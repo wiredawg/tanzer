@@ -1,17 +1,19 @@
 package provide tanzer::session 0.0.1
-package require tanzer::request
 package require tanzer::response
 package require TclOO
 
 ::oo::class create ::tanzer::session
 
-::oo::define ::tanzer::session constructor {_server _sock} {
-    my variable server sock request readBytes \
+::oo::define ::tanzer::session constructor {_server _sock _proto} {
+    my variable server sock proto request readBytes \
         route handler state responded config
+
+    set module [format "::tanzer::%s::request" $_proto]
 
     set server    $_server
     set sock      $_sock
-    set request   [::tanzer::request create ::tanzer::request-${_sock}]
+    set proto     $_proto
+    set request   [$module new]
     set route     {}
     set handler   {}
     set state     [dict create]

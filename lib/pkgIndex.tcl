@@ -12,3 +12,5 @@ package ifneeded tanzer::file::fragment 0.0.1 [list source [file join $dir tanze
 package ifneeded tanzer::file::partial  0.0.1 [list source [file join $dir tanzer/file/partial.tcl]]
 package ifneeded tanzer::file::handler  0.0.1 [list source [file join $dir tanzer/file/handler.tcl]]
 package ifneeded tanzer::file::listing  0.0.1 [list source [file join $dir tanzer/file/listing.tcl]]
+package ifneeded tanzer::scgi           0.0.1 [list source [file join $dir tanzer/scgi.tcl]]
+package ifneeded tanzer::scgi::request  0.0.1 [list source [file join $dir tanzer/scgi/request.tcl]]

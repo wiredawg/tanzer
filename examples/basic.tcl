@@ -1,6 +1,7 @@
 #! /usr/bin/env tclsh8.5
 
 package require tanzer
+package require tanzer::scgi
 package require tanzer::response
 package require tanzer::file::handler
 
@@ -47,7 +48,10 @@ namespace eval ::lambda {
     }
 }
 
-::tanzer::server create server
+::tanzer::server create server {
+    port  1337
+    proto "scgi"
+}
 
 server route GET /* [::tanzer::file::handler new {
     root     /var/www/xantronix.net/doc
@@ -55,5 +59,5 @@ server route GET /* [::tanzer::file::handler new {
     listings 1
 }] respond
 
-server listen 1337
+server listen
 vwait forever

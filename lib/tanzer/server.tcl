@@ -8,12 +8,36 @@ package require TclOO
 ::oo::define ::tanzer::server constructor {args} {
     my variable routes config sessions
 
-    if {[llength $args] > 0} {
-        set routes [lindex $routes 0]
-    }
+    set routes [list]
 
     array set config {
         readBufferSize 4096
+        port           1337
+        proto          "scgi"
+    }
+
+    if {[llength $args] == 1} {
+        foreach {key value} [lindex $args 0] {
+            if {[array get config $key] ne {}} {
+                set config($key) $value
+            }
+        }
+    }
+
+    set found 0
+
+    set test [format {
+        if {$::tanzer::%s::request::proto eq "%s"} {
+            set found 1
+        }
+    } $config(proto) $config(proto)]
+
+    if {[catch $test error]} {
+        error "Unsupported protocol $config(proto): $error"
+    }
+
+    if {!$found} {
+        error "No package found for protocol $config(proto)"
     }
 }
 
@@ -104,7 +128,8 @@ package require TclOO
         -buffering   full \
         -buffersize  $config(readBufferSize)
 
-    set session [::tanzer::session create ::tanzer::session-$sock [self] $sock]
+    set session [::tanzer::session create \
+        ::tanzer::session-$sock [self] $sock $config(proto)]
 
     $session set sockaddr [list $addr $port]
 
@@ -115,6 +140,8 @@ package require TclOO
     return
 }
 
-::oo::define ::tanzer::server method listen {port} {
-    socket -server [list [self] accept] $port
+::oo::define ::tanzer::server method listen {} {
+    my variable config
+
+    socket -server [list [self] accept] $config(port)
 }
