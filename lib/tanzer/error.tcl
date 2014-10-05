@@ -3,12 +3,15 @@ package require tanzer::response
 
 namespace eval ::tanzer::error {
     namespace ensemble create
-    namespace export new response
-
+    namespace export new response servable
 }
 
 proc ::tanzer::error::new {code msg} {
     return [list [namespace current] $code $msg]
+}
+
+proc ::tanzer::error::servable {error} {
+    return [expr {[string first "[namespace current] " $error] == 0}]
 }
 
 proc ::tanzer::error::response {error} {

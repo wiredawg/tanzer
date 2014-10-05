@@ -1,4 +1,5 @@
 package provide tanzer::server 0.0.1
+package require tanzer::error
 package require tanzer::route
 package require tanzer::session
 package require TclOO
@@ -113,7 +114,15 @@ package require TclOO
     }
 
     if {[catch {$session handle $event} error]} {
-        puts "Error: $error\n$::errorInfo"
+        if {[::tanzer::error servable $error]} {
+            set response [::tanzer::error response $error]
+        } else {
+            set response [::tanzer::error response \
+                [::tanzer::error new 500 $error]]
+        }
+
+        $session send $response
+        $response destroy
 
         my close $sock
     }

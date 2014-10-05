@@ -11,6 +11,7 @@ namespace eval ::tanzer::response {
         301 "Moved Permanently"
         403 "Forbidden"
         404 "Not Found"
+        500 "Internal Server Error"
     }
 }
 
