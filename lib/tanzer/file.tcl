@@ -107,7 +107,7 @@ package require sha1
 
     set response [::tanzer::response new 200]
 
-    $response header Content-Type   [::tanzer::file::handler::mimeType $path]
+    $response header Content-Type   [my mimeType]
     $response header Content-Length $st(size)
     $response header ETag           "\"[my etag]\""
     $response header Accept-Ranges  "bytes"

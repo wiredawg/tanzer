@@ -3,69 +3,7 @@ package require tanzer::file::listing
 package require tanzer::file::partial
 package require tanzer::file
 package require tanzer::response
-
-package require fileutil::magic::mimetype
 package require TclOO
-package require sha1
-
-namespace eval ::tanzer::file::handler {
-    variable boundary "sxw94fa83qpa8"
-}
-
-proc ::tanzer::file::handler::mimeType {localPath} {
-    set mimeType [lindex [::fileutil::magic::mimetype $localPath] 0]
-
-    if {$mimeType ne {}} {
-        return $mimeType
-    }
-
-    switch -glob -nocase $localPath {
-        *.txt  { return "text/plain" }
-        *.htm -
-        *.html { return "text/html" }
-    }
-
-    return "application/octet-stream"
-}
-
-proc ::tanzer::file::handler::ranges {headerValue size} {
-    set ranges [list]
-
-    if {![regexp {^bytes=(.*)$} $headerValue {} bytesRanges]} {
-        error "Invalid byte range value"
-    }
-
-    foreach bytesRange [split $bytesRanges ","] {
-        set min 0
-        set max [expr $size - 1]
-
-        if {[regexp {^(\d+)-$} $bytesRange {} start]} {
-            set min $start
-        } elseif {[regexp {^-(\d+)$} $bytesRange {} endOffset]} {
-            set min [expr $size - $endOffset]
-        } elseif {[regexp {^(\d+)-(\d+)$} $bytesRange {} start end]} {
-            set min $start
-            set max $end
-        } else {
-            error "Invalid byte range value"
-        }
-
-        if {$min < 0 || $min >= $size || $max >= $size || $max < 0} {
-            error "Invalid byte range value"
-        }
-
-        lappend ranges [list $min $max]
-    }
-
-    return $ranges
-}
-
-proc ::tanzer::file::handler::etag {localPath st} {
-    return [::sha1::sha1 -hex [concat \
-        $localPath \
-        [dict get $st mtime] \
-        [dict get $st ino]]]
-}
 
 ::oo::class create ::tanzer::file::handler
 
