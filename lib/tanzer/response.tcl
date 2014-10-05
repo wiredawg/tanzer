@@ -40,6 +40,12 @@ proc ::tanzer::response::lookup {code} {
     }
 }
 
+::oo::define ::tanzer::response method data {} {
+    my variable data
+
+    return $data
+}
+
 ::oo::define ::tanzer::response method buffer {_data} {
     my variable data
 
