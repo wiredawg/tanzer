@@ -1,15 +1,17 @@
 package provide tanzer::server 0.0.1
 package require tanzer::error
 package require tanzer::route
+package require tanzer::logger
 package require tanzer::session
 package require TclOO
 
 ::oo::class create ::tanzer::server
 
 ::oo::define ::tanzer::server constructor {args} {
-    my variable routes config sessions
+    my variable routes config sessions logger
 
     set routes [list]
+    set logger {}
 
     array set config {
         readBufferSize 4096
@@ -25,6 +27,18 @@ package require TclOO
         }
     }
 
+    #
+    # If need be, instantiate a logger object, passing configuration directives
+    # directly from the caller here as required.
+    #
+    if {[array get config logging] ne {}} {
+        set logger [::tanzer::logger new $config(logging)]
+    }
+
+    #
+    # Determine if support for the protocol specified at object instantiation
+    # time is present.
+    #
     set found 0
 
     set test [format {
