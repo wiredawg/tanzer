@@ -11,7 +11,7 @@ package require TclOO
     my variable routes config sessions logger
 
     set routes [list]
-    set logger {}
+    set logger ::tanzer::logger::noop
 
     array set config {
         readBufferSize 4096
