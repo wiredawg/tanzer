@@ -71,6 +71,13 @@ namespace eval ::tanzer::logger {
     return
 }
 
+::oo::define ::tanzer::logger method write {dest line} {
+    my variable files
+
+    puts $files($dest) $line
+    flush $files($dest)
+}
+
 ::oo::define ::tanzer::logger method log {server session args} {
     my variable files
 
@@ -82,7 +89,7 @@ namespace eval ::tanzer::logger {
         set response [$session response]
     }
 
-    puts $files(accessLog) [format {%s %s - [%s] "%s %s %s" %d %d "%d" "%d"} \
+    my write accessLog [format {%s %s - [%s] "%s %s %s" %d %d "%s" "%s"} \
         [$request env REMOTE_ADDR] \
         [info hostname] \
         [$request timestamp] \
@@ -101,9 +108,9 @@ namespace eval ::tanzer::logger {
     my variable config files
 
     if {$config(logStackTraces)} {
-        puts $files(errorLog) $::errorInfo
+        my write errorLog $::errorInfo
     } else {
-        puts $files(errorLog) $error
+        my write errorLog $error
     }
 
     return
