@@ -1,6 +1,7 @@
 package provide tanzer::file::partial 0.0.1
 package require tanzer::file::fragment
 package require tanzer::file
+package require tanzer::error
 package require tanzer::response
 package require TclOO
 
@@ -133,7 +134,7 @@ package require TclOO
         set fragment [my fragment]
 
         if {$fragment eq {}} {
-            error "No request fragments found"
+            ::tanzer::error throw 400 "No request fragments found"
         }
 
         return [$fragment size]
@@ -155,7 +156,7 @@ package require TclOO
     set method  [$request method]
 
     if {$method ne "GET"} {
-        error "Invalid request method with Range:"
+        ::tanzer::error throw 405 "Invalid request method with Range:"
     }
 
     set response [::tanzer::response new 206]

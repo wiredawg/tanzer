@@ -1,5 +1,6 @@
 package provide tanzer::scgi::request 0.0.1
 package require tanzer::request
+package require tanzer::error
 package require tanzer::uri
 package require TclOO
 
@@ -18,11 +19,11 @@ namespace eval ::tanzer::scgi::request {
     set tokenLast      [lindex $tokens $tokenLastIndex]
 
     if {$tokenCount % 2 == 0} {
-        error "Invalid header format"
+        ::tanzer::error throw 400 "Invalid header format"
     }
 
     if {[string length $tokenLast] > 0} {
-        error "Invalid header format"
+        ::tanzer::error throw 400 "Invalid header format"
     }
 
     return [lrange $tokens 0 [expr {$tokenLastIndex - 1}]]
@@ -53,7 +54,7 @@ namespace eval ::tanzer::scgi::request {
         return $length
     }
 
-    error "Invalid request header length"
+    ::tanzer::error throw 400 "Invalid request header length"
 }
 
 ::oo::define ::tanzer::scgi::request method validate {} {
@@ -68,16 +69,16 @@ namespace eval ::tanzer::scgi::request {
 
     foreach name $required {
         if {![dict exists $env $name]} {
-            error "Invalid request; missing $name header"
+            ::tanzer::error throw 400 "Invalid request; missing $name header"
         }
     }
 
     if {[dict get $env SCGI] != 1} {
-        error "Invalid request; unknown SCGI version"
+        ::tanzer::error throw 400 "Invalid request; unknown SCGI version"
     }
 
     if {[dict get $env CONTENT_LENGTH] < 0} {
-        error "Invalid content length"
+        ::tanzer::error throw 400 "Invalid content length"
     }
 
     return
@@ -138,7 +139,7 @@ namespace eval ::tanzer::scgi::request {
 
     if {[llength $args] == 1} {
         if {!$ready} {
-            error "Request not ready"
+            ::tanzer::error throw 400 "Request not ready"
         }
 
         incr remaining [lindex $args 0]
@@ -177,7 +178,7 @@ namespace eval ::tanzer::scgi::request {
     set endIndex [expr {$bufferSizeExpected - 1}]
 
     if {[string index $buffer $endIndex] ne ","} {
-        error "Invalid request format"
+        ::tanzer::error throw 400 "Invalid request format"
     }
 
     set startIndex [expr {

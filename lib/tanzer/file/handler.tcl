@@ -2,6 +2,7 @@ package provide tanzer::file::handler 0.0.1
 package require tanzer::file::listing
 package require tanzer::file::partial
 package require tanzer::file
+package require tanzer::error
 package require tanzer::response
 package require TclOO
 
@@ -81,7 +82,7 @@ package require TclOO
     foreach item $relative {
         if {$item eq ".."} {
             if {[incr level -1] < 0} {
-                error "Invalid request path"
+                ::tanzer::error throw 403 "Invalid request path"
             }
         } elseif {$item eq "."} {
             continue
@@ -136,9 +137,9 @@ package require TclOO
 
     if {![catch {file stat $indexFile indexSt}]} {
         if {$indexSt(type) ne "file"} {
-            error "$indexFile is not a file"
+            ::tanzer::error throw 403 "$indexFile is not a file"
         }
-        
+
         my serve $session $indexFile [array get indexSt]
 
         return
@@ -170,7 +171,7 @@ package require TclOO
         HEAD {}
 
         default {
-            error "Unsupported method for request"
+            ::tanzer::error throw 405 "Unsupported method for request"
         }
     }
 
@@ -185,7 +186,7 @@ package require TclOO
     }
 
     if {$st(type) ne "file"} {
-        error "Unsupported inode type $st(type)"
+        ::tanzer::error throw 403 "Unsupported inode type $st(type)"
     }
 
     my serve $session $localPath [array get st]

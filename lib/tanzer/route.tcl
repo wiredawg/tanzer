@@ -1,4 +1,5 @@
 package provide tanzer::route 0.0.1
+package require tanzer::error
 package require tanzer::uri
 package require TclOO
 
@@ -48,7 +49,7 @@ package require TclOO
     set pathLen [llength $path]
 
     if {$pathLen < [llength $pattern]} {
-        error "Request path is shorter than route path"
+        ::tanzer::error throw 416 "Request path is shorter than route path"
     }
 
     set wildcard 0
@@ -64,7 +65,7 @@ package require TclOO
         if {$wildcard} {
             lappend relativeParts $partPath
         } elseif {$partRoute ne $partPath} {
-            error "Path does not match route"
+            ::tanzer::error throw 416 error "Path does not match route"
         }
     }
 

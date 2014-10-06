@@ -1,5 +1,6 @@
 package provide tanzer::session 0.0.1
 package require tanzer::response
+package require tanzer::error
 package require TclOO
 
 ::oo::class create ::tanzer::session
@@ -99,9 +100,9 @@ package require TclOO
     set remaining [$request remaining -[string length $data]]
 
     if {$remaining < 0} {
-        error "Request body too long"
+        ::tanzer::error throw 400 "Request body too long"
     } elseif {$remaining > 0} {
-        error "Request body too short"
+        ::tanzer::error throw 400 "Request body too short"
     }
 
     #
@@ -245,5 +246,5 @@ package require TclOO
         }
     }
 
-    error "No suitable request handler found"
+    ::tanzer::error 404 "No suitable request handler found"
 }

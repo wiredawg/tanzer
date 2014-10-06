@@ -113,13 +113,10 @@ package require TclOO
         return
     }
 
-    if {[catch {$session handle $event} error]} {
-        if {[::tanzer::error servable $error]} {
-            set response [::tanzer::error response $error]
-        } else {
-            set response [::tanzer::error response \
-                [::tanzer::error new 500 $error]]
-        }
+    ::tanzer::error try {
+        $session handle $event
+    } catch e {
+        set response [::tanzer::error response $e]
 
         $session send $response
         $response destroy

@@ -11,7 +11,7 @@ proc ::tanzer::file::fragment::parseRangeRequest {request size mimeType} {
     set headerValue [$request header Range]
 
     if {![regexp {^bytes=(.*)$} $headerValue {} bytesRanges]} {
-        error "Invalid byte range value"
+        ::tanzer::error throw 416 "Invalid byte range value"
     }
 
     foreach bytesRange [split $bytesRanges ","] {
@@ -26,11 +26,11 @@ proc ::tanzer::file::fragment::parseRangeRequest {request size mimeType} {
             set min $start
             set max $end
         } else {
-            error "Invalid byte range value"
+            ::tanzer::error throw 416 "Invalid byte range value"
         }
 
         if {$min < 0 || $min >= $size || $max >= $size || $max < 0} {
-            error "Invalid byte range value"
+            ::tanzer::error throw 416 "Invalid byte range value"
         }
 
         lappend ranges [::tanzer::file::fragment new $min $max $size $mimeType]
