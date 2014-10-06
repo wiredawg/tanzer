@@ -30,7 +30,7 @@ proc ::tanzer::message::field {name} {
     my variable headers
 
     if {[llength $args] == 0} {
-        return [dict get $headers [string tolower $name]]
+        return [dict get $headers [::tanzer::message::field $name]]
     } elseif {[llength $args] == 1} {
         set name  [string tolower $name]
         set value [lindex $args 0]
