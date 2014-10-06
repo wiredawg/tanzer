@@ -63,8 +63,6 @@ proc ::tanzer::response::lookup {code} {
 }
 
 ::oo::define ::tanzer::response method length {} {
-    my variable headers
-
     if {[my headerExists Content-Length]} {
         return [my header Content-Length]
     }
