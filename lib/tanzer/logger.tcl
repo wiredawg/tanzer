@@ -67,10 +67,11 @@ package require TclOO
     return
 }
 
-::oo::define ::tanzer::logger method log {server session response} {
+::oo::define ::tanzer::logger method info {server session} {
     my variable files
 
-    set request [$session request]
+    set request  [$session request]
+    set response [$session response]
 
     puts $files(accessLog) [format {%s %s - [%s] "%s %s %s" %d %d "%d" "%d"} \
         [$request env REMOTE_ADDR] \
