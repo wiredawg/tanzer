@@ -48,7 +48,9 @@ proc ::tanzer::error::try {script catch ename catchBlock} {
     }
 
     if {[catch {set ret [uplevel 1 $script]} error]} {
-        return [uplevel 1 [join [list [list set $ename $error] $catchBlock] "\n"]]
+        return [uplevel 1 [join [list \
+            [list set $ename $error] \
+            $catchBlock] "\n"]]
     }
 
     return $ret

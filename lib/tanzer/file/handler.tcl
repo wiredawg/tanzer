@@ -140,7 +140,9 @@ package require TclOO
             ::tanzer::error throw 403 "$indexFile is not a file"
         }
 
-        my serve $session $indexFile [array get indexSt]
+        ::tanzer::error run {
+            my serve $session $indexFile [array get indexSt]
+        }
 
         return
     }
@@ -177,7 +179,9 @@ package require TclOO
 
     set localPath [my resolve $request $route]
 
-    file stat $localPath st
+    ::tanzer::error run {
+        file stat $localPath st
+    }
 
     if {$st(type) eq "directory"} {
         my index $session $localPath [array get st]
@@ -189,7 +193,9 @@ package require TclOO
         ::tanzer::error throw 403 "Unsupported inode type $st(type)"
     }
 
-    my serve $session $localPath [array get st]
+    ::tanzer::run {
+        my serve $session $localPath [array get st]
+    }
 
     return
 }
