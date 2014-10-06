@@ -3,7 +3,7 @@ package require tanzer::response
 
 namespace eval ::tanzer::error {
     namespace ensemble create
-    namespace export new throw try response servable
+    namespace export new throw try response run servable
 }
 
 proc ::tanzer::error::new {code msg} {
@@ -12,6 +12,28 @@ proc ::tanzer::error::new {code msg} {
 
 proc ::tanzer::error::throw {code msg} {
     error [::tanzer::error new $code $msg]
+}
+
+proc ::tanzer::error::run {script} {
+    if {[catch {set ret [uplevel 1 $script]} error]} {
+        set type  [lindex $::errorCode 0]
+        set errno [lindex $::errorCode 1]
+        set msg   [lindex $::errorCode 2]
+
+        if {[::tanzer::error servable $error]} {
+            error $error
+        } else {
+            switch -- $errno ENOTDIR - ENOENT {
+                ::tanzer::error throw 404 $msg
+            } EPERM {
+                ::tanzer::error throw 403 $msg
+            } default {
+                ::tanzer::error throw 500 $error
+            }
+        }
+    }
+
+    return $ret
 }
 
 proc ::tanzer::error::servable {error} {
@@ -26,23 +48,7 @@ proc ::tanzer::error::try {script catch ename catchBlock} {
     }
 
     if {[catch {set ret [uplevel 1 $script]} error]} {
-        set type  [lindex $::errorCode 0]
-        set errno [lindex $::errorCode 1]
-        set msg   [lindex $::errorCode 2]
-
-        if {[::tanzer::error servable $error]} {
-            set e $error
-        } else {
-            switch -- $errno ENOTDIR - ENOENT {
-                set e [::tanzer::error new 404 $msg]
-            } EPERM {
-                set e [::tanzer::error new 403 $msg]
-            } default {
-                set e [::tanzer::error new 500 $error]
-            }
-        }
-
-        return [uplevel 1 [join [list [list set $ename $e] $catchBlock] "\n"]]
+        return [uplevel 1 [join [list [list set $ename $error] $catchBlock] "\n"]]
     }
 
     return $ret

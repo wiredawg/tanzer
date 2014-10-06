@@ -116,7 +116,21 @@ package require TclOO
     ::tanzer::error try {
         $session handle $event
     } catch e {
-        set response [::tanzer::error response $e]
+        if {[::tanzer::error servable $e]} {
+            #
+            # If the error we have received is servable and thus a structured
+            # error, then we can immediately generate a response page and consider
+            # it an error meant to be sent to the client.
+            #
+            set response [::tanzer::error response $e]
+        } else {
+            #
+            # Otherwise, generate a generic 500 Internal Server Error response,
+            # and log that in the error log, if available.
+            #
+            set response [::tanzer::error response \
+                [::tanzer::error new 500 $e]]
+        }
 
         $session send $response
         $response destroy
