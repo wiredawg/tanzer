@@ -32,7 +32,7 @@ proc ::tanzer::message::field {name} {
     if {[llength $args] == 0} {
         return [dict get $headers [::tanzer::message::field $name]]
     } elseif {[llength $args] == 1} {
-        set name  [string tolower $name]
+        set name  [::tanzer::message::field $name]
         set value [lindex $args 0]
 
         lappend headers $name $value
