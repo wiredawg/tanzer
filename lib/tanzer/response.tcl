@@ -44,6 +44,12 @@ proc ::tanzer::response::lookup {code} {
     }
 }
 
+::oo::define ::tanzer::response method code {} {
+    my variable code
+
+    return $code
+}
+
 ::oo::define ::tanzer::response method data {} {
     my variable data
 
@@ -54,6 +60,16 @@ proc ::tanzer::response::lookup {code} {
     my variable data
 
     append data $_data
+}
+
+::oo::define ::tanzer::response method length {} {
+    my variable headers
+
+    if {[my headerExists Content-Length]} {
+        return [my header Content-Length]
+    }
+
+    return 0
 }
 
 ::oo::define ::tanzer::response method write {sock} {

@@ -1,4 +1,5 @@
 package provide tanzer::request 0.0.1
+package require tanzer::date
 package require tanzer::uri
 package require TclOO
 
@@ -6,7 +7,7 @@ package require TclOO
 
 ::oo::define ::tanzer::request constructor {} {
     my variable env headers length ready remaining \
-        buffer config uri path params
+        buffer config uri path params timestamp
 
     set env       [dict create]
     set headers   [dict create]
@@ -17,6 +18,7 @@ package require TclOO
     set uri       {}
     set path      {}
     set params    {}
+    set timestamp [::tanzer::date::rfc2616 [clock seconds]]
 }
 
 ::oo::define ::tanzer::request method buffer {data} {
@@ -209,4 +211,26 @@ package require TclOO
     my variable headers
 
     return [expr {[llength $headers] == 0}]
+}
+
+::oo::define ::tanzer::request method referer {} {
+    if {[my headerExists Referer]} {
+        return [my header Referer]
+    }
+
+    return "-"
+}
+
+::oo::define ::tanzer::request method agent {} {
+    if {[my headerExists User-Agent]} {
+        return [my header User-Agent]
+    }
+
+    return "(unknown)"
+}
+
+::oo::define ::tanzer::request method timestamp {} {
+    my variable timestamp
+
+    return $timestamp
 }
