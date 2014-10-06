@@ -193,7 +193,7 @@ package require TclOO
         ::tanzer::error throw 403 "Unsupported inode type $st(type)"
     }
 
-    ::tanzer::run {
+    ::tanzer::error run {
         my serve $session $localPath [array get st]
     }
 
