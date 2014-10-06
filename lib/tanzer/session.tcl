@@ -210,7 +210,7 @@ package require TclOO
     set response $_response
 }
 
-::oo::define :tanzer::session method response {} {
+::oo::define ::tanzer::session method response {} {
     my variable response
 
     return $response
