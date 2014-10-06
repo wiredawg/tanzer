@@ -3,6 +3,10 @@ package require tanzer::date
 package require tanzer::uri
 package require TclOO
 
+namespace eval ::tanzer::logger {
+    proc noop {args} {}
+}
+
 ::oo::class create ::tanzer::logger
 
 ::oo::define ::tanzer::logger constructor {opts} {
