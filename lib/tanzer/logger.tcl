@@ -61,7 +61,7 @@ namespace eval ::tanzer::logger {
         #
         # If any log files are already open, then close and reopen them.
         #
-        if {[array get config $key] ne {}} {
+        if {[array get files $key] ne {}} {
             close $files($key)
         }
 
@@ -74,7 +74,7 @@ namespace eval ::tanzer::logger {
 ::oo::define ::tanzer::logger method log {server session args} {
     my variable files
 
-    set request  [$session request]
+    set request [$session request]
 
     if {[llength $args] == 1} {
         set response [lindex $args 0]

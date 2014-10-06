@@ -51,6 +51,11 @@ namespace eval ::lambda {
 ::tanzer::server create server {
     port  1337
     proto "scgi"
+
+    logging {
+        accessLog "/var/log/tanzer/access.log"
+        errorLog  "/var/log/tanzer/error.log"
+    }
 }
 
 server route GET /* [::tanzer::file::handler new {

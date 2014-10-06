@@ -10,6 +10,7 @@ package require TclOO
 ::oo::define ::tanzer::server constructor {args} {
     my variable routes config sessions logger
 
+    set opts   {}
     set routes [list]
     set logger ::tanzer::logger::noop
 
@@ -20,10 +21,12 @@ package require TclOO
     }
 
     if {[llength $args] == 1} {
-        foreach {key value} [lindex $args 0] {
-            if {[array get config $key] ne {}} {
-                set config($key) $value
-            }
+        set opts [lindex $args 0]
+    }
+
+    foreach {key value} $opts {
+        if {[array get config $key] ne {}} {
+            set config($key) $value
         }
     }
 
@@ -31,8 +34,9 @@ package require TclOO
     # If need be, instantiate a logger object, passing configuration directives
     # directly from the caller here as required.
     #
-    if {[array get config logging] ne {}} {
-        set logger [::tanzer::logger new $config(logging)]
+    if {[dict exists $opts logging]} {
+        set logger [::tanzer::logger new \
+            [set config(logging) [dict get $opts logging]]]
     }
 
     #
@@ -129,8 +133,6 @@ package require TclOO
 
     ::tanzer::error try {
         $session handle $event
-
-        $logger log [self] $session
     } catch e {
         if {[::tanzer::error servable $e]} {
             #
