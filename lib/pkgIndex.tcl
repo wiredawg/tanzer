@@ -1,6 +1,7 @@
 package ifneeded tanzer                 0.0.1 [list source [file join $dir tanzer.tcl]]
 package ifneeded tanzer::date           0.0.1 [list source [file join $dir tanzer/date.tcl]]
 package ifneeded tanzer::error          0.0.1 [list source [file join $dir tanzer/error.tcl]]
+package ifneeded tanzer::logger         0.0.1 [list source [file join $dir tanzer/logger.tcl]]
 package ifneeded tanzer::message        0.0.1 [list source [file join $dir tanzer/message.tcl]]
 package ifneeded tanzer::request        0.0.1 [list source [file join $dir tanzer/request.tcl]]
 package ifneeded tanzer::response       0.0.1 [list source [file join $dir tanzer/response.tcl]]
