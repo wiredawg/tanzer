@@ -74,3 +74,9 @@ proc ::tanzer::message::field {name} {
 
     error "Invalid arguments"
 }
+
+::oo::define ::tanzer::message method headerExists {key} {
+    my variable headers
+
+    return [dict exists $headers $key]
+}

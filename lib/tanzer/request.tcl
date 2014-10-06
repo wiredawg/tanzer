@@ -1,9 +1,12 @@
 package provide tanzer::request 0.0.1
+package require tanzer::message
 package require tanzer::date
 package require tanzer::uri
 package require TclOO
 
-::oo::class create ::tanzer::request
+::oo::class create ::tanzer::request {
+    superclass ::tanzer::message
+}
 
 ::oo::define ::tanzer::request constructor {} {
     my variable env headers length ready remaining \
@@ -181,24 +184,6 @@ package require TclOO
     }
 
     return $env
-}
-
-::oo::define ::tanzer::request method headers {} {
-    my variable headers
-
-    return $headers
-}
-
-::oo::define ::tanzer::request method header {key} {
-    my variable headers
-
-    return [dict get $headers $key]
-}
-
-::oo::define ::tanzer::request method headerExists {key} {
-    my variable headers
-
-    return [dict exists $headers $key]
 }
 
 ::oo::define ::tanzer::request method method {} {

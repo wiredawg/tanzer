@@ -199,13 +199,15 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::session method send {_response} {
-    my variable sock response
+    my variable server sock response
 
     if {$response ne {}} {
         error "Already sent response"
     }
 
     $_response write $sock
+
+    [$server logger] log $server [self] $_response
 
     set response $_response
 }

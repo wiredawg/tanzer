@@ -86,6 +86,12 @@ package require TclOO
     error "Invalid command invocation"
 }
 
+::oo::define ::tanzer::server method logger {} {
+    my variable logger
+
+    return $logger
+}
+
 ::oo::define ::tanzer::server method route {method pattern args} {
     my variable routes
 
