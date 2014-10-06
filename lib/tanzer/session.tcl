@@ -7,18 +7,18 @@ package require TclOO
 
 ::oo::define ::tanzer::session constructor {_server _sock _proto} {
     my variable server sock proto request readBytes \
-        route handler state responded config
+        route handler state response config
 
     set module [format "::tanzer::%s::request" $_proto]
 
-    set server    $_server
-    set sock      $_sock
-    set proto     $_proto
-    set request   [$module new]
-    set route     {}
-    set handler   {}
-    set state     [dict create]
-    set responded 0
+    set server   $_server
+    set sock     $_sock
+    set proto    $_proto
+    set request  [$module new]
+    set route    {}
+    set handler  {}
+    set state    [dict create]
+    set response {}
 
     set config(readBufferSize) [$_server config readBufferSize]
 }
@@ -198,16 +198,22 @@ package require TclOO
     return [puts -nonewline $sock $data]
 }
 
-::oo::define ::tanzer::session method send {response} {
-    my variable sock responded
+::oo::define ::tanzer::session method send {_response} {
+    my variable sock response
 
-    if {$responded} {
+    if {$response ne {}} {
         error "Already sent response"
     }
 
-    $response write $sock
+    $_response write $sock
 
-    set responded 1
+    set response $_response
+}
+
+::oo::define :tanzer::session method response {} {
+    my variable response
+
+    return $response
 }
 
 ::oo::define ::tanzer::session method redirect {uri} {
