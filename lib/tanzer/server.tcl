@@ -117,7 +117,7 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::server method respond {event sock} {
-    my variable sessions
+    my variable sessions logger
 
     set session $sessions($sock)
 
@@ -129,6 +129,8 @@ package require TclOO
 
     ::tanzer::error try {
         $session handle $event
+
+        $logger log [self] $session
     } catch e {
         if {[::tanzer::error servable $e]} {
             #
@@ -137,6 +139,8 @@ package require TclOO
             # it an error meant to be sent to the client.
             #
             set response [::tanzer::error response $e]
+
+            $logger log [self] $session $response
         } else {
             #
             # Otherwise, generate a generic 500 Internal Server Error response,
@@ -144,6 +148,8 @@ package require TclOO
             #
             set response [::tanzer::error response \
                 [::tanzer::error new 500 $e]]
+
+            $logger err [self] $e
         }
 
         $session send $response

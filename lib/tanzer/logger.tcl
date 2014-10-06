@@ -71,11 +71,16 @@ namespace eval ::tanzer::logger {
     return
 }
 
-::oo::define ::tanzer::logger method info {server session} {
+::oo::define ::tanzer::logger method log {server session args} {
     my variable files
 
     set request  [$session request]
-    set response [$session response]
+
+    if {[llength $args] == 1} {
+        set response [lindex $args 0]
+    } else {
+        set response [$session response]
+    }
 
     puts $files(accessLog) [format {%s %s - [%s] "%s %s %s" %d %d "%d" "%d"} \
         [$request env REMOTE_ADDR] \
