@@ -5,10 +5,11 @@ package require TclOO
 
 ::oo::class create ::tanzer::route
 
-::oo::define ::tanzer::route constructor {_method _pattern _script} {
-    my variable method script pattern
+::oo::define ::tanzer::route constructor {_method _pattern _host _script} {
+    my variable method pattern host script
 
     set method  $_method
+    set host    $_host
     set script  $_script
     set pattern [::tanzer::uri::parts $_pattern]
 }
@@ -17,6 +18,12 @@ package require TclOO
     my variable pattern
 
     $pattern destroy
+}
+
+::oo::define ::tanzer::route method host {} {
+    my variable host
+
+    return $host
 }
 
 ::oo::define ::tanzer::route method method {} {

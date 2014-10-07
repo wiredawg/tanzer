@@ -131,6 +131,24 @@ proc ::tanzer::request::hostMatches {host pattern} {
         }
     }
 
+    #
+    # Also bail if the host does not match.
+    #
+    set host [my host]
+
+    if {$host eq {}} {
+        #
+        # Force requests without Host: to go through a host route catch-all.
+        #
+        if {[$route host] ne "*"} {
+            return 0
+        }
+    } elseif {$host ne {}} {
+        if {![::tanzer::request::hostMatches $host [$route host]]} {
+            return 0
+        }
+    }
+
     set pattern    [$route pattern]
     set partsLen   [llength $pattern]
     set requestLen [llength $path]
@@ -249,6 +267,14 @@ proc ::tanzer::request::hostMatches {host pattern} {
     my variable headers
 
     return [expr {[llength $headers] == 0}]
+}
+
+::oo::define ::tanzer::request method host {} {
+    if {[my headerExists Host]} {
+        return [my header Host]
+    }
+
+    return {}
 }
 
 ::oo::define ::tanzer::request method referer {} {

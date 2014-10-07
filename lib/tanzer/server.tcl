@@ -97,10 +97,10 @@ namespace eval ::tanzer::server {
     return $logger
 }
 
-::oo::define ::tanzer::server method route {method pattern args} {
+::oo::define ::tanzer::server method route {method pattern host args} {
     my variable routes
 
-    lappend routes [::tanzer::route new $method $pattern $args]
+    lappend routes [::tanzer::route new $method $pattern $host $args]
 }
 
 ::oo::define ::tanzer::server method routes {} {

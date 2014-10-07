@@ -10,7 +10,7 @@ package require tanzer::file::handler
     proto "http"
 }
 
-server route GET /* [::tanzer::file::handler new {
+server route * /* xantronix.net [::tanzer::file::handler new {
     root     "/var/www/xantronix.net/doc"
     static   "/var/www/xantronix.net/doc"
     listings 1
