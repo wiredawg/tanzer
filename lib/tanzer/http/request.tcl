@@ -5,7 +5,7 @@ package require tanzer::uri
 package require TclOO
 
 namespace eval ::tanzer::http::request {
-    variable proto "http"
+    variable proto            "http"
     variable maxRequestLength 1048576
     variable defaultVersion   "HTTP/0.9"
 }
