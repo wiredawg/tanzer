@@ -96,7 +96,7 @@ proc ::tanzer::request::hostMatches {host pattern} {
 }
 
 ::oo::define ::tanzer::request method parseUri {uriText} {
-    my variable env
+    my variable env uri path
 
     set parts [split $uriText "?"]
 
