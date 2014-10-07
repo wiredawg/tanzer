@@ -42,6 +42,8 @@ proc ::tanzer::response::lookup {code} {
     if {[llength $args] > 0} {
         my headers [lindex $args 0]
     }
+
+    my header Server "$::tanzer::server::name/$::tanzer::server::version"
 }
 
 ::oo::define ::tanzer::response method code {} {

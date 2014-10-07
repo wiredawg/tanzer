@@ -5,6 +5,11 @@ package require tanzer::logger
 package require tanzer::session
 package require TclOO
 
+namespace eval ::tanzer::server {
+    variable name    "tanzer"
+    variable version "0.0.1"
+}
+
 ::oo::class create ::tanzer::server
 
 ::oo::define ::tanzer::server constructor {args} {
