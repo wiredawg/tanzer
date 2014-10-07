@@ -67,6 +67,12 @@ proc ::tanzer::request::hostMatches {host pattern} {
     error "Not implemented"
 }
 
+::oo::define ::tanzer::request method ready {} {
+    my variable ready
+
+    return $ready
+}
+
 ::oo::define ::tanzer::request method incomplete {} {
     my variable ready
 
