@@ -3,8 +3,42 @@ package require tanzer::date
 package require tanzer::uri
 package require TclOO
 
-namespace eval ::tanzer::logger {
-    proc noop {args} {}
+namespace eval ::tanzer::logger {}
+
+proc ::tanzer::logger::format {subcommand args} {
+    switch -- $subcommand "log" {
+        set server  [lindex $args 0]
+        set session [lindex $args 1]
+        set request [$session request]
+
+        if {[llength $args] == 3} {
+            set response [lindex $args 2]
+        } else {
+            set response [$session response]
+        }
+
+        return [::format {%s %s - [%s] "%s %s %s" %d %d "%s" "%s"} \
+            [$request env REMOTE_ADDR] \
+            [$request host] \
+            [$request timestamp] \
+            [$request method] \
+            [::tanzer::uri::text [$request uri]] \
+            [$request env SERVER_PROTOCOL] \
+            [$response code] \
+            [$response length] \
+            [$request referer] \
+            [$request agent]]
+    } "err" {
+        set server [lindex $args 0]
+
+        return [concat [lrange $args 1 end] $::errorInfo]
+    }
+
+    error "Invalid subcommand $subcommand"
+}
+
+proc ::tanzer::logger::default {subcommand args} {
+    puts [::tanzer::logger::format $subcommand {*}$args]
 }
 
 ::oo::class create ::tanzer::logger
@@ -79,38 +113,18 @@ namespace eval ::tanzer::logger {
 }
 
 ::oo::define ::tanzer::logger method log {server session args} {
-    my variable files
-
-    set request [$session request]
-
-    if {[llength $args] == 1} {
-        set response [lindex $args 0]
-    } else {
-        set response [$session response]
-    }
-
-    my write accessLog [format {%s %s - [%s] "%s %s %s" %d %d "%s" "%s"} \
-        [$request env REMOTE_ADDR] \
-        [info hostname] \
-        [$request timestamp] \
-        [$request method] \
-        [::tanzer::uri::text [$request uri]] \
-        [$request env SERVER_PROTOCOL] \
-        [$response code] \
-        [$response length] \
-        [$request referer] \
-        [$request agent]]
+    my write accessLog [::tanzer::logger::format log $server $session {*}$args]
 
     return
 }
 
 ::oo::define ::tanzer::logger method err {server error} {
-    my variable config files
+    my variable config
+
+    my write errorLog [::tanzer::logger::format err $server $error]
 
     if {$config(logStackTraces)} {
         my write errorLog $::errorInfo
-    } else {
-        my write errorLog $error
     }
 
     return
