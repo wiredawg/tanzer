@@ -8,11 +8,6 @@ package require tanzer::file::handler
 ::tanzer::server create server {
     port  8080
     proto "http"
-
-    logging {
-        accessLog "/var/log/tanzer/access.log"
-        errorLog  "/var/log/tanzer/error.log"
-    }
 }
 
 server route GET /* [::tanzer::file::handler new {
