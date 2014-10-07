@@ -54,6 +54,20 @@ package require TclOO
     return $path
 }
 
+::oo::define ::tanzer::request method parseUri {uriText} {
+    my variable env
+
+    set parts [split $uriText "?"]
+
+    dict set env PATH_INFO    [lindex $parts 0]
+    dict set env QUERY_STRING [join [lrange $parts 1 end] "?"]
+
+    set uri  [::tanzer::uri::parts [dict get $env REQUEST_URI]]
+    set path [::tanzer::uri::parts [dict get $env PATH_INFO]]
+
+    return
+}
+
 ::oo::define ::tanzer::request method matches {route} {
     my variable params path
 
