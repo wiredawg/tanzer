@@ -121,9 +121,7 @@ package require TclOO
     # to the right place.
     #
     if {[lindex $path end] ne {}} {
-        $session send [$session redirect \
-            [::tanzer::uri::text [concat $path {""}]]]
-
+        $session redirect [::tanzer::uri::text [concat $path {""}]]
         $session destroy
 
         return
