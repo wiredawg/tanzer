@@ -27,17 +27,15 @@ proc ::tanzer::http::request::supportedVersion {version} {
 }
 
 ::oo::define ::tanzer::http::request method parse {} {
-    my variable buffer ready env remaining \
-        path uri
+    my variable buffer ready session \
+        env headers path uri
 
     if {$ready} {
         return 1
     }
 
     set bufferLength [string length $buffer]
-    set headerLength [string first $buffer "\r\n\r\n"]
-
-    puts "Got header length $headerLength"
+    set headerLength [string first "\r\n\r\n" $buffer]
 
     #
     # If we cannot find the end of the headers, then determine if the buffer
@@ -62,11 +60,16 @@ proc ::tanzer::http::request::supportedVersion {version} {
     set headerName  {}
     set headerValue {}
 
-    foreach line [split $preamble "\r\n"] {
-        #
-        # Look for the request action, first.
-        #
+    set start 0
+    set end   [expr {[string first "\r\n" $preamble $start] - 1}]
+
+    while {1} {
+        set line [string range $preamble $start $end]
+
         if {$action eq {}} {
+            #
+            # Look for the request action, first.
+            #
             set action      [regexp -all -inline {\S+} $line]
             set httpMethod  [lindex $action 0]
             set httpUri     [lindex $action 1]
@@ -89,36 +92,41 @@ proc ::tanzer::http::request::supportedVersion {version} {
             my env REQUEST_METHOD  $httpMethod
             my env REQUEST_URI     $httpUri
             my env SERVER_PROTOCOL $httpVersion
+        } elseif {[regexp -nocase {^([a-z][a-z0-9\-_]+):\s+(.*)} $line {} newHeaderName newHeaderValue]} {
+            #
+            # Set the value of an existing header that was parsed previously.
+            #
+            if {$headerName ne {} && $headerValue ne {}} {
+                my header $headerName $headerValue
+            }
 
-            continue
-        }
-
-        #
-        # Look for new headers.
-        #
-        if {[regexp -nocase {^([a-z][a-z0-9\-]+):\S+(.*)} $line {} $headerName $headerValue]} {
-            set headerValue [string trim $headerValue]
-
-            continue
-        }
-
-        #
-        # Look for header value continuation lines.
-        #
-        if {[regexp {^\s+(.*)$} $line {} headerValueExtra]} {
+            set headerName  $newHeaderName
+            set headerValue [string trim $newHeaderValue]
+        } elseif {[regexp {^\s+(.*)$} $line {} headerValueExtra]} {
+            #
+            # Look for header value continuation lines.
+            #
             if {$headerName eq {}} {
-                ::tanzer::error throw 400 "Invalid header"
+                ::tanzer::error throw 400 "Invalid request"
             }
 
             append headerValue [string trim $headerValueExtra]
-
-            continue
         }
 
-        ::tanzer::error throw 400 "Malformed request"
+        set start [expr {$end + 3}]
+        set end   [expr {[string first "\r\n" $preamble $start] - 1}]
+
+        if {$end < 0} {
+            break
+        }
     }
 
-    puts "Now we're here"
+    #
+    # Set remaining headers at the end of the request.
+    #
+    if {$headerName ne {} && $headerValue ne {}} {
+        my header $headerName $headerValue
+    }
 
     #
     # Truncate the header data from the buffer.
@@ -129,7 +137,12 @@ proc ::tanzer::http::request::supportedVersion {version} {
     # If PATH_INFO or QUERY_STRING do not exist, then infer them from
     # REQUEST_URI.
     #
-    my parseUri [dict get $env REQUEST_URI]
+    my parseUri [my env REQUEST_URI]
+
+    #
+    # Set REMOTE_ADDR.
+    #
+    my env REMOTE_ADDR [lindex [$session get sockaddr] 0]
 
     #
     # Finally, update the ready flag to indicate that the request is now
