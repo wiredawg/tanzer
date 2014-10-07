@@ -4,6 +4,41 @@ package require tanzer::date
 package require tanzer::uri
 package require TclOO
 
+namespace eval ::tanzer::request {}
+
+proc ::tanzer::request::hostMatches {host pattern} {
+    if {$host eq $pattern} {
+        return 1
+    }
+
+    set hostParts    [split $host    "."]
+    set patternParts [split $pattern "."]
+
+    set h [expr {[llength $hostParts   ] - 1}]
+    set p [expr {[llength $patternParts] - 1}]
+
+    while {$h >= 0} {
+        set hostPart    [lindex $hostParts    $h]
+        set patternPart [lindex $patternParts $p]
+
+        if {$patternPart eq "*"} {
+            if {$p != 0} {
+                error "Invalid pattern $pattern"
+            }
+
+            return 1
+        } elseif {$hostPart ne $patternPart} {
+            return 0
+        } else {
+            incr p -1
+        }
+
+        incr h -1
+    }
+
+    return 1
+}
+
 ::oo::class create ::tanzer::request {
     superclass ::tanzer::message
 }
