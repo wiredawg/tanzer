@@ -12,6 +12,15 @@ namespace eval ::tanzer::scgi::request {
     superclass ::tanzer::request
 }
 
+::oo::define ::tanzer::scgi::request constructor {} {
+    my variable length remaining
+
+    next
+
+    set length    0
+    set remaining 0
+}
+
 ::oo::define ::tanzer::scgi::request method tokenize {data} {
     set tokens         [split $data "\0"]
     set tokenCount     [llength $tokens]

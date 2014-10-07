@@ -9,14 +9,12 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::request constructor {} {
-    my variable env headers length ready remaining \
-        buffer config uri path params timestamp
+    my variable env headers ready buffer config \
+        uri path params timestamp
 
     set env       [dict create]
     set headers   [dict create]
-    set length    0
     set ready     0
-    set remaining 0
     set buffer    ""
     set uri       {}
     set path      {}
