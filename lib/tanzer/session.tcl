@@ -97,24 +97,16 @@ package require TclOO
         set data [$request data]
     }
 
-    set remaining [$request remaining -[string length $data]]
-
-    if {$remaining < 0} {
-        ::tanzer::error throw 400 "Request body too long"
-    } elseif {$remaining > 0} {
-        ::tanzer::error throw 400 "Request body too short"
-    }
-
     #
     # Pass the current block of data to the handler.
     #
     {*}$handler read [self] $data
 
     #
-    # If we have read the full request body, then bind the event handler to
-    # the socket for writable events, and ignore readable events.
+    # If the request is now ready, then bind the event handler to the socket
+    # for writable events, and ignore readable events.
     #
-    if {$remaining == 0} {
+    if {[$request ready]} {
         fileevent $sock readable {}
         fileevent $sock writable [list $server respond write $sock]
     }

@@ -13,12 +13,9 @@ namespace eval ::tanzer::scgi::request {
 }
 
 ::oo::define ::tanzer::scgi::request constructor {} {
-    my variable length remaining
+    my variable length
 
-    next
-
-    set length    0
-    set remaining 0
+    set length 0
 }
 
 ::oo::define ::tanzer::scgi::request method tokenize {data} {
@@ -143,22 +140,8 @@ namespace eval ::tanzer::scgi::request {
     return
 }
 
-::oo::define ::tanzer::scgi::request method remaining {args} {
-    my variable ready remaining
-
-    if {[llength $args] == 1} {
-        if {!$ready} {
-            ::tanzer::error throw 400 "Request not ready"
-        }
-
-        incr remaining [lindex $args 0]
-    }
-
-    return $remaining
-}
-
 ::oo::define ::tanzer::scgi::request method parse {} {
-    my variable buffer ready env remaining \
+    my variable buffer data ready env \
         path uri
 
     set length [my length]
@@ -215,9 +198,18 @@ namespace eval ::tanzer::scgi::request {
     set buffer [string range $buffer [expr {$endIndex + 1}] end]
 
     #
-    # Set the number of remaining bytes to the CONTENT_LENGTH header value.
+    # Set the number of remaining bytes to the CONTENT_LENGTH header value,
+    # and determine if the request is too long or short.
     #
-    set remaining [dict get $env CONTENT_LENGTH]
+    set remaining [expr {
+        [dict get $env CONTENT_LENGTH] - [string length $buffer]
+    }]
+
+    if {$remaining < 0} {
+        ::tanzer::error throw 400 "Request body too long"
+    } elseif {$remaining > 0} {
+        ::tanzer::error throw 400 "Request body too short"
+    }
 
     #
     # If PATH_INFO or QUERY_STRING do not exist, then infer them from
