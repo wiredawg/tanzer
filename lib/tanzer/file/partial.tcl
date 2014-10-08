@@ -82,10 +82,10 @@ package require TclOO
     set fragment [my fragment]
 
     #
-    # If there are no more fragments to be read, then close the session.
+    # If there are no more fragments to be read, then finish the request.
     #
     if {$fragment eq {}} {
-        $session destroy
+        $session nextRequest
         my destroy
         return
     }
@@ -101,10 +101,10 @@ package require TclOO
 
     #
     # If we were not able to pipe any data from the input file to the output
-    # socket, then close the session.
+    # socket, then finish the request.
     #
     if {![$fragment pipe $fh [$session sock] $config(readBufferSize)]} {
-        $session destroy
+        $session nextRequest
         my destroy
         return
     }
@@ -180,5 +180,4 @@ package require TclOO
 
     $session delegate [self] stream
     $session send $response
-    $response destroy
 }

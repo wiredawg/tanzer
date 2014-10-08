@@ -18,12 +18,12 @@ proc ::tanzer::logger::format {subcommand args} {
         }
 
         return [::format {%s %s - [%s] "%s %s %s" %d %d "%s" "%s"} \
-            [$request env REMOTE_ADDR] \
+            [$request client] \
             [$request host] \
             [$request timestamp] \
             [$request method] \
             [::tanzer::uri::text [$request uri]] \
-            [$request env SERVER_PROTOCOL] \
+            [$request proto] \
             [$response code] \
             [$response length] \
             [$request referer] \

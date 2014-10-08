@@ -6,8 +6,8 @@ package require TclOO
 ::oo::class create ::tanzer::session
 
 ::oo::define ::tanzer::session constructor {_server _sock _proto} {
-    my variable server sock proto request readBytes \
-        route handler state response config
+    my variable server sock proto request readBytes route handler \
+        state response buffer config remaining keepalive
 
     set server    $_server
     set sock      $_sock
@@ -17,15 +17,23 @@ package require TclOO
     set handler   {}
     set state     [dict create]
     set response  {}
+    set buffer    ""
+    set remaining 0
     set keepalive 5
 
     set config(readBufferSize) [$_server config readBufferSize]
 }
 
 ::oo::define ::tanzer::session destructor {
-    my variable server sock request
+    my variable server sock request response
 
-    $request destroy
+    if {$request ne {}} {
+        $request destroy
+    }
+
+    if {$response ne {}} {
+        $response destroy
+    }
 
     if {$sock ne {}} {
         $server forget $sock
@@ -44,12 +52,54 @@ package require TclOO
 }
 
 #
+# Called by request handlers to reset session state and handle keepalive
+# sessions.
+#
+::oo::define ::tanzer::session method nextRequest {} {
+    my variable server sock buffer handler route \
+        request response remaining keepalive
+
+    if {$remaining != 0} {
+        ::tanzer::error throw 400 "Invalid request body length"
+    }
+
+    if {$request ne {}} {
+        $request destroy
+        set request {}
+    }
+
+    if {$response ne {}} {
+        $response destroy
+        set response {}
+    }
+
+    set route   {}
+    set handler {}
+
+    fileevent $sock readable [list $server respond read $sock]
+    fileevent $sock writable {}
+
+    flush $sock
+
+    if {[incr keepalive -1] <= 0} {
+        my destroy
+    }
+
+    #
+    # If we still have data in the buffer, then we'll need to flush that out.
+    #
+    if {[string length $buffer] > 0} {
+        my handle read
+    }
+}
+
+#
 # This is the first bit of code that gets executed by the server upon receipt
 # of a ready event.
 #
 ::oo::define ::tanzer::session method handle {event} {
-    my variable sock server request \
-        config handler
+    my variable sock server request keepalive \
+        buffer config handler
 
     if {$event eq "write"} {
         return [{*}$handler write [self] ""]
@@ -81,13 +131,21 @@ package require TclOO
         #
         # If not, buffer the data to the request and attempt to parse it.
         #
-        $request buffer $data
+        append buffer $data
 
         #
         # Bail if the request is not yet parseable.
         #
-        if {![$request parse]} {
+        if {![$request parse $buffer]} {
             return
+        }
+
+        #
+        # If the request does not call for keepalive, then set the keepalive
+        # count to 1.
+        #
+        if {![$request keepalive]} {
+            set keepalive 1
         }
 
         #
@@ -97,16 +155,31 @@ package require TclOO
         my route
 
         #
-        # Flush out the existing data left over from the request buffer
-        # to the handler as a read event.
+        # Indicate the amount of bytes left to be read by the session handler.
         #
-        set data [$request data]
+        set remaining [$request length]
+
+        #
+        # Flush out the existing data left over from the session buffer
+        # to the handler as a read event, and subsequently trim the buffer
+        # to only the parts we need.
+        #
+        set start  [expr {[$request headerLength] + 3}]
+        set end    [expr {$start + $remaining + 1}]
+        set data   [string range $buffer $start $end]
+        set buffer [string range $buffer $end end]
     }
 
     #
     # Pass the current block of data to the handler.
     #
     {*}$handler read [self] $data
+
+    #
+    # Decrement the length of the data passed to the request handler from the
+    # number of bytes left for this current request.
+    #
+    incr remaining -[string length $data]
 
     #
     # If the request is now ready, then bind the event handler to the socket
@@ -165,7 +238,7 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::session method request {args} {
-    my variable proto request
+    my variable proto request keepalive
 
     array set opts {
         new 0
@@ -186,7 +259,9 @@ package require TclOO
     if {$opts(new)} {
         set module [format "::tanzer::%s::request" $proto]
 
-        return [set request [$module new [self]]]
+        set request [$module new [self]]
+
+        $request env REMOTE_ADDR [lindex [my get sockaddr] 0]
     }
 
     return $request
@@ -216,6 +291,10 @@ package require TclOO
     return $state
 }
 
+::oo::define ::tanzer::session method read {} {
+    my variable config sock 
+}
+
 ::oo::define ::tanzer::session method write {data} {
     my variable sock
 
@@ -231,7 +310,7 @@ package require TclOO
 
     $_response write $sock
 
-    [$server logger] log $server [self] $_response
+    $server log [self] $_response
 
     set response $_response
 }
@@ -249,8 +328,6 @@ package require TclOO
     $response header Content-Length 0
 
     my send $response
-
-    $response destroy
 }
 
 ::oo::define ::tanzer::session method ended {} {

@@ -81,7 +81,7 @@ package require sha1
     set buf [read $fh $config(readBufferSize)]
 
     if {[eof $fh]} {
-        $session destroy
+        $session nextRequest
         my destroy
         return
     }
@@ -119,12 +119,10 @@ package require sha1
 
     $session send $response
 
-    $response destroy
-
     #
-    # Only close the session immediately if we're only sending headers.
+    # Only finish the request immediately if we're only sending headers.
     #
     if {$method eq "HEAD"} {
-        $session destroy
+        $session nextRequest
     }
 }

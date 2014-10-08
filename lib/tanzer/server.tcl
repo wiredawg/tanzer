@@ -91,10 +91,10 @@ namespace eval ::tanzer::server {
     error "Invalid command invocation"
 }
 
-::oo::define ::tanzer::server method logger {} {
+::oo::define ::tanzer::server method log {args} {
     my variable logger
 
-    return $logger
+    return [$logger log [self] {*}$args]
 }
 
 ::oo::define ::tanzer::server method route {method pattern host args} {
@@ -152,8 +152,6 @@ namespace eval ::tanzer::server {
             # it an error meant to be sent to the client.
             #
             set response [::tanzer::error response $e]
-
-            $logger log [self] $session $response
         } else {
             #
             # Otherwise, generate a generic 500 Internal Server Error response,
@@ -166,7 +164,6 @@ namespace eval ::tanzer::server {
         }
 
         $session send $response
-        $response destroy
 
         my close $sock
     }

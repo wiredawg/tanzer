@@ -5,19 +5,16 @@ package require tanzer::uri
 package require TclOO
 
 namespace eval ::tanzer::scgi::request {
-    variable proto "scgi"
+    variable proto     "scgi"
+    variable keepalive 1
 }
 
 ::oo::class create ::tanzer::scgi::request {
     superclass ::tanzer::request
 }
 
-::oo::define ::tanzer::scgi::request constructor {session} {
-    my variable headerLength
-
-    next $session
-
-    set headerLength 0
+::oo::define ::tanzer::scgi::request method keepalive {} {
+    return 0
 }
 
 ::oo::define ::tanzer::scgi::request method tokenize {data} {
@@ -35,34 +32,6 @@ namespace eval ::tanzer::scgi::request {
     }
 
     return [lrange $tokens 0 [expr {$tokenLastIndex - 1}]]
-}
-
-#
-# Return the length of the request headers, including netstring wrapping,
-# but not including the size of the body.
-#
-::oo::define ::tanzer::scgi::request method headerLength {} {
-    my variable buffer headerLength
-
-    set bufferSize [string length $buffer]
-
-    if {$bufferSize == 0} {
-        return 0
-    }
-
-    if {$headerLength > 0} {
-        return $headerLength
-    }
-
-    #
-    # We need to check and see if the first bit of the buffer looks like a
-    # netstring prefix.  If so, we might actually have read the full headers.
-    #
-    if {[regexp {^(0|[1-9]\d{0,6}):} $buffer {} headerLength]} {
-        return $headerLength
-    }
-
-    ::tanzer::error throw 400 "Invalid request header length"
 }
 
 ::oo::define ::tanzer::scgi::request method validate {} {
@@ -142,14 +111,27 @@ namespace eval ::tanzer::scgi::request {
     return
 }
 
-::oo::define ::tanzer::scgi::request method parse {} {
-    my variable buffer data ready env \
-        path uri
+::oo::define ::tanzer::scgi::request method parse {buffer} {
+    my variable ready env path uri \
+        headerLength
 
-    set headerLength [my headerLength]
+    set bufferSize [string length $buffer]
 
-    if {$headerLength == 0} {
+    #
+    # If the buffer is empty, then bail.
+    #
+    if {$bufferSize == 0} {
         return 0
+    }
+
+    #
+    # We need to check and see if the first bit of the buffer looks like a
+    # netstring prefix.  If so, we might actually have read the full headers.
+    #
+    if {$headerLength == 0} {
+        if {![regexp {^(0|[1-9]\d{0,6}):} $buffer {} headerLength]} {
+            ::tanzer::error throw 400 "Invalid request header length"
+        }
     }
 
     #
@@ -158,8 +140,6 @@ namespace eval ::tanzer::scgi::request {
     # quick validation to ensure a netstring format.  Then, extract the
     # header names and values.
     #
-    set bufferSize [string length $buffer]
-
     set bufferSizeExpected [expr {
           2
         + $headerLength
@@ -195,17 +175,11 @@ namespace eval ::tanzer::scgi::request {
     my validate
 
     #
-    # Truncate the header data from the buffer.
-    #
-    set buffer [string range $buffer [expr {$endIndex + 1}] end]
-
-    #
     # Set the number of remaining bytes to the CONTENT_LENGTH header value,
     # and determine if the request is too long or short.
     #
     set remaining [expr {
-        [dict get $env CONTENT_LENGTH] - [string length $buffer]
-    }]
+        [dict get $env CONTENT_LENGTH] - [string length $buffer]}]
 
     if {$remaining < 0} {
         ::tanzer::error throw 400 "Request body too long"

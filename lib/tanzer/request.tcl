@@ -45,23 +45,17 @@ proc ::tanzer::request::hostMatches {host pattern} {
 
 ::oo::define ::tanzer::request constructor {_session} {
     my variable session env headers ready buffer config \
-        uri path params timestamp
+        uri path params timestamp headerLength
 
-    set session   $_session
-    set env       [dict create]
-    set headers   [dict create]
-    set ready     0
-    set buffer    ""
-    set uri       {}
-    set path      {}
-    set params    {}
-    set timestamp [::tanzer::date::rfc2616 [clock seconds]]
-}
-
-::oo::define ::tanzer::request method buffer {data} {
-    my variable buffer
-
-    append buffer $data
+    set session      $_session
+    set env          [dict create]
+    set headers      [dict create]
+    set ready        0
+    set uri          {}
+    set path         {}
+    set params       {}
+    set headerLength 0
+    set timestamp    [::tanzer::date::rfc2616 [clock seconds]]
 }
 
 ::oo::define ::tanzer::request method validate {} {
@@ -238,10 +232,10 @@ proc ::tanzer::request::hostMatches {host pattern} {
     return $params
 }
 
-::oo::define ::tanzer::request method data {} {
-    my variable buffer
+::oo::define ::tanzer::request method headerLength {} {
+    my variable headerLength
 
-    return $buffer
+    return $headerLength
 }
 
 ::oo::define ::tanzer::request method env {args} {
@@ -261,7 +255,11 @@ proc ::tanzer::request::hostMatches {host pattern} {
 ::oo::define ::tanzer::request method method {} {
     my variable env
 
-    return [dict get $env REQUEST_METHOD]
+    if {[dict exists $env REQUEST_METHOD]} {
+        return [dict get $env REQUEST_METHOD]
+    }
+
+    return "-"
 }
 
 ::oo::define ::tanzer::request method empty {} {
@@ -276,6 +274,26 @@ proc ::tanzer::request::hostMatches {host pattern} {
     }
 
     return {}
+}
+
+::oo::define ::tanzer::request method client {} {
+    my variable env
+
+    if {[dict exists $env REMOTE_ADDR]} {
+        return [dict get $env REMOTE_ADDR]
+    }
+
+    return "-"
+}
+
+::oo::define ::tanzer::request method proto {} {
+    my variable env
+
+    if {[dict exists $env SERVER_PROTOCOL]} {
+        return [dict get $env SERVER_PROTOCOL]
+    }
+
+    return "-"
 }
 
 ::oo::define ::tanzer::request method referer {} {

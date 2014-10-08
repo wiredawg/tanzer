@@ -26,9 +26,9 @@ proc ::tanzer::http::request::supportedVersion {version} {
     superclass ::tanzer::request
 }
 
-::oo::define ::tanzer::http::request method parse {} {
-    my variable buffer ready session \
-        env headers path uri
+::oo::define ::tanzer::http::request method parse {buffer} {
+    my variable ready session env headers \
+        path uri headerLength
 
     if {$ready} {
         return 1
@@ -55,7 +55,7 @@ proc ::tanzer::http::request::supportedVersion {version} {
     # On the other hand, at this point, we happen to know where the request
     # preamble ends.  Let's try to parse that.
     #
-    set preamble    [string range $buffer 0 $headerLength]
+    set preamble    [string range $buffer 0 [expr {$headerLength + 1}]]
     set action      {}
     set headerName  {}
     set headerValue {}
@@ -66,7 +66,11 @@ proc ::tanzer::http::request::supportedVersion {version} {
     while {1} {
         set line [string range $preamble $start $end]
 
-        if {$action eq {}} {
+        if {[regexp -nocase {^(?:[a-z]+)\s+} $line {}]} {
+            if {$action ne {}} {
+                ::tanzer::error throw 400 "Invalid request"
+            }
+
             #
             # Look for the request action, first.
             #
@@ -111,6 +115,8 @@ proc ::tanzer::http::request::supportedVersion {version} {
             }
 
             append headerValue [string trim $headerValueExtra]
+        } else {
+            ::tanzer::error throw 400 "Invalid request format"
         }
 
         set start [expr {$end + 3}]
@@ -129,20 +135,10 @@ proc ::tanzer::http::request::supportedVersion {version} {
     }
 
     #
-    # Truncate the header data from the buffer.
-    #
-    set buffer [string range $buffer $headerLength end]
-
-    #
     # If PATH_INFO or QUERY_STRING do not exist, then infer them from
     # REQUEST_URI.
     #
     my parseUri [my env REQUEST_URI]
-
-    #
-    # Set REMOTE_ADDR.
-    #
-    my env REMOTE_ADDR [lindex [$session get sockaddr] 0]
 
     #
     # Finally, update the ready flag to indicate that the request is now
@@ -154,4 +150,16 @@ proc ::tanzer::http::request::supportedVersion {version} {
     # Tell the caller that we've successfully parsed the request.
     #
     return 1
+}
+
+::oo::define ::tanzer::http::request method keepalive {} {
+    if {[my headerExists Connection]} {
+        set value [my header Connection]
+
+        switch -nocase -- [my header Connection] Keep-Alive {
+            return 1
+        }
+    }
+
+    return 0
 }

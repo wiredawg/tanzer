@@ -122,7 +122,7 @@ package require TclOO
     #
     if {[lindex $path end] ne {}} {
         $session redirect [::tanzer::uri::text [concat $path {""}]]
-        $session destroy
+        $session nextRequest
 
         return
     }
@@ -151,9 +151,7 @@ package require TclOO
     set response [::tanzer::file::listing new $request $localPath $st]
 
     $session send $response
-
-    $response destroy
-    $session  destroy
+    $session nextRequest
 }
 
 ::oo::define ::tanzer::file::handler method respond {event session data} {
@@ -165,6 +163,13 @@ package require TclOO
 
     set request [$session request]
     set route   [$session route]
+
+    #
+    # Send an error if the client is trying to send file data.
+    #
+    if {[$request length]} {
+        ::tanzer::error throw 415 "Request bodies not allowed for file reads"
+    }
 
     switch [$request method] {
         GET -

@@ -13,6 +13,7 @@ namespace eval ::tanzer::response {
         403 "Forbidden"
         404 "Not Found"
         405 "Method Not Allowed"
+        415 "Unsupported Media Type"
         416 "Requested Range Not Satisfiable"
         500 "Internal Server Error"
     }
