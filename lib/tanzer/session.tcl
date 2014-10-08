@@ -9,8 +9,6 @@ package require TclOO
     my variable server sock proto request readBytes \
         route handler state response config
 
-    set module [format "::tanzer::%s::request" $_proto]
-
     set server    $_server
     set sock      $_sock
     set proto     $_proto
