@@ -64,14 +64,6 @@ proc ::tanzer::response::lookup {code} {
     append data $_data
 }
 
-::oo::define ::tanzer::response method length {} {
-    if {[my headerExists Content-Length]} {
-        return [my header Content-Length]
-    }
-
-    return 0
-}
-
 ::oo::define ::tanzer::response method write {sock} {
     my variable code headers data
 

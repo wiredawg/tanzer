@@ -80,3 +80,11 @@ proc ::tanzer::message::field {name} {
 
     return [dict exists $headers $key]
 }
+
+::oo::define ::tanzer::message method length {} {
+    if {[my headerExists Content-Length]} {
+        return [my header Content-Length]
+    }
+
+    return 0
+}

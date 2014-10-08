@@ -270,14 +270,6 @@ proc ::tanzer::request::hostMatches {host pattern} {
     return [expr {[llength $headers] == 0}]
 }
 
-::oo::define ::tanzer::request method length {} {
-    if {[my headerExists Content-Length]} {
-        return [my header Content-Length]
-    }
-
-    return 0
-}
-
 ::oo::define ::tanzer::request method host {} {
     if {[my headerExists Host]} {
         return [my header Host]
