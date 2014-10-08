@@ -246,5 +246,5 @@ package require TclOO
         }
     }
 
-    ::tanzer::error 404 "No suitable request handler found"
+    ::tanzer::error throw 404 "No suitable request handler found"
 }
