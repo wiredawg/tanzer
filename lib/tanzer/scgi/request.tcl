@@ -12,10 +12,12 @@ namespace eval ::tanzer::scgi::request {
     superclass ::tanzer::request
 }
 
-::oo::define ::tanzer::scgi::request constructor {} {
+::oo::define ::tanzer::scgi::request constructor {session} {
     my variable length
 
     set length 0
+
+    next $session
 }
 
 ::oo::define ::tanzer::scgi::request method tokenize {data} {

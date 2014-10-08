@@ -43,10 +43,11 @@ proc ::tanzer::request::hostMatches {host pattern} {
     superclass ::tanzer::message
 }
 
-::oo::define ::tanzer::request constructor {} {
-    my variable env headers ready buffer config \
+::oo::define ::tanzer::request constructor {_session} {
+    my variable session env headers ready buffer config \
         uri path params timestamp
 
+    set session   $_session
     set env       [dict create]
     set headers   [dict create]
     set ready     0

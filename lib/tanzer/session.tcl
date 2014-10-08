@@ -180,7 +180,7 @@ package require TclOO
     if {$opts(new)} {
         set module [format "::tanzer::%s::request" $proto]
 
-        return [set request [$module new]]
+        return [set request [$module new [self]]]
     }
 
     return $request
