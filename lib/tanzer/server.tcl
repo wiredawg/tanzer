@@ -17,7 +17,7 @@ namespace eval ::tanzer::server {
 
     set opts   {}
     set routes [list]
-    set logger ::tanzer::logger::noop
+    set logger ::tanzer::logger::default
 
     array set config {
         readBufferSize 4096
