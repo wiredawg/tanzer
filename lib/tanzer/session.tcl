@@ -112,6 +112,14 @@ package require TclOO
     # If the request is now ready, then bind the event handler to the socket
     # for writable events, and ignore readable events.
     #
+    # Now, before I forget my post-rationalization, precisely, why would we
+    # want to do this?  The answer is simple, my love.  This affords the
+    # request handler the autonomy to decide whether or not it wants to read
+    # from the socket at its own whim.  And...AND, it ought to be up to the
+    # request handler to determine when it's ready to cede control back to
+    # the session and spawn up a new request handler, at least in the case
+    # of HTTP.
+    #
     if {[$request ready]} {
         fileevent $sock readable {}
         fileevent $sock writable [list $server respond write $sock]
