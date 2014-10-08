@@ -11,14 +11,15 @@ package require TclOO
 
     set module [format "::tanzer::%s::request" $_proto]
 
-    set server   $_server
-    set sock     $_sock
-    set proto    $_proto
-    set request  [$module new]
-    set route    {}
-    set handler  {}
-    set state    [dict create]
-    set response {}
+    set server    $_server
+    set sock      $_sock
+    set proto     $_proto
+    set request   {}
+    set route     {}
+    set handler   {}
+    set state     [dict create]
+    set response  {}
+    set keepalive 5
 
     set config(readBufferSize) [$_server config readBufferSize]
 }
@@ -67,6 +68,13 @@ package require TclOO
     # to allow it to parse the headers, at least.
     #
     set data [read $sock $config(readBufferSize)]
+
+    #
+    # Create a request if one does not exist already.
+    #
+    if {$request eq {}} {
+        set request [my request -new]
+    }
 
     #
     # Is the request complete yet?
@@ -151,13 +159,31 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::session method request {args} {
-    my variable request
+    my variable proto request
+
+    array set opts {
+        new 0
+    }
 
     if {[llength $args] == 0} {
         return $request
     }
 
-    return [$request {*}$args]
+    foreach arg $args {
+        switch -- $arg "-new" {
+            set opts(new) 1
+        } default {
+            error "Invalid argument $arg"
+        }
+    }
+
+    if {$opts(new)} {
+        set module [format "::tanzer::%s::request" $proto]
+
+        return [set request [$module new]]
+    }
+
+    return $request
 }
 
 ::oo::define ::tanzer::session method config {args} {
