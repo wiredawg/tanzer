@@ -13,11 +13,11 @@ namespace eval ::tanzer::scgi::request {
 }
 
 ::oo::define ::tanzer::scgi::request constructor {session} {
-    my variable length
-
-    set length 0
+    my variable headerLength
 
     next $session
+
+    set headerLength 0
 }
 
 ::oo::define ::tanzer::scgi::request method tokenize {data} {
@@ -41,8 +41,8 @@ namespace eval ::tanzer::scgi::request {
 # Return the length of the request headers, including netstring wrapping,
 # but not including the size of the body.
 #
-::oo::define ::tanzer::scgi::request method length {} {
-    my variable buffer length
+::oo::define ::tanzer::scgi::request method headerLength {} {
+    my variable buffer headerLength
 
     set bufferSize [string length $buffer]
 
@@ -50,16 +50,16 @@ namespace eval ::tanzer::scgi::request {
         return 0
     }
 
-    if {$length > 0} {
-        return $length
+    if {$headerLength > 0} {
+        return $headerLength
     }
 
     #
     # We need to check and see if the first bit of the buffer looks like a
     # netstring prefix.  If so, we might actually have read the full headers.
     #
-    if {[regexp {^(0|[1-9]\d{0,6}):} $buffer {} length]} {
-        return $length
+    if {[regexp {^(0|[1-9]\d{0,6}):} $buffer {} headerLength]} {
+        return $headerLength
     }
 
     ::tanzer::error throw 400 "Invalid request header length"
@@ -146,9 +146,9 @@ namespace eval ::tanzer::scgi::request {
     my variable buffer data ready env \
         path uri
 
-    set length [my length]
+    set headerLength [my headerLength]
 
-    if {$length == 0} {
+    if {$headerLength == 0} {
         return 0
     }
 
@@ -162,8 +162,8 @@ namespace eval ::tanzer::scgi::request {
 
     set bufferSizeExpected [expr {
           2
-        + $length
-        + [string length $length]}]
+        + $headerLength
+        + [string length $headerLength]}]
 
     if {$bufferSize < $bufferSizeExpected} {
         return 0
@@ -177,7 +177,7 @@ namespace eval ::tanzer::scgi::request {
 
     set startIndex [expr {
           1
-        + [string length $length]}]
+        + [string length $headerLength]}]
 
     #
     # Capture the header data from within the body of the netstring.
