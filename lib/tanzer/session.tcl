@@ -3,11 +3,16 @@ package require tanzer::response
 package require tanzer::error
 package require TclOO
 
+namespace eval ::tanzer::session {
+    variable timeout 15
+}
+
 ::oo::class create ::tanzer::session
 
 ::oo::define ::tanzer::session constructor {_server _sock _proto} {
     my variable server sock proto request readBytes route handler \
-        state response buffer config remaining keepalive
+        state response buffer config remaining keepalive \
+        active watchdog
 
     set server    $_server
     set sock      $_sock
@@ -20,12 +25,16 @@ package require TclOO
     set buffer    ""
     set remaining 0
     set keepalive 5
+    set active    0
+    set watchdog  [after [expr {$::tanzer::session::timeout * 1000}] \
+        [self] ping]
 
     set config(readBufferSize) [$_server config readBufferSize]
 }
 
 ::oo::define ::tanzer::session destructor {
-    my variable server sock request response
+    my variable server sock request response \
+        active watchdog
 
     if {$request ne {}} {
         $request destroy
@@ -40,6 +49,10 @@ package require TclOO
         close $sock
         set sock {}
     }
+
+    if {$watchdog ne {}} {
+        after cancel $watchdog
+    }
 }
 
 #
@@ -49,6 +62,23 @@ package require TclOO
     my variable handler
 
     return [set handler $args]
+}
+
+#
+# Called by a watchdog timer to make sure the session is still alive, and to
+# reset the timeout if it is.
+#
+::oo::define ::tanzer::session method ping {} {
+    my variable active watchdog
+
+    if {!$active} {
+        my destroy
+
+        return
+    }
+
+    set active 0
+    set watchdog [after [expr {$::tanzer::session::timeout * 1000}] [self] ping]
 }
 
 #
