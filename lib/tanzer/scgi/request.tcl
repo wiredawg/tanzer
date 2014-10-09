@@ -160,6 +160,12 @@ namespace eval ::tanzer::scgi::request {
         + [string length $headerLength]}]
 
     #
+    # Bump the headerLength size up to include its netstring wrapper, as we
+    # will want to consume the entire header, netstring outer shell and all.
+    #
+    incr headerLength [expr {2 + [string length $headerLength]}]
+
+    #
     # Capture the header data from within the body of the netstring.
     #
     set headerData [string range $buffer $startIndex [expr {$endIndex - 1}]]
@@ -179,7 +185,7 @@ namespace eval ::tanzer::scgi::request {
     # and determine if the request is too long or short.
     #
     set remaining [expr {
-        [dict get $env CONTENT_LENGTH] - [string length $buffer]}]
+        [string length $buffer] - [my headerLength] - [my length]}]
 
     if {$remaining < 0} {
         ::tanzer::error throw 400 "Request body too long"
