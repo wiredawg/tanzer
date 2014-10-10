@@ -11,7 +11,7 @@ namespace eval ::tanzer::session {
 
 ::oo::define ::tanzer::session constructor {_server _sock _proto} {
     my variable server sock proto request readBytes route handler \
-        state response buffer config remaining keepalive \
+        cleanup state response buffer config remaining keepalive \
         active watchdog
 
     set server    $_server
