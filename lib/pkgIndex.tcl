@@ -9,6 +9,8 @@ package ifneeded tanzer::route          0.0.1 [list source [file join $dir tanze
 package ifneeded tanzer::session        0.0.1 [list source [file join $dir tanzer/session.tcl]]
 package ifneeded tanzer::server         0.0.1 [list source [file join $dir tanzer/server.tcl]]
 package ifneeded tanzer::uri            0.0.1 [list source [file join $dir tanzer/uri.tcl]]
+package ifneeded tanzer::cgi            0.0.1 [list source [file join $dir tanzer/cgi.tcl]]
+package ifneeded tanzer::cgi::handler   0.0.1 [list source [file join $dir tanzer/cgi/handler.tcl]]
 package ifneeded tanzer::file           0.0.1 [list source [file join $dir tanzer/file.tcl]]
 package ifneeded tanzer::file::fragment 0.0.1 [list source [file join $dir tanzer/file/fragment.tcl]]
 package ifneeded tanzer::file::partial  0.0.1 [list source [file join $dir tanzer/file/partial.tcl]]

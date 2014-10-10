@@ -223,10 +223,8 @@ namespace eval ::tanzer::session {
     # the session and spawn up a new request handler, at least in the case
     # of HTTP.
     #
-    if {[$request ready]} {
-        fileevent $sock readable {}
-        fileevent $sock writable [list $server respond write $sock]
-    }
+    fileevent $sock readable {}
+    fileevent $sock writable [list $server respond write $sock]
 
     return
 }
@@ -323,6 +321,8 @@ namespace eval ::tanzer::session {
 
 ::oo::define ::tanzer::session method read {} {
     my variable config sock 
+
+    return [read $sock $config(readBufferSize)]
 }
 
 ::oo::define ::tanzer::session method write {data} {

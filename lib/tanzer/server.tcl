@@ -195,3 +195,9 @@ namespace eval ::tanzer::server {
 
     socket -server [list [self] accept] $config(port)
 }
+
+::oo::define ::tanzer::server method port {} {
+    my variable config
+
+    return $config(port)
+}
