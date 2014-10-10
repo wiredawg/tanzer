@@ -55,7 +55,7 @@ namespace eval ::tanzer::cgi::handler {
 
     foreach {name value} [$request headers] {
         dict set childenv \
-            [string map {"-" "_"} [string toupper $name]] \
+            "HTTP_[string map {"-" "_"} [string toupper $name]]" \
             $value
     }
 
