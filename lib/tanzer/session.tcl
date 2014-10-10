@@ -20,6 +20,7 @@ namespace eval ::tanzer::session {
     set request   {}
     set route     {}
     set handler   {}
+    set cleanup   {}
     set state     [dict create]
     set response  {}
     set buffer    ""
@@ -34,7 +35,7 @@ namespace eval ::tanzer::session {
 
 ::oo::define ::tanzer::session destructor {
     my variable server sock request response \
-        active watchdog
+        active watchdog cleanup
 
     if {$request ne {}} {
         $request destroy
@@ -53,6 +54,20 @@ namespace eval ::tanzer::session {
     if {$watchdog ne {}} {
         after cancel $watchdog
     }
+
+    if {$cleanup ne {}} {
+        eval $cleanup
+    }
+}
+
+::oo::define ::tanzer::session method cleanup {args} {
+    my variable cleanup
+
+    if {[llength $args] == 0} {
+        return $cleanup
+    }
+
+    return [set cleanup [concat $args]]
 }
 
 #
