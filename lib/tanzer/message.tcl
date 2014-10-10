@@ -47,13 +47,7 @@ proc ::tanzer::message::field {name} {
     my variable headers
 
     if {[llength $args] == 0} {
-        set ret {}
-
-        foreach {name value} $headers {
-            lappend ret [::tanzer::message::field $name] $value
-        }
-
-        return $ret
+        return $headers
     }
 
     if {[llength $args] == 1} {
