@@ -74,8 +74,11 @@ namespace eval ::tanzer::cgi::handler {
         dup $stdin_r  stdin
         dup $stdout_w stdout
 
-        array unset ::env
-        array   set ::env $childenv
+        foreach {name unused} [array get ::env] {
+            unset ::env($name)
+        }
+
+        array set ::env $childenv
 
         execl $config(program)
 
