@@ -131,8 +131,6 @@ proc ::tanzer::request::hostMatches {host pattern} {
     #
     set host [my host]
 
-    puts "Comparing $host and [$route host]"
-
     if {$host eq {}} {
         #
         # Force requests without Host: to go through a host route catch-all.
