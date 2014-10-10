@@ -156,14 +156,6 @@ proc ::tanzer::request::hostMatches {host pattern} {
         set partRequest [lindex $path    $i]
 
         #
-        # If there is no request part in the position corresponding to the
-        # position of the route part, then the route does not match.
-        #
-        if {$i >= $requestLen} {
-            return 0
-        }
-
-        #
         # If the current route part is a wildcard, then everything at this
         # position, and thereafter, in the request, shall match.
         #
@@ -179,6 +171,13 @@ proc ::tanzer::request::hostMatches {host pattern} {
             set wildcard 1
 
             break
+        } elseif {$i >= $requestLen} {
+            #
+            # If there is no request part in the position corresponding to the
+            # position of the route part, and the current route part is not
+            # a glob, then the route does not match.
+            #
+            return 0
         }
 
         #
