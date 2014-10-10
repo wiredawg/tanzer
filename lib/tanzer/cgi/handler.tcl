@@ -220,7 +220,7 @@ namespace eval ::tanzer::cgi::handler {
             # Set the value of an existing header that was parsed previously.
             #
             if {$headerName ne {} && $headerValue ne {}} {
-                dict set headers $headerName $headervalue
+                dict set headers $headerName $headerValue
             }
 
             set headerName $newHeaderName
