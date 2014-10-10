@@ -47,10 +47,16 @@ proc ::tanzer::response::lookup {code} {
     my header Server "$::tanzer::server::name/$::tanzer::server::version"
 }
 
-::oo::define ::tanzer::response method code {} {
+::oo::define ::tanzer::response method code {args} {
     my variable code
 
-    return $code
+    switch -- [llength $args] 0 {
+        return $code
+    } 1 {
+        return [set code [lindex $args 0]]
+    }
+
+    error "Invalid command invocation"
 }
 
 ::oo::define ::tanzer::response method data {} {
