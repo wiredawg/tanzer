@@ -366,6 +366,18 @@ namespace eval ::tanzer::session {
     return [expr {[eof $sock] && [$request empty]}]
 }
 
+::oo::define ::tanzer::session method keepalive {args} {
+    my variable keepalive
+
+    switch -- [llength $args] 0 {
+        return $keepalive
+    } 1 {
+        return [set keepalive [lindex $args 0]]
+    }
+
+    error "Invalid command invocation"
+}
+
 ::oo::define ::tanzer::session method route {} {
     my variable server request route handler
 
