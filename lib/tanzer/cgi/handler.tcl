@@ -15,9 +15,9 @@ namespace eval ::tanzer::cgi::handler {
     my variable config buffers
 
     set requirements {
-        program      "No CGI executable provided"
-        scriptName   "No script name provided"
-        documentRoot "No document root provided"
+        program "No CGI executable provided"
+        name    "No script name provided"
+        root    "No document root provided"
     }
 
     foreach {name message} $requirements {
@@ -44,10 +44,10 @@ namespace eval ::tanzer::cgi::handler {
         SERVER_ADDR       $addr \
         SERVER_PORT       [$server port] \
         SCRIPT_FILENAME   $config(program) \
-        SCRIPT_NAME       $config(scriptName) \
+        SCRIPT_NAME       $config(name) \
         REQUEST_METHOD    [$request method] \
         PWD               [pwd] \
-        DOCUMENT_ROOT     $config(documentRoot)]
+        DOCUMENT_ROOT     $config(root)]
 
     foreach {name value} [$request env] {
         dict set childenv $name $value

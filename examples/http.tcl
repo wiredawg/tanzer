@@ -12,9 +12,9 @@ package require tanzer::cgi::handler
 }
 
 server route * /env.cgi xantronix.local:8080 [::tanzer::cgi::handler new {
-    documentRoot "/var/www/xantronix.net/doc"
-    program      "/var/www/xantronix.net/doc/env.cgi"
-    scriptName   "/env.cgi"
+    root    "/var/www/xantronix.net/doc"
+    program "/var/www/xantronix.net/doc/env.cgi"
+    name    "/env.cgi"
 }] respond
 
 server route * /* www.xantronix.local:8080 [::tanzer::file::handler new {
