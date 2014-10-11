@@ -19,7 +19,6 @@ server route * /env.cgi/* xantronix.local:8080 [::tanzer::cgi::handler new {
 
 server route * /* www.xantronix.local:8080 [::tanzer::file::handler new {
     root     "/var/www/xantronix.net/doc"
-    static   "/var/www/xantronix.net/doc"
     listings 1
 }] respond
 

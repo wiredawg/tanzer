@@ -5,6 +5,61 @@ package require tanzer::uri
 package require TclOO
 package require Tclx
 
+namespace eval ::tanzer::file::listing {
+    variable typeRanks [dict create {*}{
+        "directory"        0
+        "file"             1
+        "socket"           2
+        "characterSpecial" 3
+        "blockSpecial"     4
+        "fifo"             5
+        "link"             6
+    }]
+}
+
+proc ::tanzer::file::listing::compareTypes {a b} {
+    set rankA [dict get $::tanzer::file::listing::typeRanks $a]
+    set rankB [dict get $::tanzer::file::listing::typeRanks $b]
+
+    if {$rankA > $rankB} {
+        return 1
+    } elseif {$rankA < $rankB} {
+        return -1
+    }
+
+    return 0
+}
+
+proc ::tanzer::file::listing::compare {a b} {
+    set itemA [lindex $a 0]
+    set itemB [lindex $b 0]
+    set typeA [dict get [lindex $a 1] type]
+    set typeB [dict get [lindex $b 1] type]
+
+    switch -- [::tanzer::file::listing::compareTypes $typeA $typeB] -1 {
+        return -1
+    } 0 {
+        return [string compare $itemA $itemB]
+    } 1 {
+        return 1
+    }
+
+    return 0
+}
+
+proc ::tanzer::file::listing::items {dir} {
+    set items [list]
+
+    foreach item [readdir $dir] {
+        set path "$dir/$item"
+        file stat $path itemSt
+
+        lappend items [list $item [array get itemSt]]
+    }
+
+    return [lsort -command ::tanzer::file::listing::compare $items]
+}
+
 ::oo::class create ::tanzer::file::listing {
     superclass ::tanzer::response
 }
@@ -49,6 +104,10 @@ package require Tclx
                 table.tanzer-listing tr.tanzer-file-even {
                     background-color: #e0e0e0;
                 }
+
+                table.tanzer-listing th,td {
+                    padding: 4px;
+                }
             </style>
         </head>
         <body>
@@ -68,18 +127,22 @@ package require Tclx
         1 "tanzer-file-odd"
     }
 
-    foreach item [readdir $dir] {
-        set path "$dir/$item"
+    foreach item [::tanzer::file::listing::items $dir] {
+        set name   [lindex $item 0]
+        set itemSt [lindex $item 1]
+        set path   [concat [$request path] [list $name]]
 
-        file stat $path itemSt
+        if {[dict get $itemSt type] eq "directory"} {
+            append  name "/"
+            lappend path {}
+        }
 
         my buffer [string map [list \
-            @type  $itemSt(type) \
-            @name  $item \
-            @size  $itemSt(size) \
+            @type  [dict get $itemSt type] \
+            @name  $name \
+            @size  [dict get $itemSt size] \
             @class $rowClasses($odd) \
-            @uri   "[::tanzer::uri::text \
-                [concat [$request path] [list $item]]]" \
+            @uri   [::tanzer::uri::text $path] \
         ] {
             <tr class="@class">
                 <td>@type</td>
@@ -88,11 +151,7 @@ package require Tclx
             </tr>
         }]
 
-        if {$odd} {
-            set odd 0
-        } else {
-            set odd 1
-        }
+        set odd [expr {1 - $odd}]
     }
 
     my buffer {
