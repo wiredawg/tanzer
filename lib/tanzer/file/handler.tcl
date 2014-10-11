@@ -145,6 +145,14 @@ package require TclOO
     }
 
     #
+    # If we must list the directory at this point, at least determine if
+    # listings are enabled, and raise an error otherwise.
+    #
+    if {!$config(listings)} {
+        ::tanzer::error throw 403 "Directory listing not allowed"
+    }
+
+    #
     # Lastly, send a directory listing.
     #
     set response [::tanzer::file::listing new $request $localPath $st]
