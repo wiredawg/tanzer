@@ -180,7 +180,7 @@ namespace eval ::tanzer::scgi::request {
     #
     # Parse the URI information passed from REQUEST_URI.
     #
-    my uri [dict env REQUEST_URI]
+    my uri [dict get $env REQUEST_URI]
 
     #
     # Finally, update the ready flag to indicate that the request is now
