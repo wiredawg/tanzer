@@ -17,8 +17,7 @@ package require TclOO
     }
 
     set requirements {
-        root   "No root directory for file handler provided"
-        static "No static resources directory for file listings provided"
+        root "No root directory for file handler provided"
     }
 
     array set config $defaults
