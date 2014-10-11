@@ -225,7 +225,7 @@ namespace eval ::tanzer::cgi::handler {
     set status  200
     set headers [dict create]
 
-    set preamble    [string range $buffers($session) 0 [expr {$headerLength + 1}]]
+    set preamble    [string range $buffers($session) 0 $headerLength]
     set headerName  {}
     set headerValue {}
 
@@ -258,7 +258,7 @@ namespace eval ::tanzer::cgi::handler {
             ::tanzer::error throw 500 "Invalid response format"
         }
 
-        set start [expr {$end + 3}]
+        set start [expr {$end + 2}]
         set end   [expr {[string first "\n" $preamble $start] - 1}]
 
         if {$end < 0} {

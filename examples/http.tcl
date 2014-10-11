@@ -11,7 +11,7 @@ package require tanzer::cgi::handler
     proto "http"
 }
 
-server route * /env.cgi xantronix.local:8080 [::tanzer::cgi::handler new {
+server route * /env.cgi/* xantronix.local:8080 [::tanzer::cgi::handler new {
     root    "/var/www/xantronix.net/doc"
     program "/var/www/xantronix.net/doc/env.cgi"
     name    "/env.cgi"
