@@ -67,7 +67,7 @@ namespace eval ::tanzer::session {
         return $cleanup
     }
 
-    return [set cleanup [concat $args]]
+    return [set cleanup $args]
 }
 
 #
