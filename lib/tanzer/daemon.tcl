@@ -83,7 +83,6 @@ package require TclOO
             foreach handler $handlers($site) {
                 set route $routes($handler)
 
-                puts [list $server route {*}$route $domain {*}$handler]
                 $server route {*}$route $domain {*}$handler
             }
         }
