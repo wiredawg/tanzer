@@ -152,6 +152,8 @@ package require TclOO
 ::oo::define ::tanzer::file::partial method serve {session} {
     my variable config path st fragments
 
+    $session cleanup [self] destroy
+
     set request [$session request]
     set method  [$request method]
 

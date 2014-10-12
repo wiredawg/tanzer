@@ -91,6 +91,12 @@ package require sha1
 ::oo::define ::tanzer::file method serve {session} {
     my variable config path st
 
+    #
+    # Ensure the session object can cleanup the current file state if need
+    # be.
+    #
+    $session cleanup [self] destroy
+
     set request [$session request]
     set method  [$request method]
 
