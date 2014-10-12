@@ -145,6 +145,18 @@ namespace eval ::tanzer::server {
     ::tanzer::error try {
         $session handle $event
     } catch e {
+        #
+        # If the session has already sent a response for the current request,
+        # then simply log the error and move on.
+        #
+        if {[$session responded]} {
+            $logger err [self] $e
+
+            my close $sock
+
+            return
+        }
+
         if {[::tanzer::error servable $e]} {
             #
             # If the error we have received is servable and thus a structured

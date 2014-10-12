@@ -369,6 +369,12 @@ namespace eval ::tanzer::session {
     set response $_response
 }
 
+::oo::define ::tanzer::session method responded {} {
+    my variable response
+
+    return [expr {$response ne {}}]
+}
+
 ::oo::define ::tanzer::session method response {} {
     my variable response
 
