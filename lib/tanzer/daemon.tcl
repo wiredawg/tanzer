@@ -91,6 +91,12 @@ package require TclOO
     return
 }
 
+::oo::define ::tanzer::daemon method server {} {
+    my variable server
+
+    return $server
+}
+
 ::oo::define ::tanzer::daemon method run {} {
     my variable server
 
