@@ -43,7 +43,7 @@ proc ::tanzer::file::listing::humanTimestamp {epoch} {
         return [clock format $epoch -format "%H:%M today GMT" -gmt 1]
     }
 
-    return [clock format $epoch -format "%d %b %Y %H:%M GMT" -gmt 1]
+    return [clock format $epoch -format "%d %b %Y, %H:%M GMT" -gmt 1]
 }
 
 proc ::tanzer::file::listing::compareTypes {a b} {
