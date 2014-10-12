@@ -17,6 +17,18 @@ namespace eval ::tanzer::file::listing {
     }]
 }
 
+proc ::tanzer::file::listing::humanSize {bytes} {
+    if {$bytes < 1024} {
+        return $bytes
+    } elseif {$bytes >= 1024 && $bytes < 1048576} {
+        return [format "%dKB" [expr {$bytes / 1024}]]
+    } elseif {$bytes >= 1048576 && $bytes < 1073741824} {
+        return [format "%dMB" [expr {$bytes / 1048576}]]
+    } elseif {$bytes >= 1073741824} {
+        return [format "%dGB" [expr {$bytes / 1073741824}]]
+    }
+}
+
 proc ::tanzer::file::listing::compareTypes {a b} {
     set rankA [dict get $::tanzer::file::listing::typeRanks $a]
     set rankB [dict get $::tanzer::file::listing::typeRanks $b]
@@ -115,8 +127,9 @@ proc ::tanzer::file::listing::items {dir} {
         <table class="tanzer-listing" width="75%">
             <tr>
                 <th width="5%">Type</th>
-                <th width="85%">Name</th>
-                <th width="10%">Size</th>
+                <th width="5%">Size</th>
+                <th width="55%">Name</th>
+                <th width="25%">Date</th>
             </tr>
     }]
 
@@ -131,6 +144,8 @@ proc ::tanzer::file::listing::items {dir} {
         set name   [lindex $item 0]
         set itemSt [lindex $item 1]
         set path   [concat [$request path] [list $name]]
+        set type   [string toupper [dict get $itemSt type] 0 0]
+        set size   [dict get $itemSt size]
 
         if {[dict get $itemSt type] eq "directory"} {
             append  name "/"
@@ -138,16 +153,18 @@ proc ::tanzer::file::listing::items {dir} {
         }
 
         my buffer [string map [list \
-            @type  [dict get $itemSt type] \
+            @type  $type \
+            @size  [::tanzer::file::listing::humanSize $size] \
             @name  $name \
-            @size  [dict get $itemSt size] \
+            @date  [::tanzer::date::rfc2616 [dict get $itemSt mtime]] \
             @class $rowClasses($odd) \
             @uri   [::tanzer::uri::text $path] \
         ] {
             <tr class="@class">
                 <td>@type</td>
-                <td><a href="@uri">@name</a></td>
                 <td>@size</td>
+                <td><a href="@uri">@name</a></td>
+                <td>@date</td>
             </tr>
         }]
 
