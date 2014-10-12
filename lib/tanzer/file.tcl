@@ -15,6 +15,10 @@ proc ::tanzer::file::mimeType {path} {
         *.htm -
         *.html { return "text/html" }
         *.css  { return "text/css" }
+        *.png  { return "image/png" }
+        *.jpg -
+        *.jpeg { return "image/jpeg" }
+        *.gif  { return "image/gif" }
     }
 
     return "application/octet-stream"
