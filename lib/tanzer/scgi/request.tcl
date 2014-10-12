@@ -92,22 +92,6 @@ namespace eval ::tanzer::scgi::request {
         dict set headers Content-Length $contentLength
     }
 
-    #
-    # Parse the parameters passed in QUERY_STRING, if available.
-    #
-    if {[dict exists $env QUERY_STRING]} {
-        foreach pair [split [dict get $env QUERY_STRING] "&"] {
-            #
-            # Split only once, in case a value contains an equals for whatever
-            # perverse reason.
-            #
-            if {[regexp {^(.*)=(.*)$} $pair {} name value]} {
-                dict set params \
-                    [::tanzer::uri::decode $name] [::tanzer::uri::decode $value]
-            }
-        }
-    }
-
     return
 }
 
@@ -194,24 +178,9 @@ namespace eval ::tanzer::scgi::request {
     }
 
     #
-    # If PATH_INFO or QUERY_STRING do not exist, then infer them from
-    # REQUEST_URI.
+    # Parse the URI information passed from REQUEST_URI.
     #
-    set parts [split [dict get $env REQUEST_URI] ?]
-
-    if {![dict exists $env PATH_INFO]} {
-        dict set env PATH_INFO [lindex $parts 0]
-    }
-
-    if {![dict exists $env QUERY_STRING]} {
-        dict set env QUERY_STRING [join [lrange $parts 1 end] ?]
-    }
-
-    #
-    # Store path information in the current object.
-    #
-    set uri  [::tanzer::uri::parts [dict get $env REQUEST_URI]]
-    set path [::tanzer::uri::parts [dict get $env PATH_INFO]]
+    my uri [dict env REQUEST_URI]
 
     #
     # Finally, update the ready flag to indicate that the request is now

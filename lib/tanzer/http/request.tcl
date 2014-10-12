@@ -94,8 +94,9 @@ proc ::tanzer::http::request::supportedVersion {version} {
             }
 
             my env REQUEST_METHOD  $httpMethod
-            my env REQUEST_URI     $httpUri
             my env SERVER_PROTOCOL $httpVersion
+
+            my uri $httpUri
         } elseif {[regexp -nocase {^([a-z][a-z0-9\-_]+):\s+(.*)} $line {} newHeaderName newHeaderValue]} {
             #
             # Set the value of an existing header that was parsed previously.
@@ -133,12 +134,6 @@ proc ::tanzer::http::request::supportedVersion {version} {
     if {$headerName ne {} && $headerValue ne {}} {
         my header $headerName $headerValue
     }
-
-    #
-    # If PATH_INFO or QUERY_STRING do not exist, then infer them from
-    # REQUEST_URI.
-    #
-    my parseUri [my env REQUEST_URI]
 
     #
     # Finally, update the ready flag to indicate that the request is now

@@ -45,7 +45,7 @@ proc ::tanzer::request::hostMatches {host pattern} {
 
 ::oo::define ::tanzer::request constructor {_session} {
     my variable session env headers ready buffer config \
-        uri path params timestamp headerLength
+        uri path params rewritten timestamp headerLength
 
     set session      $_session
     set env          [dict create]
@@ -54,6 +54,7 @@ proc ::tanzer::request::hostMatches {host pattern} {
     set uri          {}
     set path         {}
     set params       {}
+    set rewritten    0
     set headerLength 0
     set timestamp    [::tanzer::date::rfc2616 [clock seconds]]
 }
@@ -78,30 +79,68 @@ proc ::tanzer::request::hostMatches {host pattern} {
     error "Not implemented"
 }
 
-::oo::define ::tanzer::request method uri {} {
-    my variable uri
+::oo::define ::tanzer::request method uri {args} {
+    my variable uri path
 
-    return $uri
+    switch -- [llength $args] 0 {
+        return $uri
+    } 1 {
+        #
+    } default {
+        error "Invalid command invocation"
+    }
+
+    set requestUri [lindex $args 0]
+    set uri        [::tanzer::uri::parts $requestUri]
+    set uriParts   [split $requestUri "?"]
+    set path       [::tanzer::uri::parts [lindex $uriParts 0]]
+    set query      [join [concat [lrange $uriParts 1 end]] "?"]
+
+    my env REQUEST_URI  [::tanzer::uri::text $uri]
+    my env QUERY_STRING $query
+
+    foreach pair [split $query "&"] {
+        #
+        # Split only once, in case a value contains an equals for whatever
+        # perverse reason.
+        #
+        if {[regexp {^(.*)=(.*)$} $pair {} name value]} {
+            my param \
+                [::tanzer::uri::decode $name] [::tanzer::uri::decode $value]
+        }
+    }
+
+    return
+}
+
+::oo::define ::tanzer::request method rewrite {re newFormat} {
+    my variable uri rewritten
+
+    if {$rewritten} {
+        return 1
+    }
+
+    if {$uri eq {}} {
+        error "Cannot rewrite URI on request that has not been matched"
+    }
+
+    set uriText [::tanzer::uri::text $uri]
+    set matches [regexp -inline $re $uriText]
+
+    if {[llength $matches] == 0} {
+        return 0
+    }
+
+    set uri [::tanzer::uri::parts [format $newFormat \
+        {*}[lrange $matches 1 end]]]
+
+    return 1
 }
 
 ::oo::define ::tanzer::request method path {} {
     my variable path
 
     return $path
-}
-
-::oo::define ::tanzer::request method parseUri {uriText} {
-    my variable env uri path
-
-    set parts [split $uriText "?"]
-
-    dict set env PATH_INFO    [lindex $parts 0]
-    dict set env QUERY_STRING [join [lrange $parts 1 end] "?"]
-
-    set uri  [::tanzer::uri::parts [dict get $env REQUEST_URI]]
-    set path [::tanzer::uri::parts [dict get $env PATH_INFO]]
-
-    return
 }
 
 ::oo::define ::tanzer::request method matches {route} {
@@ -147,6 +186,8 @@ proc ::tanzer::request::hostMatches {host pattern} {
     set pattern    [$route pattern]
     set partsLen   [llength $pattern]
     set requestLen [llength $path]
+    set matching   [list]
+    set pathInfo   [list]
     set _params    [list]
 
     set wildcard 0
@@ -185,10 +226,28 @@ proc ::tanzer::request::hostMatches {host pattern} {
         # URL decoded value from the corresponding request part.
         #
         if {[regexp {^:(.*)$} $partRoute {} key]} {
-            dict set _params \
+            my param \
                 [::tanzer::uri::decode $key] [::tanzer::uri::decode $partRequest]
         } elseif {$partRoute ne $partRequest} {
             return 0
+        }
+
+        lappend matching $partRequest
+    }
+
+    if {$wildcard} {
+        for {#} {$i < $requestLen} {incr i} {
+            set part [lindex $path $i]
+
+            if {$part eq {}} {
+                continue
+            }
+
+            if {[llength $pathInfo] == 0} {
+                lappend pathInfo {}
+            }
+
+            lappend pathInfo $part
         }
     }
 
@@ -201,11 +260,16 @@ proc ::tanzer::request::hostMatches {host pattern} {
     }
 
     #
+    # Set PATH_INFO, now that we have enough data to do so.
+    #
+    my env PATH_INFO [::tanzer::uri::text $pathInfo]
+
+    #
     # If we've found any parameters, then merge them into the request
     # parameters dictionary.
     #
     if {[llength $_params] > 0} {
-        dict set params {*}$_params
+        my params $_params
     }
 
     return 1
@@ -214,21 +278,33 @@ proc ::tanzer::request::hostMatches {host pattern} {
 ::oo::define ::tanzer::request method param {args} {
     my variable params
 
-    if {[llength $args] == 1} {
+    switch -- [llength $args] 1 {
         return [dict get $params [lindex $args 0]]
-    }
-
-    if {[llength $args] == 2} {
+    } 2 {
         return [dict set params {*}$args]
     }
 
     error "Invalid command invocation"
 }
 
-::oo::define ::tanzer::request method params {} {
+::oo::define ::tanzer::request method params {args} {
     my variable params
 
-    return $params
+    set count [llength $args]
+
+    if {$count == 0} {
+        return $params
+    } elseif {$count == 1} {
+        foreach {name value} [lindex $args 0] {
+            dict set params $name $value
+        }
+
+        return $params
+    } elseif {$count % 2 == 0} {
+        return [dict set params {*}$args]
+    }
+
+    error "Invalid command invocation"
 }
 
 ::oo::define ::tanzer::request method headerLength {} {

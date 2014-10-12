@@ -20,12 +20,24 @@ namespace eval ::tanzer::cgi::handler {
         root    "No document root provided"
     }
 
+    set defaults {
+        rewrite {}
+    }
+
+    array set config $defaults
+
     foreach {name message} $requirements {
         if {![dict exists $opts $name]} {
             error "$message in option '$name'"
         }
 
         set config($name) [dict get $opts $name]
+    }
+
+    foreach {name value} $defaults {
+        if {[dict exists $opts $name]} {
+            set config($name) [dict get $opts $name]
+        }
     }
 }
 
@@ -35,6 +47,14 @@ namespace eval ::tanzer::cgi::handler {
     set server  [$session server]
     set route   [$session route]
     set request [$session request]
+
+    if {[array get config rewrite] ne {}} {
+        foreach {re newFormat} $config(rewrite) {
+            if {[$request rewrite $re $newFormat]} {
+                break
+            }
+        }
+    }
 
     set addr [lindex [chan configure [$session sock] -sockname] 0]
 
