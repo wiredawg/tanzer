@@ -272,7 +272,7 @@ namespace eval ::tanzer::cgi::handler {
         # If the CGI program explicitly mentions a Status:, then send that
         # along.
         #
-        $response code [$response header Status]
+        $response code [lindex [$response header Status] 0]
     } elseif {[$response headerExists Location]} {
         #
         # In this event, we ought to emit a 301 redirect.
