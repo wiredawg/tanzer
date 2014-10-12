@@ -33,9 +33,7 @@ package require sha1
 
     fconfigure $fh \
         -translation binary \
-        -blocking    0 \
-        -buffering   full \
-        -buffersize  $config(readBufferSize)
+        -blocking    0
 }
 
 ::oo::define ::tanzer::file destructor {
