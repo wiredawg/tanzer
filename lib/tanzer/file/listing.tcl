@@ -78,8 +78,8 @@ package require Tclx
             @name  $item \
             @size  $itemSt(size) \
             @class $rowClasses($odd) \
-            @uri   [::tanzer::uri::text [concat \
-                [$request path] $item]] \
+            @uri   "[::tanzer::uri::text \
+                [concat [$request path] [list $item]]]" \
         ] {
             <tr class="@class">
                 <td>@type</td>
