@@ -29,6 +29,21 @@ proc ::tanzer::file::listing::humanSize {bytes} {
     }
 }
 
+proc ::tanzer::file::listing::humanTimestamp {epoch} {
+    set now [clock seconds]
+    set age [expr {$now - $epoch}]
+
+    if {$age < 60} {
+        return [format "%d seconds ago" $age]
+    } elseif {$age >= 60 && $age < 3600} {
+        return [format "%d minutes ago" [expr {$age / 60}]]
+    } elseif {$age >= 3600 && $age < 86400} {
+        return [clock format $epoch -format "%H:%M today" -gmt 1]
+    }
+
+    return [clock format $epoch -format "%d %b %Y %H:%M" -gmt 1]
+}
+
 proc ::tanzer::file::listing::compareTypes {a b} {
     set rankA [dict get $::tanzer::file::listing::typeRanks $a]
     set rankB [dict get $::tanzer::file::listing::typeRanks $b]
@@ -106,7 +121,7 @@ proc ::tanzer::file::listing::items {dir} {
 
                 a:link {
                     text-decoration: none;
-                    color: #94d487;
+                    color: #74b467;
                 }
 
                 a:visited {
@@ -172,7 +187,7 @@ proc ::tanzer::file::listing::items {dir} {
                 <th width="5%">Type</th>
                 <th width="5%">Size</th>
                 <th class="tanzer-file-name" width="55%">Name</th>
-                <th class="tanzer-file-date" width="25%">Date</th>
+                <th class="tanzer-file-date" width="25%">Last Modified</th>
             </tr>
     }]
 
@@ -199,7 +214,7 @@ proc ::tanzer::file::listing::items {dir} {
             @type  $type \
             @size  [::tanzer::file::listing::humanSize $size] \
             @name  $name \
-            @date  [::tanzer::date::rfc2616 [dict get $itemSt mtime]] \
+            @date  [::tanzer::file::listing::humanTimestamp [dict get $itemSt mtime]] \
             @class $rowClasses($odd) \
             @uri   [::tanzer::uri::text $path] \
         ] {
