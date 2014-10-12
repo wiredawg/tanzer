@@ -146,6 +146,9 @@ proc ::tanzer::file::listing::items {dir} {
 
                 table.tanzer-listing th {
                     background-color: #f0f0f0;
+                }
+
+                table.tanzer-listing th.tanzer-file-name, th.tanzer-file-date {
                     text-align: left;
                 }
 
@@ -168,8 +171,8 @@ proc ::tanzer::file::listing::items {dir} {
             <tr>
                 <th width="5%">Type</th>
                 <th width="5%">Size</th>
-                <th width="55%">Name</th>
-                <th width="25%">Date</th>
+                <th class="tanzer-file-name" width="55%">Name</th>
+                <th class="tanzer-file-date" width="25%">Date</th>
             </tr>
     }]
 
