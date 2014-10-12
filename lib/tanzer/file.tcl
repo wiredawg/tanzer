@@ -83,7 +83,11 @@ proc ::tanzer::file::mimeType {path} {
 ::oo::define ::tanzer::file method stream {event session data} {
     my variable fh config
 
-    set buf [read $fh $config(readBufferSize)]
+    set size $config(readBufferSize)
+
+    if {[fcopy $fh [$session sock] -size $size] != $size} {
+        ::tanzer::error throw 500 "Short read on file"
+    }
 
     if {[eof $fh]} {
         $session nextRequest
@@ -91,7 +95,7 @@ proc ::tanzer::file::mimeType {path} {
         return
     }
 
-    return [$session write $buf]
+    return
 }
 
 ::oo::define ::tanzer::file method serve {session} {

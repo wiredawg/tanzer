@@ -130,17 +130,13 @@ proc ::tanzer::file::fragment::parseRangeRequest {request size mimeType} {
         set size $readBufferSize
     }
 
-    set buf [read $in $size]
+    if {[fcopy $in $out -size $size] != $size} {
+        error "Incomplete read"
+    }
 
     if {[eof $in]} {
         return 0
     }
-
-    if {[string length $buf] != $size} {
-        error "Incomplete read"
-    }
-
-    puts -nonewline $out $buf
 
     incr offset $size
 

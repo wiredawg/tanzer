@@ -172,18 +172,19 @@ namespace eval ::tanzer::cgi::handler {
         error "Invalid event $event"
     }
 
-    set buf [read $out [$session config readBufferSize]]
+    set size [$session config readBufferSize]
+    set sock [$session sock]
 
     #
-    # If we weren'ta ble to read anything from the CGI process, then let's wrap
+    # If we weren't able to read anything from the CGI process, then let's wrap
     # up this session.
     #
     #
     # If we've already sent out a response, then just ferry data between the
     # server process and the CGI process, and move on.
     #
-    if {[$session response] ne {}} {
-        $session write $buf
+    if {[$session responded]} {
+        fcopy $out $sock -size $size
 
         if {[eof $out]} {
             my close $session
@@ -196,6 +197,8 @@ namespace eval ::tanzer::cgi::handler {
     # Otherwise, we need to buffer the data until we've read enough to parse
     # the response headers.
     #
+    set buf [read $out $size]
+
     append buffers($session) $buf
 
     #
