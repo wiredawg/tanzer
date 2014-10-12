@@ -5,6 +5,21 @@ package require fileutil::magic::mimetype
 package require TclOO
 package require sha1
 
+namespace eval ::tanzer::file {}
+
+proc ::tanzer::file::mimeType {path} {
+    set mimeType [lindex [::fileutil::magic::mimetype $path] 0]
+
+    switch -glob -nocase $path {
+        *.txt  { return "text/plain" }
+        *.htm -
+        *.html { return "text/html" }
+        *.css  { return "text/css" }
+    }
+
+    return "application/octet-stream"
+}
+
 ::oo::class create ::tanzer::file
 
 ::oo::define ::tanzer::file constructor {_path _st _config} {
@@ -51,20 +66,7 @@ package require sha1
 ::oo::define ::tanzer::file method mimeType {} {
     my variable path
 
-    set mimeType [lindex [::fileutil::magic::mimetype $path] 0]
-
-    if {$mimeType ne {}} {
-        return $mimeType
-    }
-
-    switch -glob -nocase $path {
-        *.txt  { return "text/plain" }
-        *.htm -
-        *.html { return "text/html" }
-        *.css  { return "text/css" }
-    }
-
-    return "application/octet-stream"
+    return [::tanzer::file::mimeType $path]
 }
 
 ::oo::define ::tanzer::file method etag {} {
