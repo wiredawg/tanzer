@@ -27,7 +27,7 @@ proc ::tanzer::http::request::supportedVersion {version} {
 }
 
 ::oo::define ::tanzer::http::request method parse {buffer} {
-    my variable ready session env headers \
+    my variable ready env headers \
         path uri headerLength
 
     if {$ready} {
