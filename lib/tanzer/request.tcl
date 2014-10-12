@@ -226,8 +226,7 @@ proc ::tanzer::request::hostMatches {host pattern} {
         # URL decoded value from the corresponding request part.
         #
         if {[regexp {^:(.*)$} $partRoute {} key]} {
-            my param \
-                [::tanzer::uri::decode $key] [::tanzer::uri::decode $partRequest]
+            my param $key $partRequest
         } elseif {$partRoute ne $partRequest} {
             return 0
         }
