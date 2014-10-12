@@ -25,6 +25,15 @@ proc ::tanzer::uri::text {parts} {
     return [join [::tanzer::uri::clean $parts] "/"]
 }
 
+proc ::tanzer::uri::encode {text} {
+    set utfText [encoding convertto utf-8 $text]
+    set search  {[^-A-Za-z0-9._~\n]}
+    set replace {%[format "%02X" [scan "\\\0" "%c"]]}
+
+    return [string map {"\n" "%0A"} [subst \
+        [regsub -all $search $utfText $replace]]]
+}
+
 proc ::tanzer::uri::decode {text} {
     set specialCases [dict create \
         "\[" "%5B" \
