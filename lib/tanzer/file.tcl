@@ -63,6 +63,7 @@ package require sha1
         *.txt  { return "text/plain" }
         *.htm -
         *.html { return "text/html" }
+        *.css  { return "text/css" }
     }
 
     return "application/octet-stream"
