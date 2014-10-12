@@ -33,9 +33,9 @@ proc ::tanzer::file::listing::humanTimestamp {epoch} {
     set now [clock seconds]
     set age [expr {$now - $epoch}]
 
-    if {$age < 60} {
+    if {$age < 120} {
         return [format "%d seconds ago" $age]
-    } elseif {$age >= 60 && $age < 3600} {
+    } elseif {$age >= 120 && $age < 3600} {
         return [format "%d minutes ago" [expr {$age / 60}]]
     } elseif {$age >= 3600 && $age < 86400} {
         return [clock format $epoch -format "%H:%M today GMT" -gmt 1]
