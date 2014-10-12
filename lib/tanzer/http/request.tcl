@@ -60,6 +60,7 @@ proc ::tanzer::http::request::supportedVersion {version} {
     set headerName  {}
     set headerValue {}
 
+    set index 0
     set start 0
     set end   [expr {[string first "\r\n" $preamble $start] - 1}]
 
@@ -67,7 +68,7 @@ proc ::tanzer::http::request::supportedVersion {version} {
         set line [string range $preamble $start $end]
 
         if {[regexp -nocase {^(?:[a-z]+)\s+} $line {}]} {
-            if {$action ne {}} {
+            if {$action ne {} || $index != 0} {
                 ::tanzer::error throw 400 "Invalid request"
             }
 
@@ -126,6 +127,8 @@ proc ::tanzer::http::request::supportedVersion {version} {
         if {$end < 0} {
             break
         }
+
+        incr index
     }
 
     #
