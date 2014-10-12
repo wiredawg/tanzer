@@ -153,7 +153,9 @@ namespace eval ::tanzer::session {
 #
 ::oo::define ::tanzer::session method handle {event} {
     my variable sock server request keepalive \
-        buffer config handler
+        buffer config handler active
+
+    set active 1
 
     if {$event eq "write"} {
         return [{*}$handler write [self] ""]
