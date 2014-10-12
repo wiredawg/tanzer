@@ -6,22 +6,27 @@ package require tanzer::response
 package require tanzer::file::handler
 package require tanzer::cgi::handler
 
-::tanzer::server create server {
-    port  8080
-    proto "http"
+proc usage {} {
+    puts stderr "usage: $::argv0 port root"
+    exit 1
 }
 
-server route * /env.cgi/* xantronix.local:8080 [::tanzer::cgi::handler new {
-    root    "/var/www/xantronix.net/doc"
-    program "/var/www/xantronix.net/doc/env.cgi"
-    name    "/env.cgi"
-}] respond
+if {$argc != 2} {
+    usage
+}
 
-server route * /* www.xantronix.local:8080 [::tanzer::file::handler new {
-    root     "/var/www/xantronix.net/doc"
-    listings 1
-}] respond
+set port [lindex $::argv 0]
+set root [lindex $::argv 1]
 
-server listen
+set server [::tanzer::server new [list \
+    port  $port \
+    proto "http" \
+]]
 
+$server route * /* * [::tanzer::file::handler new [list \
+    root     $root \
+    listings 1 \
+]] respond
+
+$server listen
 vwait forever
