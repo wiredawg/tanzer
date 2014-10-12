@@ -140,7 +140,7 @@ proc ::tanzer::file::listing::items {dir} {
                     padding: 0px;
                     margin-left: auto;
                     margin-right: auto;
-                    border-spacing: 0px;
+                    border-spacing: 0 4px;
                     border-collapse: separate;
                 }
 
