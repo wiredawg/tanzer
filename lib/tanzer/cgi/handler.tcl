@@ -82,6 +82,10 @@ namespace eval ::tanzer::cgi::handler {
     pipe stdin_r  stdin_w
     pipe stdout_r stdout_w
 
+    foreach fh [list $stdin_r $stdin_w $stdout_r $stdout_w] {
+        fconfigure $fh -translation binary
+    }
+
     fcntl $stdin_w  NOBUF 1
     fcntl $stdout_r NOBUF 1
 
@@ -272,11 +276,6 @@ namespace eval ::tanzer::cgi::handler {
     if {$headerName ne {} && $headerValue ne {}} {
         dict set headers $headerName $headerValue
     }
-
-    #
-    # If there are no reasonable headers, then that's bad, mmmkay?
-    #
-
 
     #
     # Prepare a response object.
