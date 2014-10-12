@@ -146,6 +146,7 @@ proc ::tanzer::file::listing::items {dir} {
 
                 table.tanzer-listing th {
                     background-color: #f0f0f0;
+                    text-align: left;
                 }
 
                 table.tanzer-listing tr.tanzer-file-odd {
