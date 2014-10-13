@@ -112,6 +112,7 @@ proc ::tanzer::error::response {error} {
                     margin-top: 8px;
                     margin-left: auto;
                     margin-right: auto;
+                    font-size: 10pt;
                 }
             </style>
         </head>
