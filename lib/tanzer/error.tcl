@@ -73,7 +73,7 @@ proc ::tanzer::error::response {error} {
     $response buffer [string map [list \
         @code $code \
         @name $name \
-        @msg  $msg \
+        @msg  [string toupper $msg 0 0] \
     ] {
         <html>
         <head>
