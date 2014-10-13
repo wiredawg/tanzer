@@ -78,14 +78,60 @@ proc ::tanzer::error::response {error} {
         <html>
         <head>
             <title>@code - @name</title>
+            <style type="text/css">
+                body {
+                    font-family: "HelveticaNeue-Light", "Helvetica Neue", Helvetica;
+                    background: #ffffff;
+                    color: #4a4a4a;
+                    margin: 0px;
+                }
+
+                div.tanzer-header {
+                    width: 75%;
+                    font-size: 30pt;
+                    font-weight: bold;
+                    padding: 8px;
+                    margin-top: 8px;
+                    margin-left: auto;
+                    margin-right: auto;
+                    margin-bottom: 8px;
+                }
+
+                div.tanzer-body {
+                    background-color: #f0f0f0;
+                    border: 0px;
+                    padding: 8px;
+                    margin-left: auto;
+                    margin-right: auto;
+                    width: 75%;
+                }
+
+                div.tanzer-footer {
+                    width: 75%;
+                    padding: 8px;
+                    margin-top: 8px;
+                    margin-left: auto;
+                    margin-right: auto;
+                    font-size: 10pt;
+                }
+            </style>
         </head>
-        <h1>@code - @name</h1>
-        <p>
+        <div class="tanzer-header">
+            @code - @name
+        </div>
+        <div class="tanzer-body">
             @msg
-        </p>
+        </div>
+        <div class="tanzer-footer">
+    }]
+
+    $response buffer "Served by $::tanzer::server::name/$::tanzer::server::version"
+
+    $response buffer {
+        </div>
         </body>
         </html>
-    }]
+    }
 
     return $response
 }
