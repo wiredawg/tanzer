@@ -185,16 +185,20 @@ proc ::tanzer::file::listing::items {dir} {
                 table.tanzer-listing th,td {
                     padding: 6px;
                 }
+
+                table.tanzer-listing td.tanzer-date, table.tanzer-listing td.tanzer-size {
+                    font-family: "Andale Mono", monospace;
+                    white-space: nowrap;
+                }
             </style>
         </head>
         <body>
         <div class="tanzer-header">Directory listing for @dir</div>
         <table class="tanzer-listing">
             <tr>
-                <th width="5%">Type</th>
                 <th width="5%">Size</th>
-                <th class="tanzer-file-name" width="55%">Name</th>
-                <th class="tanzer-file-date" width="25%">Last Modified</th>
+                <th class="tanzer-file-name" width="65%">Name</th>
+                <th class="tanzer-file-date" width="30%">Last Modified</th>
             </tr>
     }]
 
@@ -209,27 +213,25 @@ proc ::tanzer::file::listing::items {dir} {
         set name   [lindex $item 0]
         set itemSt [lindex $item 1]
         set path   [concat [$request path] [list $name]]
-        set type   [string toupper [dict get $itemSt type] 0 0]
-        set size   [dict get $itemSt size]
+        set size   [::tanzer::file::listing::humanSize [dict get $itemSt size]]
 
         if {[dict get $itemSt type] eq "directory"} {
             append  name "/"
             lappend path {}
+            set size ""
         }
 
         my buffer [string map [list \
-            @type  $type \
-            @size  [::tanzer::file::listing::humanSize $size] \
+            @size  $size \
             @name  $name \
             @date  [::tanzer::file::listing::humanTimestamp [dict get $itemSt mtime]] \
             @class $rowClasses($odd) \
             @uri   [::tanzer::uri::text $path] \
         ] {
             <tr class="@class">
-                <td>@type</td>
-                <td>@size</td>
+                <td class="tanzer-size">@size</td>
                 <td><a href="@uri">@name</a></td>
-                <td>@date</td>
+                <td class="tanzer-date">@date</td>
             </tr>
         }]
 
