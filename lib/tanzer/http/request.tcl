@@ -116,7 +116,7 @@ proc ::tanzer::http::request::supportedVersion {version} {
                 ::tanzer::error throw 400 "Invalid request"
             }
 
-            append headerValue [string trim $headerValueExtra]
+            append headerValue " [string trim $headerValueExtra]"
         } else {
             ::tanzer::error throw 400 "Invalid request format"
         }
