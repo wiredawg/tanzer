@@ -36,6 +36,14 @@ proc ::tanzer::request::hostMatches {host pattern} {
         incr h -1
     }
 
+    #
+    # If the host pattern contained no wildcard, and differs in number of
+    # components, then fail.
+    #
+    if {$h != $p} {
+        return 0
+    }
+
     return 1
 }
 
