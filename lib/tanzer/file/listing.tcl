@@ -190,6 +190,10 @@ proc ::tanzer::file::listing::items {dir} {
                     font-family: "Andale Mono", monospace;
                     white-space: nowrap;
                 }
+
+                table.tanzer-listing td.tanzer-size {
+                    text-align: right;
+                }
             </style>
         </head>
         <body>
