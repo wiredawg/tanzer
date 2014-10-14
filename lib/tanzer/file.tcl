@@ -1,5 +1,6 @@
 package provide tanzer::file 0.0.1
 package require tanzer::response
+package require tanzer::error
 
 package require fileutil::magic::mimetype
 package require TclOO
@@ -80,6 +81,14 @@ proc ::tanzer::file::mimeType {path} {
         $path $st(mtime) $st(ino)]]
 }
 
+::oo::define ::tanzer::file method matches {etag} {
+    if {[regexp {^"([^\"]+)"$} $etag {} quoted]} {
+        set etag $quoted
+    }
+
+    return [expr {$etag eq "*" || $etag eq [my etag]}]
+}
+
 ::oo::define ::tanzer::file method stream {event session data} {
     my variable fh config
 
@@ -117,23 +126,48 @@ proc ::tanzer::file::mimeType {path} {
     }
 
     set response [::tanzer::response new 200]
+    set etag     [my etag]
+    set serve    1
 
     $response header Content-Type   [my mimeType]
-    $response header Content-Length $st(size)
-    $response header ETag           "\"[my etag]\""
+    $response header Etag           "\"$etag\""
     $response header Accept-Ranges  "bytes"
     $response header Last-Modified  [::tanzer::date::rfc2616 $st(mtime)]
 
-    if {$method eq "GET"} {
-        $session delegate [self] stream
+    if {[$request headerExists If-Match]} {
+        if {![my matches [$request header If-Match]]} {
+            $response status 412
+            set serve 0
+        }
+    } elseif {[$request headerExists If-None-Match]} {
+        if {[my matches [$request header If-None-Match]]} {
+            $response status 304
+            set serve 0
+        }
     }
 
-    $session send $response
+    if {!$serve} {
+        $response header Content-Length 0
 
-    #
-    # Only finish the request immediately if we're only sending headers.
-    #
-    if {$method eq "HEAD"} {
+        $session send $response
         $session nextRequest
+
+        return
     }
+
+    $response header Content-Length $st(size)
+
+    if {$method eq "GET"} {
+        $session send $response
+        $session delegate [self] stream
+
+        return
+    } elseif {$method eq "HEAD"} {
+        $session send $response
+        $session nextRequest
+
+        return
+    }
+
+    ::tanzer::error throw 405 "Method $method unsupported"
 }

@@ -162,11 +162,35 @@ package require TclOO
     }
 
     set response [::tanzer::response new 206]
+    set etag     [my etag]
+    set serve    1
 
-    $response header Content-Length [my contentLength]
-    $response header ETag           "\"[my etag]\""
+    $response header Etag           "\"$etag\""
     $response header Accept-Ranges  "bytes"
     $response header Last-Modified  [::tanzer::date::rfc2616 $st(mtime)]
+
+    if {[$request headerExists If-Match]} {
+        if {![my matches [$request header If-Match]]} {
+            set serve 0
+            $response status 412
+        }
+    } elseif {[$request headerExists If-None-Match]} {
+        if {![my matches [$request header If-None-Match]]} {
+            $response status 304
+            set serve 0
+        }
+    }
+
+    if {!$serve} {
+        $session header Content-Length 0
+
+        $session send $response
+        $session nextRequest
+
+        return
+    }
+
+    $response header Content-Length [my contentLength]
 
     #
     # If there is only one range specified, then do not split the response
