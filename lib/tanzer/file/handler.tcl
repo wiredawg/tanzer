@@ -38,30 +38,11 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::file::handler method close {session} {
-    my variable files ranges
-
-    if {[array get files $session] ne {}} {
-        ::close $files($session)
-        unset files($session)
-    }
+    my variable ranges
 
     if {[array get ranges $session] ne {}} {
         unset ranges($session)
     }
-}
-
-::oo::define ::tanzer::file::handler method open {session localPath} {
-    my variable config files
-
-    set fh [::open $localPath]
-
-    fconfigure $fh \
-        -translation binary \
-        -blocking    0 \
-        -buffering   full \
-        -buffersize  [$session config readBufferSize]
-
-    return [set files($session) $fh]
 }
 
 ::oo::define ::tanzer::file::handler method resolve {request route} {
