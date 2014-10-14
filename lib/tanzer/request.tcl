@@ -80,13 +80,16 @@ proc ::tanzer::request::hostMatches {host pattern} {
         error "Invalid command invocation"
     }
 
-    set requestUri [lindex $args 0]
-    set uri        [::tanzer::uri::parts $requestUri]
-    set uriParts   [split $requestUri "?"]
-    set path       [::tanzer::uri::parts [lindex $uriParts 0]]
-    set query      [join [concat [lrange $uriParts 1 end]] "?"]
+    set rawUri      [lindex $args 0]
+    set rawUriParts [split $rawUri "?"]
 
-    my env REQUEST_URI  $requestUri
+    set path  [::tanzer::uri::parts [lindex $rawUriParts 0]]
+    set query [join [concat [lrange $rawUriParts 1 end]] "/"]
+
+    set uri [join [list \
+        [::tanzer::uri::clean [lindex $rawUriParts 0]] $query] "?"]
+
+    my env REQUEST_URI  $uri
     my env QUERY_STRING $query
 
     foreach pair [split $query "&"] {
@@ -114,15 +117,13 @@ proc ::tanzer::request::hostMatches {host pattern} {
         error "Cannot rewrite URI on request that has not been matched"
     }
 
-    set uriText [::tanzer::uri::text $uri]
-    set matches [regexp -inline $re $uriText]
+    set matches [regexp -inline $re $uri]
 
     if {[llength $matches] == 0} {
         return 0
     }
 
-    set uri [::tanzer::uri::parts [format $newFormat \
-        {*}[lrange $matches 1 end]]]
+    my uri [format $newFormat {*}[lrange $matches 1 end]]
 
     return 1
 }

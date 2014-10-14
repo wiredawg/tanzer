@@ -26,9 +26,9 @@ proc ::tanzer::uri::decode {text} {
         -nobackslash -novariable $modified]]
 }
 
-proc ::tanzer::uri::clean {parts} {
-    set ret   [list]
+proc ::tanzer::uri::filter {parts} {
     set count [llength $parts]
+    set ret   [list]
 
     for {set i 0} {$i < $count} {incr i} {
         set part [lindex $parts $i]
@@ -41,22 +41,34 @@ proc ::tanzer::uri::clean {parts} {
     return $ret
 }
 
+proc ::tanzer::uri::split {uri} {
+    return [::tanzer::uri::filter [::split $uri "/"]]
+}
+
+proc ::tanzer::uri::join {parts} {
+    return [::join $parts "/"]
+}
+
+proc ::tanzer::uri::clean {uri} {
+    return [::tanzer::uri::join [::tanzer::uri::split $uri]]
+}
+
 proc ::tanzer::uri::parts {uri} {
     set out [list]
 
-    foreach part [split $uri "/"] {
+    foreach part [::tanzer::uri::split $uri] {
         lappend out [::tanzer::uri::decode $part]
     }
 
-    return [::tanzer::uri::clean $out]
+    return $out
 }
 
 proc ::tanzer::uri::text {parts} {
     set out [list]
 
-    foreach part [::tanzer::uri::clean $parts] {
+    foreach part [::tanzer::uri::filter $parts] {
         lappend out [::tanzer::uri::encode $part]
     }
 
-    return [join $out "/"]
+    return [::tanzer::uri::join $out]
 }
