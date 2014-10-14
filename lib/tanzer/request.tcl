@@ -80,17 +80,10 @@ proc ::tanzer::request::hostMatches {host pattern} {
         error "Invalid command invocation"
     }
 
-    set rawUri      [lindex $args 0]
-    set rawUriParts [split $rawUri "?"]
-
-    set path  [::tanzer::uri::parts [lindex $rawUriParts 0]]
-    set query [join [concat [lrange $rawUriParts 1 end]] "/"]
-
-    set uri [join [list \
-        [::tanzer::uri::clean [lindex $rawUriParts 0]] $query] "?"]
-
-    my env REQUEST_URI  $uri
-    my env QUERY_STRING $query
+    set uri      [lindex $args 0]
+    set uriParts [split $uri "?"]
+    set path     [::tanzer::uri::parts [lindex $uriParts 0]]
+    set query    [join [lrange $uriParts 1 end] "?"]
 
     foreach pair [split $query "&"] {
         #
@@ -102,6 +95,9 @@ proc ::tanzer::request::hostMatches {host pattern} {
                 [::tanzer::uri::decode $name] [::tanzer::uri::decode $value]
         }
     }
+
+    my env REQUEST_URI  $uri
+    my env QUERY_STRING $query
 
     return
 }
