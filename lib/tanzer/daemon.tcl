@@ -77,7 +77,7 @@ package require TclOO
 
         lappend handlers($site) $handler
 
-        set routes($handler) [list GET /*]
+        set routes($handler) [list * /*]
 
         foreach domain [concat $site $aliases($site)] {
             foreach handler $handlers($site) {
