@@ -86,7 +86,7 @@ proc ::tanzer::request::hostMatches {host pattern} {
     set path       [::tanzer::uri::parts [lindex $uriParts 0]]
     set query      [join [concat [lrange $uriParts 1 end]] "?"]
 
-    my env REQUEST_URI  [::tanzer::uri::text $uri]
+    my env REQUEST_URI  $requestUri
     my env QUERY_STRING $query
 
     foreach pair [split $query "&"] {
