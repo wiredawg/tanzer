@@ -24,7 +24,7 @@ proc ::tanzer::logger::format {subcommand args} {
             [$request method] \
             [::tanzer::uri::text [$request uri]] \
             [$request proto] \
-            [$response code] \
+            [$response status] \
             [$response length] \
             [$request referer] \
             [$request agent]]

@@ -6,12 +6,12 @@ namespace eval ::tanzer::error {
     namespace export new throw try response run servable
 }
 
-proc ::tanzer::error::new {code msg} {
-    return [list [namespace current] $code $msg]
+proc ::tanzer::error::new {status msg} {
+    return [list [namespace current] $status $msg]
 }
 
-proc ::tanzer::error::throw {code msg} {
-    error [::tanzer::error new $code $msg]
+proc ::tanzer::error::throw {status msg} {
+    error [::tanzer::error new $status $msg]
 }
 
 proc ::tanzer::error::run {script} {
@@ -57,27 +57,27 @@ proc ::tanzer::error::try {script catch ename catchBlock} {
 }
 
 proc ::tanzer::error::response {error} {
-    set ns   [lindex $error 0]
-    set code [lindex $error 1]
-    set msg  [lindex $error 2]
-    set name [::tanzer::response::lookup $code]
+    set ns     [lindex $error 0]
+    set status [lindex $error 1]
+    set msg    [lindex $error 2]
+    set name   [::tanzer::response::lookup $status]
 
     if {$ns ne [namespace current]} {
         error "Unrecognized error type $ns"
     }
 
-    set response [::tanzer::response new $code {
+    set response [::tanzer::response new $status {
         Content-Type "text/html"
     }]
 
     $response buffer [string map [list \
-        @code $code \
-        @name $name \
-        @msg  [string toupper $msg 0 0] \
+        @status $status \
+        @name   $name \
+        @msg    [string toupper $msg 0 0] \
     ] {
         <html>
         <head>
-            <title>@code - @name</title>
+            <title>@status @name</title>
             <style type="text/css">
                 body {
                     font-family: "HelveticaNeue-Light", "Helvetica Neue", Helvetica;
@@ -117,7 +117,7 @@ proc ::tanzer::error::response {error} {
             </style>
         </head>
         <div class="tanzer-header">
-            @code - @name
+            @status @name
         </div>
         <div class="tanzer-body">
             @msg

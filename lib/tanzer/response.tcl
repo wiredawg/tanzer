@@ -3,9 +3,9 @@ package require tanzer::message
 package require TclOO
 
 namespace eval ::tanzer::response {
-    variable codes
+    variable statuses
 
-    array set codes {
+    array set statuses {
         200 "OK"
         206 "Partial Content"
         301 "Moved Permanently"
@@ -19,11 +19,11 @@ namespace eval ::tanzer::response {
     }
 }
 
-proc ::tanzer::response::lookup {code} {
-    variable codes
+proc ::tanzer::response::lookup {status} {
+    variable statuses
 
-    if {[array get codes $code] ne {}} {
-        return $codes($code)
+    if {[array get statuses $status] ne {}} {
+        return $statuses($status)
     }
 
     return ""
@@ -33,10 +33,13 @@ proc ::tanzer::response::lookup {code} {
     superclass ::tanzer::message
 }
 
-::oo::define ::tanzer::response constructor {_code args} {
-    my variable code headers data
+::oo::define ::tanzer::response constructor {_status args} {
+    my variable version status headers data
 
-    set code    $_code
+    next
+
+    set version $::tanzer::message::defaultVersion
+    set status  $_status
     set headers {}
     set data    ""
 
@@ -47,13 +50,13 @@ proc ::tanzer::response::lookup {code} {
     my header Server "$::tanzer::server::name/$::tanzer::server::version"
 }
 
-::oo::define ::tanzer::response method code {args} {
-    my variable code
+::oo::define ::tanzer::response method status {args} {
+    my variable status
 
     switch -- [llength $args] 0 {
-        return $code
+        return $status
     } 1 {
-        return [set code [lindex $args 0]]
+        return [set status [lindex $args 0]]
     }
 
     error "Invalid command invocation"
@@ -72,10 +75,10 @@ proc ::tanzer::response::lookup {code} {
 }
 
 ::oo::define ::tanzer::response method write {sock} {
-    my variable code headers data
+    my variable version status headers data
 
-    puts -nonewline $sock [format "HTTP/1.1 %d %s\r\n" \
-        $code [::tanzer::response::lookup $code]]
+    puts -nonewline $sock [format "%s %d %s\r\n" \
+        $version $status [::tanzer::response::lookup $status]]
 
     set len [string length $data]
 

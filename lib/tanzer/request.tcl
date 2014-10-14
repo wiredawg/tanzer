@@ -52,39 +52,21 @@ proc ::tanzer::request::hostMatches {host pattern} {
 }
 
 ::oo::define ::tanzer::request constructor {_session} {
-    my variable session env headers ready buffer config \
+    my variable session env headers buffer config \
         uri path params rewritten timestamp headerLength
+
+    next -newline "\r\n" \
+         -request
 
     set session      $_session
     set env          [dict create]
     set headers      [dict create]
-    set ready        0
     set uri          {}
     set path         {}
     set params       {}
     set rewritten    0
     set headerLength 0
     set timestamp    [::tanzer::date::rfc2616 [clock seconds]]
-}
-
-::oo::define ::tanzer::request method validate {} {
-    error "Not implemented"
-}
-
-::oo::define ::tanzer::request method ready {} {
-    my variable ready
-
-    return $ready
-}
-
-::oo::define ::tanzer::request method incomplete {} {
-    my variable ready
-
-    return [expr {$ready == 0}]
-}
-
-::oo::define ::tanzer::request method parse {} {
-    error "Not implemented"
 }
 
 ::oo::define ::tanzer::request method uri {args} {
@@ -312,12 +294,6 @@ proc ::tanzer::request::hostMatches {host pattern} {
     }
 
     error "Invalid command invocation"
-}
-
-::oo::define ::tanzer::request method headerLength {} {
-    my variable headerLength
-
-    return $headerLength
 }
 
 ::oo::define ::tanzer::request method env {args} {

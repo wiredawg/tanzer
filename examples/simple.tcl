@@ -60,7 +60,7 @@ set server [::tanzer::server new {
     proto "http"
 }]
 
-$server route GET /stuff/* localhost:8080 simpleResponder
+$server route GET /* localhost:8080 simpleResponder
 
 $server listen
 vwait forever

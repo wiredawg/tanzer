@@ -12,7 +12,7 @@ namespace eval ::tanzer::cgi::handler {
 ::oo::class create ::tanzer::cgi::handler
 
 ::oo::define ::tanzer::cgi::handler constructor {opts} {
-    my variable config buffers
+    my variable config pipes buffers responses
 
     set requirements {
         program "No CGI executable provided"
@@ -24,7 +24,10 @@ namespace eval ::tanzer::cgi::handler {
         rewrite {}
     }
 
-    array set config $defaults
+    array set config    $defaults
+    array set pipes     {}
+    array set buffers   {}
+    array set responses {}
 
     foreach {name message} $requirements {
         if {![dict exists $opts $name]} {
@@ -42,7 +45,7 @@ namespace eval ::tanzer::cgi::handler {
 }
 
 ::oo::define ::tanzer::cgi::handler method open {session} {
-    my variable config pipes buffers
+    my variable config pipes buffers responses
 
     set server  [$session server]
     set route   [$session route]
@@ -117,13 +120,17 @@ namespace eval ::tanzer::cgi::handler {
         out $stdout_r \
         pid $child]
 
-    set buffers($session) ""
+    set buffers($session)   ""
+    set responses($session) [::tanzer::response new \
+        $::tanzer::cgi::handler::defaultStatus]
+
+    $responses($session) config -newline "\n"
 
     $session cleanup [self] cleanup $session
 }
 
 ::oo::define ::tanzer::cgi::handler method cleanup {session} {
-    my variable pipes buffers
+    my variable pipes buffers responses
 
     if {[array get pipes $session] eq {}} {
         return
@@ -135,10 +142,11 @@ namespace eval ::tanzer::cgi::handler {
 
     ::close $in
     ::close $out
-    wait  $pid
+    wait $pid
 
-    array unset pipes   $session
-    array unset buffers $session
+    array unset pipes    $session
+    array unset buffers  $session
+    array unset responses $session
 
     return
 }
@@ -152,15 +160,16 @@ namespace eval ::tanzer::cgi::handler {
 }
 
 ::oo::define ::tanzer::cgi::handler method respond {event session data} {
-    my variable config pipes buffers
+    my variable config pipes buffers responses
 
     if {[array get pipes $session] eq {}} {
         my open $session
     }
 
-    set pipe $pipes($session)
-    set in   [dict get $pipe in]
-    set out  [dict get $pipe out]
+    set pipe     $pipes($session)
+    set response $responses($session)
+    set in       [dict get $pipe in]
+    set out      [dict get $pipe out]
 
     if {$event eq "read"} {
         puts -nonewline $in $data
@@ -194,96 +203,20 @@ namespace eval ::tanzer::cgi::handler {
     }
 
     #
-    # Otherwise, we need to buffer the data until we've read enough to parse
-    # the response headers.
+    # Read a buffer's worth of data from the CGI subprocess and see if it's a
+    # parseable response.
     #
     set buf [read $out $size]
 
     append buffers($session) $buf
 
-    #
-    # Let's check and see if we've found the end of the response headers yet.
-    #
-    set headerLength [string first "\n\n" $buffers($session)]
-
-    #
-    # If we've not found the end of the request headers yet, then let's bail
-    # for now.
-    #
-    if {$headerLength < 0} {
-        #
-        # Furthermore, let's bail this entire session if our current read
-        # buffer is empty.
-        #
-        if {$buf eq ""} {
-            ::tanzer::error throw 500 "Invalid response"
-        }
-
+    if {![$response parse $buffers($session)]} {
         return
     }
 
-    #
-    # Now's a great time to parse.
-    #
-    # I feel like I've written this code already.  And, it just so happens to
-    # be the case, I already *have*.  So, XXX TODO: PLEASE REFACTOR THE CODE
-    # HERE AND IN ::tanzer::http::request TO BE SOMEWHERE SHARED, K? <3
-    #
-    set status  200
-    set headers [dict create]
-
-    set preamble    [string range $buffers($session) 0 $headerLength]
-    set headerName  {}
-    set headerValue {}
-
-    set start 0
-    set end   [expr {[string first "\n" $preamble $start] - 1}]
-
-    while {1} {
-        set line [string range $preamble $start $end]
-
-        if {[regexp -nocase {^([a-z][a-z0-9\-_]+):\s+(.*)} $line {} newHeaderName newHeaderValue]} {
-            #
-            # Set the value of an existing header that was parsed previously.
-            #
-            if {$headerName ne {} && $headerValue ne {}} {
-                dict set headers $headerName $headerValue
-            }
-
-            set headerName $newHeaderName
-            set headerValue [string trim $newHeaderValue]
-        } elseif {[regexp {^\s+(.*)$} $line {} headerValueExtra]} {
-            #
-            # Look for header value continuation lines.
-            #
-            if {$headerName eq {}} {
-                ::tanzer::error throw 500 "Invalid response"
-            }
-
-            append headerValue [string trim $headerValueExtra]
-        } else {
-            ::tanzer::error throw 500 "Invalid response format"
-        }
-
-        set start [expr {$end + 2}]
-        set end   [expr {[string first "\n" $preamble $start] - 1}]
-
-        if {$end < 0} {
-            break
-        }
+    if {![$response keepalive]} {
+        $session keepalive 0
     }
-
-    #
-    # Set remaining headers at the end of the response.
-    #
-    if {$headerName ne {} && $headerValue ne {}} {
-        dict set headers $headerName $headerValue
-    }
-
-    #
-    # Prepare a response object.
-    #
-    set response [::tanzer::response new $status $headers]
 
     #
     # Let's see if we've received a reasonable header to determine what sort
@@ -294,12 +227,17 @@ namespace eval ::tanzer::cgi::handler {
         # If the CGI program explicitly mentions a Status:, then send that
         # along.
         #
-        $response code [lindex [$response header Status] 0]
+        $response status [lindex [$response header Status] 0]
+    } elseif {[$response headerExists Content-Type]} {
+        #
+        # Presume the CGI response is valid if it is qualified with a type.
+        #
+        $response status 200
     } elseif {[$response headerExists Location]} {
         #
-        # In this event, we ought to emit a 301 redirect.
+        # Send a 301 Redirect if the CGI program indicated a Location: header.
         #
-        $response code 301
+        $response status 301
     }
 
     #
@@ -321,7 +259,7 @@ namespace eval ::tanzer::cgi::handler {
     # headers.
     #
     $session write [string range $buffers($session) \
-        [expr {$headerLength + 2}] end]
+        [expr {[$response headerLength] + 2}] end]
 
     #
     # And discard the buffer cruft.

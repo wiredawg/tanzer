@@ -198,10 +198,10 @@ namespace eval ::tanzer::session {
 
         #
         # If the request does not call for keepalive, then set the keepalive
-        # count to 1.
+        # count to 0.
         #
         if {![$request keepalive]} {
-            set keepalive 1
+            set keepalive 0
         }
 
         #
