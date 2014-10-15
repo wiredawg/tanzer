@@ -37,14 +37,6 @@ package require TclOO
     }
 }
 
-::oo::define ::tanzer::file::handler method close {session} {
-    my variable ranges
-
-    if {[array get ranges $session] ne {}} {
-        unset ranges($session)
-    }
-}
-
 ::oo::define ::tanzer::file::handler method resolve {request route} {
     my variable config
 
