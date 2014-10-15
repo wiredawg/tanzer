@@ -72,3 +72,26 @@ proc ::tanzer::uri::text {parts} {
 
     return [::tanzer::uri::join $out]
 }
+
+proc ::tanzer::uri::up {parts} {
+    set filtered [::tanzer::uri::filter $parts]
+    set last     [expr {[llength $filtered] - 1}]
+
+    if {$last == 0} {
+        set part [lindex $filtered 0]
+
+        switch -- $part {} {
+            return {{} {}}
+        } default {
+            return $part
+        }
+    }
+
+    if {[lindex $filtered end] eq {}} {
+        incr last -2
+    } else {
+        incr last -1
+    }
+
+    return [concat [lrange $filtered 0 $last] [list {}]]
+}
