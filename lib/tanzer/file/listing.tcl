@@ -64,15 +64,16 @@ proc ::tanzer::file::listing::compareTypes {a b} {
 }
 
 proc ::tanzer::file::listing::compare {a b} {
-    set itemA [lindex $a 0]
-    set itemB [lindex $b 0]
-    set typeA [dict get [lindex $a 1] type]
-    set typeB [dict get [lindex $b 1] type]
+    set typeA [dict get $a type]
+    set typeB [dict get $b type]
 
     switch -- [::tanzer::file::listing::compareTypes $typeA $typeB] -1 {
         return -1
     } 0 {
-        return [string compare $itemA $itemB]
+        set nameA [dict get $a name]
+        set nameB [dict get $b name]
+
+        return [string compare $nameA $nameB]
     } 1 {
         return 1
     }
@@ -80,14 +81,36 @@ proc ::tanzer::file::listing::compare {a b} {
     return 0
 }
 
-proc ::tanzer::file::listing::items {dir} {
+proc ::tanzer::file::listing::items {localDir path} {
     set items [list]
 
-    foreach item [readdir $dir] {
-        set path "$dir/$item"
-        file stat $path itemSt
+    foreach name [concat .. [readdir $localDir]] {
+        set subpath [::tanzer::uri::filter [concat $path $name]]
 
-        lappend items [list $item [array get itemSt]]
+        if {$subpath eq {}} {
+            continue
+        }
+
+        set localPath "$localDir/$name"
+        file stat $localPath itemSt
+
+        set size [if {$itemSt(type) eq "file"} {
+            ::tanzer::file::listing::humanSize $itemSt(size)
+        } else {
+            list
+        }]
+
+        if {$itemSt(type) eq "directory"} {
+            lappend subpath {}
+            append  name "/"
+        }
+
+        lappend items [list \
+            type $itemSt(type) \
+            size $size \
+            name $name \
+            date [::tanzer::file::listing::humanTimestamp $itemSt(mtime)] \
+            uri  [::tanzer::uri::text $subpath]]
     }
 
     return [lsort -command ::tanzer::file::listing::compare $items]
@@ -97,7 +120,7 @@ proc ::tanzer::file::listing::items {dir} {
     superclass ::tanzer::response
 }
 
-::oo::define ::tanzer::file::listing constructor {request dir st} {
+::oo::define ::tanzer::file::listing constructor {request localDir st} {
     next 200 [list \
         Content-Type  "text/html" \
         Last-Modified [::tanzer::date::rfc2616 [dict get $st mtime]]]
@@ -111,12 +134,14 @@ proc ::tanzer::file::listing::items {dir} {
         return
     }
 
+    set path [$request path]
+
     my buffer [string map [list \
-        @dir [::tanzer::uri::text [$request path]] \
+        @path [::tanzer::uri::text $path] \
     ] {
         <html>
         <head>
-            <title>Directory listing for @dir</title>
+            <title>Directory listing for @path</title>
             <style type="text/css">
                 body {
                     font-family: "HelveticaNeue-Light", "Helvetica Neue", Helvetica;
@@ -197,7 +222,7 @@ proc ::tanzer::file::listing::items {dir} {
             </style>
         </head>
         <body>
-        <div class="tanzer-header">Directory listing for @dir</div>
+        <div class="tanzer-header">Directory listing for @path</div>
         <table class="tanzer-listing">
             <tr>
                 <th width="5%">Size</th>
@@ -213,24 +238,13 @@ proc ::tanzer::file::listing::items {dir} {
         1 "tanzer-file-odd"
     }
 
-    foreach item [::tanzer::file::listing::items $dir] {
-        set name   [lindex $item 0]
-        set itemSt [lindex $item 1]
-        set path   [concat [$request path] [list $name]]
-        set size   [::tanzer::file::listing::humanSize [dict get $itemSt size]]
-
-        if {[dict get $itemSt type] eq "directory"} {
-            append  name "/"
-            lappend path {}
-            set size ""
-        }
-
+    foreach item [::tanzer::file::listing::items $localDir $path] {
         my buffer [string map [list \
-            @size  $size \
-            @name  $name \
-            @date  [::tanzer::file::listing::humanTimestamp [dict get $itemSt mtime]] \
+            @size  [dict get $item size] \
+            @name  [dict get $item name] \
+            @date  [dict get $item date] \
+            @uri   [dict get $item uri] \
             @class $rowClasses($odd) \
-            @uri   [::tanzer::uri::text $path] \
         ] {
             <tr class="@class">
                 <td class="tanzer-size">@size</td>
