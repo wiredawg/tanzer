@@ -33,7 +33,9 @@ proc ::tanzer::uri::filter {parts} {
     for {set i 0} {$i < $count} {incr i} {
         set part [lindex $parts $i]
 
-        if {$part ne {} || $i == 0 || $i == $count - 1} {
+        if {$part eq ".."} {
+            set ret [lreplace $ret end end]
+        } elseif {$part ne {} || $i == 0 || $i == $count - 1} {
             lappend ret $part
         }
     }
