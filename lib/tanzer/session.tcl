@@ -107,8 +107,8 @@ namespace eval ::tanzer::session {
 # sessions.
 #
 ::oo::define ::tanzer::session method nextRequest {} {
-    my variable server sock buffer handler cleanup \
-        route request response remaining keepalive
+    my variable server sock buffer handler route \
+        request response remaining keepalive
 
     if {$remaining != 0} {
         ::tanzer::error throw 400 "Invalid request body length"
@@ -124,9 +124,10 @@ namespace eval ::tanzer::session {
         set response {}
     }
 
+    my cleanup
+
     set route   {}
     set handler {}
-    set cleanup {}
 
     fileevent $sock readable [list $server respond read $sock]
     fileevent $sock writable {}
