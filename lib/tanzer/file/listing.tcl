@@ -85,7 +85,7 @@ proc ::tanzer::file::listing::items {localDir path} {
     set items [list]
 
     foreach name [concat .. [readdir $localDir]] {
-        set subpath [::tanzer::uri::filter [concat $path $name]]
+        set subpath [::tanzer::uri::filter [concat $path [list $name]]]
 
         if {$subpath eq {}} {
             continue
