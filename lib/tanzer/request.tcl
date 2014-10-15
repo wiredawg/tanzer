@@ -6,47 +6,6 @@ package require TclOO
 
 namespace eval ::tanzer::request {}
 
-proc ::tanzer::request::hostMatches {host pattern} {
-    if {$host eq $pattern} {
-        return 1
-    }
-
-    set hostParts    [split $host    "."]
-    set patternParts [split $pattern "."]
-
-    set h [expr {[llength $hostParts   ] - 1}]
-    set p [expr {[llength $patternParts] - 1}]
-
-    while {$h >= 0} {
-        set hostPart    [lindex $hostParts    $h]
-        set patternPart [lindex $patternParts $p]
-
-        if {$patternPart eq "*"} {
-            if {$p != 0} {
-                error "Invalid pattern $pattern"
-            }
-
-            return 1
-        } elseif {$hostPart ne $patternPart} {
-            return 0
-        } else {
-            incr p -1
-        }
-
-        incr h -1
-    }
-
-    #
-    # If the host pattern contained no wildcard, and differs in number of
-    # components, then fail.
-    #
-    if {$h != $p} {
-        return 0
-    }
-
-    return 1
-}
-
 ::oo::class create ::tanzer::request {
     superclass ::tanzer::message
 }
@@ -130,6 +89,57 @@ proc ::tanzer::request::hostMatches {host pattern} {
     return $path
 }
 
+::oo::define ::tanzer::request method hostMatches {route} {
+    set host    [my host]
+    set pattern [$route host]
+
+    if {$host eq {}} {
+        #
+        # Force requests without Host: to go through a host route catch-all.
+        #
+        if {$pattern ne "*"} {
+            return 0
+        }
+    } elseif {$host eq $pattern} {
+        return 1
+    }
+
+    set hostParts    [split $host    "."]
+    set patternParts [split $pattern "."]
+
+    set h [expr {[llength $hostParts   ] - 1}]
+    set p [expr {[llength $patternParts] - 1}]
+
+    while {$h >= 0} {
+        set hostPart    [lindex $hostParts    $h]
+        set patternPart [lindex $patternParts $p]
+
+        if {$patternPart eq "*"} {
+            if {$p != 0} {
+                error "Invalid pattern $pattern"
+            }
+
+            return 1
+        } elseif {$hostPart ne $patternPart} {
+            return 0
+        } else {
+            incr p -1
+        }
+
+        incr h -1
+    }
+
+    #
+    # If the host pattern contained no wildcard, and differs in number of
+    # components, then fail.
+    #
+    if {$h != $p} {
+        return 0
+    }
+
+    return 1
+}
+
 ::oo::define ::tanzer::request method matches {route} {
     my variable params path
 
@@ -155,19 +165,8 @@ proc ::tanzer::request::hostMatches {host pattern} {
     #
     # Also bail if the host does not match.
     #
-    set host [my host]
-
-    if {$host eq {}} {
-        #
-        # Force requests without Host: to go through a host route catch-all.
-        #
-        if {[$route host] ne "*"} {
-            return 0
-        }
-    } elseif {$host ne {}} {
-        if {![::tanzer::request::hostMatches $host [$route host]]} {
-            return 0
-        }
+    if {![my hostMatches $route]} {
+        return 0
     }
 
     set pattern    [$route pattern]
