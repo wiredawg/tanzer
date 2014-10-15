@@ -269,7 +269,7 @@ proc ::tanzer::message::field {name} {
         set name  [::tanzer::message::field $name]
         set value [lindex $args 0]
 
-        lappend headers $name $value
+        dict set headers $name $value
 
         return [list $name $value]
     }

@@ -103,71 +103,16 @@ proc ::tanzer::file::mimeType {path} {
     return
 }
 
-::oo::define ::tanzer::file method serve {session} {
-    my variable config path st
+::oo::define ::tanzer::file method headers {} {
+    my variable st
 
-    #
-    # Ensure the session object can cleanup the current file state if need
-    # be.
-    #
-    $session cleanup [self] destroy
+    set headers [dict create]
 
-    set request [$session request]
-    set method  [$request method]
+    dict set headers Content-Type   [my mimeType]
+    dict set headers Content-Length $st(size)
+    dict set headers Etag           "\"[my etag]\""
+    dict set headers Accept-Ranges  "bytes"
+    dict set headers Last-Modified  [::tanzer::date::rfc2616 $st(mtime)]
 
-    #
-    # If a Range: header was specified, then endeavor to serve up ranges for
-    # each write ready event.
-    #
-    if {[$request headerExists Range]} {
-        my serve $session
-
-        return
-    }
-
-    set response [::tanzer::response new 200]
-    set etag     [my etag]
-    set serve    1
-
-    $response header Content-Type   [my mimeType]
-    $response header Etag           "\"$etag\""
-    $response header Accept-Ranges  "bytes"
-    $response header Last-Modified  [::tanzer::date::rfc2616 $st(mtime)]
-
-    if {[$request headerExists If-Match]} {
-        if {![my matches [$request header If-Match]]} {
-            $response status 412
-            set serve 0
-        }
-    } elseif {[$request headerExists If-None-Match]} {
-        if {[my matches [$request header If-None-Match]]} {
-            $response status 304
-            set serve 0
-        }
-    }
-
-    if {!$serve} {
-        $response header Content-Length 0
-
-        $session send $response
-        $session nextRequest
-
-        return
-    }
-
-    $response header Content-Length $st(size)
-
-    if {$method eq "GET"} {
-        $session send $response
-        $session delegate [self] stream
-
-        return
-    } elseif {$method eq "HEAD"} {
-        $session send $response
-        $session nextRequest
-
-        return
-    }
-
-    ::tanzer::error throw 405 "Method $method unsupported"
+    return $headers
 }

@@ -75,19 +75,56 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::file::handler method serve {session localPath st} {
-    my variable config
+    set config   [$session config]
+    set request  [$session request]
+    set method   [$request method]
+    set range    [$request headerExists Range]
+    set response [::tanzer::response new [expr {$range? 206: 200}]]
+    set serve    1
 
-    set request [$session request]
+    switch -- $method "GET" {#} "HEAD" {
+        if {$range} {
+            ::tanzer::error throw 405 "Invalid request method with Range:"
+        }
 
-    if {[$request headerExists Range]} {
-        set file [::tanzer::file::partial new \
-            $localPath $st [$session config] $request]
-    } else {
-        set file [::tanzer::file new \
-            $localPath $st [$session config]]
+        set serve 0
+    } default {
+        ::tanzer::error throw 400 "Unsupported method $method"
     }
 
-    $file serve $session
+    set file [if {$range} {
+        ::tanzer::file::partial new $localPath $st $config $request
+    } else {
+        ::tanzer::file new $localPath $st $config
+    }]
+
+    $response headers [$file headers]
+
+    if {[$request headerExists If-Match]} {
+        if {![$file matches [$request header If-Match]]} {
+            $response status 412
+            $response header Content-Length 0
+            set serve 0
+        }
+    } elseif {[$request headerExists If-None-Match]} {
+        if {[$file matches [$request header If-None-Match]]} {
+            $response status 304
+            $response header Content-Length 0
+            set serve 0
+        }
+    }
+
+    $session send $response
+
+    if {$serve} {
+        $session cleanup  $file destroy
+        $session delegate $file stream
+    } else {
+        $session nextRequest
+        $file destroy
+    }
+
+    return
 }
 
 ::oo::define ::tanzer::file::handler method index {session localPath st} {
@@ -143,7 +180,7 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::file::handler method respond {event session data} {
-    my variable config files
+    my variable config
 
     if {$event ne "write"} {
         return

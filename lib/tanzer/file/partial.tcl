@@ -149,61 +149,18 @@ package require TclOO
     return $length
 }
 
-::oo::define ::tanzer::file::partial method serve {session} {
-    my variable config path st fragments
+::oo::define ::tanzer::file::partial method headers {} {
+    set headers [next]
 
-    $session cleanup [self] destroy
+    dict set headers Content-Length [my contentLength]
 
-    set request [$session request]
-    set method  [$request method]
-
-    if {$method ne "GET"} {
-        ::tanzer::error throw 405 "Invalid request method with Range:"
-    }
-
-    set response [::tanzer::response new 206]
-    set etag     [my etag]
-    set serve    1
-
-    $response header Etag           "\"$etag\""
-    $response header Accept-Ranges  "bytes"
-    $response header Last-Modified  [::tanzer::date::rfc2616 $st(mtime)]
-
-    if {[$request headerExists If-Match]} {
-        if {![my matches [$request header If-Match]]} {
-            set serve 0
-            $response status 412
-        }
-    } elseif {[$request headerExists If-None-Match]} {
-        if {![my matches [$request header If-None-Match]]} {
-            $response status 304
-            set serve 0
-        }
-    }
-
-    if {!$serve} {
-        $session header Content-Length 0
-
-        $session send $response
-        $session nextRequest
-
-        return
-    }
-
-    $response header Content-Length [my contentLength]
-
-    #
-    # If there is only one range specified, then do not split the response
-    # message into multiple fragments.
-    #
     if {[my multipart]} {
-        $response header Content-Type \
+        dict set headers Content-Type \
             "multipart/byteranges; boundary=$::tanzer::file::fragment::boundary"
     } else {
-        $response header Content-Type  [my mimeType]
-        $response header Content-Range [[my fragment] contentRange]
+        dict set headers Content-Type  [my mimeType]
+        dict set headers Content-Range [[my fragment] contentRange]
     }
 
-    $session delegate [self] stream
-    $session send $response
+    return $headers
 }
