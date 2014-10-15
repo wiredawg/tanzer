@@ -82,6 +82,14 @@ package require TclOO
     set response [::tanzer::response new [expr {$range? 206: 200}]]
     set serve    1
 
+    set file [if {$range} {
+        ::tanzer::file::partial new $localPath $st $config $request
+    } else {
+        ::tanzer::file new $localPath $st $config
+    }]
+
+    $session cleanup $file destroy
+
     switch -- $method "GET" {#} "HEAD" {
         if {$range} {
             ::tanzer::error throw 405 "Invalid request method with Range:"
@@ -92,11 +100,9 @@ package require TclOO
         ::tanzer::error throw 400 "Unsupported method $method"
     }
 
-    set file [if {$range} {
-        ::tanzer::file::partial new $localPath $st $config $request
-    } else {
-        ::tanzer::file new $localPath $st $config
-    }]
+    if {[$request length]} {
+        ::tanzer::error throw 415 "Request bodies not allowed for file reads"
+    }
 
     $response headers [$file headers]
 
@@ -117,11 +123,9 @@ package require TclOO
     $session send $response
 
     if {$serve} {
-        $session cleanup  $file destroy
         $session delegate $file stream
     } else {
         $session nextRequest
-        $file destroy
     }
 
     return
@@ -188,22 +192,6 @@ package require TclOO
 
     set request [$session request]
     set route   [$session route]
-
-    #
-    # Send an error if the client is trying to send file data.
-    #
-    if {[$request length]} {
-        ::tanzer::error throw 415 "Request bodies not allowed for file reads"
-    }
-
-    switch [$request method] {
-        GET -
-        HEAD {}
-
-        default {
-            ::tanzer::error throw 405 "Unsupported method for request"
-        }
-    }
 
     set localPath [my resolve $request $route]
 
