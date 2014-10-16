@@ -2,7 +2,6 @@
 
 package require tanzer
 package require tanzer::http
-package require tanzer::response
 package require tanzer::file::handler
 package require tanzer::cgi::handler
 

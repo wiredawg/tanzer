@@ -2,19 +2,30 @@
 
 package require tanzer
 package require tanzer::scgi
-package require tanzer::response
 package require tanzer::file::handler
+package require tanzer::cgi::handler
 
-::tanzer::server create server {
-    port  1337
-    proto "scgi"
+proc usage {} {
+    puts stderr "usage: $::argv0 port root"
+    exit 1
 }
 
-server route * /* xantronix.local [::tanzer::file::handler new {
-    root     /var/www/xantronix.net/doc
-    static   /var/www/xantronix.net/doc
-    listings 1
-}] respond
+if {$argc != 2} {
+    usage
+}
 
-server listen
+set port [lindex $::argv 0]
+set root [lindex $::argv 1]
+
+set server [::tanzer::server new [list \
+    port  $port \
+    proto "scgi" \
+]]
+
+$server route * /* * [::tanzer::file::handler new [list \
+    root     $root \
+    listings 1 \
+]] respond
+
+$server listen
 vwait forever
