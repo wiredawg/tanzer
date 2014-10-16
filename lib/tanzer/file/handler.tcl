@@ -98,12 +98,26 @@ package require TclOO
 
     $response headers [$file headers]
 
-    foreach {precondition failStatus} {
+    #
+    # If this is a Range: request, then check to see any If-Range: precondition
+    # matches, and set the status to 200 and serve the whole file if not.
+    #
+    if {$range && [$file mismatched]} {
+        $response status 200
+    }
+
+    #
+    # If any preconditions are present and fail, then modify the status and do
+    # not send a response body.
+    #
+    set preconditions {
                   match 412
               noneMatch 304
           modifiedSince 412
         unmodifiedSince 304
-    } {
+    }
+
+    foreach {precondition failStatus} $preconditions {
         if {![$file $precondition $request]} {
             $response status $failStatus
             $response header Content-Length 0

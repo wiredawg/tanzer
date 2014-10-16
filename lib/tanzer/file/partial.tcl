@@ -10,14 +10,21 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::file::partial constructor {_path _st _config request} {
-    my variable fragments st multipart
+    my variable fragments st multipart mismatched
 
     next $_path $_st $_config
 
-    set fragments [::tanzer::file::fragment::parseRangeRequest \
-        $request $st(size) [my mimeType]]
+    set mismatched [expr {![my rangeMatch $request]}]
 
-    set multipart [expr {[llength $fragments] > 1}]
+    if {$mismatched} {
+        set fragments {}
+        set multipart 0
+    } else {
+        set fragments [::tanzer::file::fragment::parseRangeRequest \
+            $request $st(size) [my mimeType]]
+
+        set multipart  [expr {[llength $fragments] > 1}]
+    }
 }
 
 ::oo::define ::tanzer::file::partial destructor {
@@ -25,7 +32,7 @@ package require TclOO
 
     next
 
-    if {$fragments eq {}} {
+    if {[llength $fragments] == 0} {
         return
     }
 
@@ -80,8 +87,32 @@ package require TclOO
     return [expr {[llength $fragments] == 1}]
 }
 
+::oo::define ::tanzer::file::partial method rangeMatch {request} {
+    if {![$request headerExists If-Range]} {
+        return 1
+    }
+
+    set value [$request header If-Range]
+
+    return [expr {[my entityMatches $value] || ![my entityNewerThan $value]}]
+}
+
+::oo::define ::tanzer::file::partial method mismatched {} {
+    my variable mismatched
+
+    return $mismatched
+}
+
 ::oo::define ::tanzer::file::partial method stream {event session data} {
-    my variable config fh fragments
+    my variable config fh fragments mismatched
+
+    #
+    # If any present If-Range: precondition failed, then we need to serve the
+    # whole entity body.
+    #
+    if {$mismatched} {
+        return [next $event $session $data]
+    }
 
     set fragment [my fragment]
 
@@ -132,7 +163,16 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::file::partial method contentLength {} {
-    my variable fragments
+    my variable fragments mismatched
+
+    #
+    # If the request for which this file was opened fails an If-Range:
+    # precondition, then use the content length reported by ::tanzer::file
+    # instead.
+    #
+    if {$mismatched} {
+        return [next]
+    }
 
     if {![my multipart]} {
         set fragment [my fragment]
@@ -154,7 +194,17 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::file::partial method headers {} {
+    my variable mismatched
+
     set headers [next]
+
+    #
+    # If the request for which this file was opened fails an If-Range:
+    # precondition, then do not override the headers set in ::tanzer::file.
+    #
+    if {$mismatched} {
+        return $headers
+    }
 
     dict set headers Content-Length [my contentLength]
 
