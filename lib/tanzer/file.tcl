@@ -94,6 +94,12 @@ proc ::tanzer::file::mimeType {path} {
     return [expr {$etag eq "*" || $etag eq [my etag]}]
 }
 
+::oo::define ::tanzer::file method entityNewerThan {rfc2616} {
+    my variable st
+
+    return [expr {$st(mtime) > [::tanzer::date::epoch $rfc2616]}]
+}
+
 ::oo::define ::tanzer::file method match {request} {
     if {![$request headerExists If-Match]} {
         return 1
