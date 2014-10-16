@@ -98,14 +98,14 @@ package require TclOO
 
     $response headers [$file headers]
 
-    foreach {precondition newStatus} {
+    foreach {precondition failStatus} {
                   match 412
               noneMatch 304
           modifiedSince 412
         unmodifiedSince 304
     } {
         if {![$file $precondition $request]} {
-            $response status $newStatus
+            $response status $failStatus
             $response header Content-Length 0
 
             set serve 0
