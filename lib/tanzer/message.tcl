@@ -303,10 +303,16 @@ proc ::tanzer::message::field {name} {
     error "Invalid arguments"
 }
 
-::oo::define ::tanzer::message method headerExists {key} {
+::oo::define ::tanzer::message method headerExists {args} {
     my variable headers
 
-    return [dict exists $headers $key]
+    foreach key $args {
+        if {[dict exists $headers $key]} {
+            return 1
+        }
+    }
+
+    return 0
 }
 
 ::oo::define ::tanzer::message method length {} {
