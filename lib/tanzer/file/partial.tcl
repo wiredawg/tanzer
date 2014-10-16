@@ -25,6 +25,10 @@ package require TclOO
 
     next
 
+    if {$fragments eq {}} {
+        return
+    }
+
     foreach fragment $fragments {
         $fragment destroy
     }
