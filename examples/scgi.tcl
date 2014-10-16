@@ -27,5 +27,5 @@ $server route * /* * [::tanzer::file::handler new [list \
     listings 1 \
 ]] respond
 
-socket -server [list $server accept] $port
+$server listen
 vwait forever

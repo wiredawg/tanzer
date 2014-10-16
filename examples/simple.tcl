@@ -55,13 +55,12 @@ proc simpleResponder {event session data} {
     }
 }
 
-set port 8080
-
 set server [::tanzer::server new {
+    port  8080
     proto "http"
 }]
 
-$server route GET /* "localhost:$port" simpleResponder
+$server route GET /* localhost:8080 simpleResponder
 
-socket -server [list $server accept] $port
+$server listen
 vwait forever
