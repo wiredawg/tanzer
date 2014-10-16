@@ -20,4 +20,5 @@ package ifneeded tanzer::file::listing  0.0.1 [list source [file join $dir tanze
 package ifneeded tanzer::http           0.0.1 [list source [file join $dir tanzer/http.tcl]]
 package ifneeded tanzer::http::request  0.0.1 [list source [file join $dir tanzer/http/request.tcl]]
 package ifneeded tanzer::scgi           0.0.1 [list source [file join $dir tanzer/scgi.tcl]]
+package ifneeded tanzer::scgi::handler  0.0.1 [list source [file join $dir tanzer/scgi/handler.tcl]]
 package ifneeded tanzer::scgi::request  0.0.1 [list source [file join $dir tanzer/scgi/request.tcl]]

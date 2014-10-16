@@ -144,7 +144,6 @@ proc ::tanzer::file::mimeType {path} {
     if {[eof $fh]} {
         $session nextRequest
         my destroy
-        return
     }
 
     return

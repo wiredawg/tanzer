@@ -149,12 +149,12 @@ proc ::tanzer::message::field {name} {
             set responseParts [regexp -all -inline {\S+} $line]
             set partCount     [llength $responseParts]
 
-            if {$partCount > 3 || $partCount < 2} {
+            if {$partCount < 2} {
                 ::tanzer::error throw 500 "Malformed HTTP response"
             }
 
-            set version [$lindex $responseParts 0]
-            set status  [$lindex $responseParts 1]
+            set version [lindex $responseParts 0]
+            set status  [lindex $responseParts 1]
         } elseif {[regexp -nocase {^(?:[a-z]+)\s+} $line {}]} {
             if {!$opts(request) || $action ne {} || $index != 0} {
                 ::tanzer::error throw $opts(errorStatus) $opts(errorMessage)

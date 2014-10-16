@@ -158,6 +158,10 @@ namespace eval ::tanzer::server {
         }
 
         if {[::tanzer::error servable $e]} {
+            if {[::tanzer::error status $e] >= 500} {
+                $logger err [self] $e
+            }
+
             set response [::tanzer::error response $e]
         } else {
             $logger err [self] $e

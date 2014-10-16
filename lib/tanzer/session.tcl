@@ -221,7 +221,7 @@ namespace eval ::tanzer::session {
         # to the handler as a read event, and subsequently trim the buffer
         # to only the parts we need.
         #
-        set start  [expr {[$request headerLength] + 3}]
+        set start  [expr {[$request headerLength] + 4}]
         set end    [expr {$start + $remaining + 1}]
         set data   [string range $buffer $start $end]
         set buffer [string range $buffer $end end]
@@ -359,7 +359,7 @@ namespace eval ::tanzer::session {
 }
 
 ::oo::define ::tanzer::session method send {_response} {
-    my variable server sock response
+    my variable server sock response keepalive
 
     if {$response ne {}} {
         error "Already sent response"
@@ -368,6 +368,10 @@ namespace eval ::tanzer::session {
     $_response write $sock
 
     $server log [self] $_response
+
+    if {![$_response keepalive] || [$_response length] == 0} {
+        set keepalive 0
+    }
 
     set response $_response
 }

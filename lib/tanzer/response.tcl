@@ -38,7 +38,7 @@ proc ::tanzer::response::lookup {status} {
 ::oo::define ::tanzer::response constructor {_status args} {
     my variable version status headers data
 
-    next
+    next -response
 
     set version $::tanzer::message::defaultVersion
     set status  $_status
