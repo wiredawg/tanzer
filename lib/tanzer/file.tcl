@@ -105,7 +105,7 @@ proc ::tanzer::file::mimeType {path} {
         return 1
     }
 
-    return [expr {[my entityMatches [$request header If-Match]]}]
+    return [my entityMatches [$request header If-Match]]
 }
 
 ::oo::define ::tanzer::file method noneMatch {request} {
@@ -117,25 +117,19 @@ proc ::tanzer::file::mimeType {path} {
 }
 
 ::oo::define ::tanzer::file method modifiedSince {request} {
-    my variable st
-
     if {![$request headerExists If-Modified-Since]} {
         return 1
     }
 
-    return [expr {$st(mtime) > [::tanzer::date::epoch \
-        [$request header If-Modified-Since]]}]
+    return [my entityNewerThan [$request header If-Modified-Since]]
 }
 
 ::oo::define ::tanzer::file method unmodifiedSince {request} {
-    my variable st
-
     if {![$request headerExists If-Unmodified-Since]} {
         return 1
     }
 
-    return [expr {$st(mtime) <= [::tanzer::date::epoch \
-        [$request header If-Unmodified-Since]]}]
+    return [expr {![my entityNewerThan [$request header If-Unmodified-Since]]}]
 }
 
 ::oo::define ::tanzer::file method stream {event session data} {
