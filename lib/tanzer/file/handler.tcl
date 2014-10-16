@@ -98,17 +98,19 @@ package require TclOO
 
     $response headers [$file headers]
 
-    if {[$request headerExists If-Match]} {
-        if {![$file matches [$request header If-Match]]} {
-            $response status 412
+    foreach {precondition newStatus} {
+                  match 412
+              noneMatch 304
+          modifiedSince 412
+        unmodifiedSince 304
+    } {
+        if {![$file $precondition $request]} {
+            $response status $newStatus
             $response header Content-Length 0
+
             set serve 0
-        }
-    } elseif {[$request headerExists If-None-Match]} {
-        if {[$file matches [$request header If-None-Match]]} {
-            $response status 304
-            $response header Content-Length 0
-            set serve 0
+
+            break
         }
     }
 

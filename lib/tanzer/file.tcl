@@ -28,7 +28,7 @@ proc ::tanzer::file::mimeType {path} {
 ::oo::class create ::tanzer::file
 
 ::oo::define ::tanzer::file constructor {_path _st _config} {
-    my variable path fh st config
+    my variable config path fh st etag
 
     set required {
         readBufferSize
@@ -43,6 +43,7 @@ proc ::tanzer::file::mimeType {path} {
     }
 
     set       path $_path
+    set       etag {}
     array set st   $_st
 
     if {$st(type) ne "file"} {
@@ -75,18 +76,60 @@ proc ::tanzer::file::mimeType {path} {
 }
 
 ::oo::define ::tanzer::file method etag {} {
-    my variable path st
+    my variable path st etag
 
-    return [::sha1::sha1 -hex [concat \
-        $path $st(mtime) $st(ino)]]
+    if {$etag ne {}} {
+        return $etag
+    }
+
+    return [set etag [::sha1::sha1 -hex [concat \
+        $path $st(mtime) $st(ino)]]]
 }
 
-::oo::define ::tanzer::file method matches {etag} {
+::oo::define ::tanzer::file method entityMatches {etag} {
     if {[regexp {^"([^\"]+)"$} $etag {} quoted]} {
         set etag $quoted
     }
 
     return [expr {$etag eq "*" || $etag eq [my etag]}]
+}
+
+::oo::define ::tanzer::file method match {request} {
+    if {![$request headerExists If-Match]} {
+        return 1
+    }
+
+    return [expr {[my entityMatches [$request header If-Match]]}]
+}
+
+::oo::define ::tanzer::file method noneMatch {request} {
+    if {![$request headerExists If-None-Match]} {
+        return 1
+    }
+
+    return [expr {![my entityMatches [$request header If-None-Match]]}]
+}
+
+::oo::define ::tanzer::file method modifiedSince {request} {
+    my variable st
+
+    if {![$request headerExists If-Modified-Since]} {
+        return 1
+    }
+
+    return [expr {$st(mtime) > [::tanzer::date::epoch \
+        [$request header If-Modified-Since]]}]
+}
+
+::oo::define ::tanzer::file method unmodifiedSince {request} {
+    my variable st
+
+    if {![$request headerExists If-Unmodified-Since]} {
+        return 1
+    }
+
+    return [expr {$st(mtime) <= [::tanzer::date::epoch \
+        [$request header If-Unmodified-Since]]}]
 }
 
 ::oo::define ::tanzer::file method stream {event session data} {
