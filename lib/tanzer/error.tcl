@@ -3,7 +3,8 @@ package require tanzer::response
 
 namespace eval ::tanzer::error {
     namespace ensemble create
-    namespace export new throw try response run servable
+    namespace export   new throw try fatal response run servable
+    variable  fatal    "The server was unable to fulfill your request."
 }
 
 proc ::tanzer::error::new {status msg} {
@@ -15,7 +16,7 @@ proc ::tanzer::error::throw {status msg} {
 }
 
 proc ::tanzer::error::run {script} {
-    if {[catch {set ret [uplevel 1 $script]} error]} {
+    if {[catch {uplevel 1 $script} error]} {
         set type  [lindex $::errorCode 0]
         set errno [lindex $::errorCode 1]
         set msg   [lindex $::errorCode 2]
@@ -28,12 +29,10 @@ proc ::tanzer::error::run {script} {
             } EPERM {
                 ::tanzer::error throw 403 $msg
             } default {
-                ::tanzer::error throw 500 $error
+                error $error
             }
         }
     }
-
-    return $ret
 }
 
 proc ::tanzer::error::servable {error} {
@@ -54,6 +53,10 @@ proc ::tanzer::error::try {script catch ename catchBlock} {
     }
 
     return $ret
+}
+
+proc ::tanzer::error::fatal {} {
+    return [::tanzer::error new 500 $::tanzer::error::fatal]
 }
 
 proc ::tanzer::error::response {error} {
