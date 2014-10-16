@@ -29,7 +29,7 @@ proc ::tanzer::error::run {script} {
             } EPERM {
                 ::tanzer::error throw 403 $msg
             } default {
-                error $error
+                error $::errorInfo
             }
         }
     }
