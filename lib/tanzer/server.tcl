@@ -160,10 +160,10 @@ namespace eval ::tanzer::server {
         if {[::tanzer::error servable $e]} {
             set response [::tanzer::error response $e]
         } else {
+            $logger err [self] $e
+
             set response [::tanzer::error response [::tanzer::error fatal]]
         }
-
-        $logger err [self] $e
 
         $session send $response
 
