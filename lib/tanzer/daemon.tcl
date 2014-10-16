@@ -12,9 +12,9 @@ package require TclOO
         roots listings programs aliases
 
     set server [::tanzer::server new [list \
-        port  [dict get $config port] \
         proto [dict get $config proto]]]
 
+    set port  [dict get $config port]
     set sites [list]
 
     array set roots    {}
@@ -98,8 +98,8 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::daemon method run {} {
-    my variable server
+    my variable server port
 
-    $server listen
+    socket -server [list $server accept] $port
     vwait forever
 }

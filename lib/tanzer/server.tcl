@@ -21,7 +21,6 @@ namespace eval ::tanzer::server {
 
     array set config {
         readBufferSize 4096
-        port           1337
         proto          "scgi"
     }
 
@@ -190,16 +189,4 @@ namespace eval ::tanzer::server {
     set sessions($sock) $session
 
     return
-}
-
-::oo::define ::tanzer::server method listen {} {
-    my variable config
-
-    socket -server [list [self] accept] $config(port)
-}
-
-::oo::define ::tanzer::server method port {} {
-    my variable config
-
-    return $config(port)
 }
