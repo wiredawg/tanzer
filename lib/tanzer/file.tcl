@@ -132,6 +132,10 @@ proc ::tanzer::file::mimeType {path} {
     return [expr {![my entityNewerThan [$request header If-Unmodified-Since]]}]
 }
 
+::oo::define ::tanzer::file method mismatched {} {
+    return 0
+}
+
 ::oo::define ::tanzer::file method stream {event session data} {
     my variable fh config
 
