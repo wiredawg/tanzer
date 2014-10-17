@@ -181,8 +181,7 @@ namespace eval ::tanzer::server {
     fconfigure $sock \
         -translation binary \
         -blocking    0 \
-        -buffering   full \
-        -buffersize  $config(readBufferSize)
+        -buffering   none
 
     set session [::tanzer::session create \
         ::tanzer::session-$sock [self] $sock $config(proto)]

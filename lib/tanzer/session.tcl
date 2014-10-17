@@ -132,8 +132,6 @@ namespace eval ::tanzer::session {
     fileevent $sock readable [list $server respond read $sock]
     fileevent $sock writable {}
 
-    flush $sock
-
     #
     # Determine if we need to kill the session posthaste.
     #
