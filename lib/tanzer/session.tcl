@@ -223,7 +223,7 @@ namespace eval ::tanzer::session {
         # to only the parts we need.
         #
         set start  [expr {[$request headerLength] + 4}]
-        set end    [expr {$start + $remaining + 1}]
+        set end    [expr {$start + $remaining}]
         set data   [string range $buffer $start $end]
         set buffer [string range $buffer $end end]
     }
