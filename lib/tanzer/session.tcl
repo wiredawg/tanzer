@@ -25,7 +25,7 @@ namespace eval ::tanzer::session {
     set response  {}
     set buffer    ""
     set remaining 0
-    set keepalive 5
+    set keepalive 1
     set active    0
     set watchdog  [after [expr {$::tanzer::session::timeout * 1000}] \
         [self] ping]
@@ -134,7 +134,10 @@ namespace eval ::tanzer::session {
 
     flush $sock
 
-    if {[incr keepalive -1] <= 0} {
+    #
+    # Determine if we need to kill the session posthaste.
+    #
+    if {!$keepalive || [eof $sock]} {
         my destroy
 
         return
