@@ -324,12 +324,22 @@ proc ::tanzer::message::field {name} {
 }
 
 ::oo::define ::tanzer::message method keepalive {} {
-    if {[my headerExists Connection]} {
-        set value [my header Connection]
+    #
+    # It's unknown if we want to keep the session alive, so let's let the
+    # session handler sort those details out.
+    #
+    if {![my headerExists Connection]} {
+        return 1
+    }
 
-        switch -nocase -- [my header Connection] Keep-Alive {
-            return 1
-        }
+    #
+    # Otherwise, if a value does exist, then if it explicitly indicates that
+    # the session is to be kept alive, then say "yes".  Otherwise, no.
+    #
+    set value [my header Connection]
+
+    switch -nocase -- [my header Connection] Keep-Alive {
+        return 1
     }
 
     return 0
