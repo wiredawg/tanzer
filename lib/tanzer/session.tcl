@@ -4,7 +4,7 @@ package require tanzer::error
 package require TclOO
 
 namespace eval ::tanzer::session {
-    variable timeout 15
+    variable timeout 5
 }
 
 ::oo::class create ::tanzer::session
