@@ -171,12 +171,6 @@ namespace eval ::tanzer::scgi::request {
     set remaining [expr {
         [string length $buffer] - [my headerLength] - [my length]}]
 
-    puts "Got buffer '$buffer'"
-    puts "Got buffer length [string length $buffer]"
-    puts "Got header length [my headerLength]"
-    puts "Got request length [my length]"
-    puts "Got remaining $remaining"
-
     if {$remaining < 0} {
         ::tanzer::error throw 400 "Request body too long"
     } elseif {$remaining > 0} {
