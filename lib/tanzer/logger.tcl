@@ -11,6 +11,13 @@ proc ::tanzer::logger::format {subcommand args} {
         set session [lindex $args 1]
         set request [$session request]
 
+        #
+        # TODO: Figure out how to log these sorts of events
+        #
+        if {$request eq {}} {
+            return
+        }
+
         if {[llength $args] == 3} {
             set response [lindex $args 2]
         } else {
