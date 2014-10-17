@@ -48,8 +48,12 @@ proc ::tanzer::response::lookup {status} {
     if {[llength $args] > 0} {
         my headers [lindex $args 0]
     }
+}
 
-    my header Server "$::tanzer::server::name/$::tanzer::server::version"
+::oo::define ::tanzer::response method version {} {
+    my variable version
+
+    return $version
 }
 
 ::oo::define ::tanzer::response method status {args} {
@@ -74,27 +78,4 @@ proc ::tanzer::response::lookup {status} {
     my variable data
 
     append data $_data
-}
-
-::oo::define ::tanzer::response method write {sock} {
-    my variable version status headers data
-
-    puts -nonewline $sock [format "%s %d %s\r\n" \
-        $version $status [::tanzer::response::lookup $status]]
-
-    set len [string length $data]
-
-    if {$len > 0} {
-        my header Content-Length $len
-    }
-
-    foreach {name value} $headers {
-        puts -nonewline $sock "[::tanzer::message::field $name]: $value\r\n"
-    }
-
-    puts -nonewline $sock "\r\n"
-
-    if {$len > 0} {
-        puts -nonewline $sock $data
-    }
 }

@@ -48,6 +48,8 @@ proc ::tanzer::message::field {name} {
     if {[llength $args] > 0} {
         my config {*}$args
     }
+
+    my header Server "$::tanzer::server::name/$::tanzer::server::version"
 }
 
 ::oo::define ::tanzer::message method config {args} {
@@ -343,4 +345,34 @@ proc ::tanzer::message::field {name} {
     }
 
     return 0
+}
+
+::oo::define ::tanzer::message method send {sock} {
+    my variable opts headers data
+
+    if {$opts(request)} {
+        puts -nonewline $sock [format "%s %s %s\r\n" \
+            [my method] [my uri] [my version]]
+    } elseif {$opts(response)} {
+        set status [my status]
+
+        puts -nonewline $sock [format "%s %d %s\r\n" \
+            [my version] $status [::tanzer::response::lookup $status]]
+    }
+
+    set len [string length $data]
+
+    if {$len > 0} {
+        my header Content-Length $len
+    }
+
+    foreach {name value} $headers {
+        puts -nonewline $sock "[::tanzer::message::field $name]: $value\r\n"
+    }
+
+    puts -nonewline $sock "\r\n"
+
+    if {$len > 0} {
+        puts -nonewline $sock $data
+    }
 }
