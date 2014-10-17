@@ -214,10 +214,6 @@ namespace eval ::tanzer::cgi::handler {
         return
     }
 
-    if {![$response keepalive]} {
-        $session keepalive 0
-    }
-
     #
     # Let's see if we've received a reasonable header to determine what sort
     # of response status to send off.
@@ -238,15 +234,6 @@ namespace eval ::tanzer::cgi::handler {
         # Send a 301 Redirect if the CGI program indicated a Location: header.
         #
         $response status 301
-    }
-
-    #
-    # On the other hand, we need to check if we actually know the length of the
-    # response.  If we don't, then we should tell the session to die after
-    # servicing this request, because the client will likely expect more data.
-    #
-    if {![$response headerExists Content-Length]} {
-        $session keepalive 0
     }
 
     #
