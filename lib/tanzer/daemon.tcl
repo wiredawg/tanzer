@@ -64,7 +64,7 @@ package require TclOO
 
         foreach program $programs($site) {
             set handler [list [::tanzer::cgi::handler new [dict create \
-                root $roots($site) {*}$program]] respond]
+                root $roots($site) {*}$program]]]
 
             lappend handlers($site) $handler
 
@@ -73,7 +73,7 @@ package require TclOO
 
         set handler [list [::tanzer::file::handler new [dict create \
             root $roots($site) \
-            listings $listings($site)]] respond]
+            listings $listings($site)]]]
 
         lappend handlers($site) $handler
 

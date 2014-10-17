@@ -191,12 +191,12 @@ package require TclOO
     $session nextRequest
 }
 
-::oo::define ::tanzer::file::handler method respond {event session data} {
-    my variable config
+::oo::define ::tanzer::file::handler method read {session data} {
+    return
+}
 
-    if {$event ne "write"} {
-        return
-    }
+::oo::define ::tanzer::file::handler method write {session data} {
+    my variable config
 
     set request [$session request]
     set route   [$session route]

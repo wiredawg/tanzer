@@ -159,8 +159,8 @@ namespace eval ::tanzer::cgi::handler {
     return
 }
 
-::oo::define ::tanzer::cgi::handler method respond {event session data} {
-    my variable config pipes buffers responses
+::oo::define ::tanzer::cgi::handler method read {session data} {
+    my variable pipes responses
 
     if {[array get pipes $session] eq {}} {
         my open $session
@@ -171,15 +171,20 @@ namespace eval ::tanzer::cgi::handler {
     set in       [dict get $pipe in]
     set out      [dict get $pipe out]
 
-    if {$event eq "read"} {
-        puts -nonewline $in $data
+    puts -nonewline $in $data
+}
 
-        return
+::oo::define ::tanzer::cgi::handler method write {session data} {
+    my variable pipes buffers responses
+
+    if {[array get pipes $session] eq {}} {
+        my open $session
     }
 
-    if {$event ne "write"} {
-        error "Invalid event $event"
-    }
+    set pipe     $pipes($session)
+    set response $responses($session)
+    set in       [dict get $pipe in]
+    set out      [dict get $pipe out]
 
     set size [$session config readBufferSize]
     set sock [$session sock]

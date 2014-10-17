@@ -25,7 +25,7 @@ set server [::tanzer::server new [list \
 $server route * /* * [::tanzer::file::handler new [list \
     root     $root \
     listings 1 \
-]] respond
+]]
 
 $server listen
 vwait forever

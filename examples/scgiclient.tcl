@@ -14,7 +14,7 @@ $server route GET /* * [::tanzer::scgi::handler new {
     host "localhost"
     port 1337
     name "/"
-}] respond
+}]
 
 $server listen
 vwait forever

@@ -142,25 +142,20 @@ namespace eval ::tanzer::scgi::handler {
     return
 }
 
-::oo::define ::tanzer::scgi::handler method respond {event session data} {
-    my variable config socks buffers \
-        bodies requested responses
+::oo::define ::tanzer::scgi::handler method read {session data} {
+    my variable socks bodies
 
     if {[array get socks $session] eq {}} {
         my open $session
     }
 
+    append bodies($session) $data
+}
+
+::oo::define ::tanzer::scgi::handler method write {session data} {
+    my variable socks buffers requested responses
+
     set response $responses($session)
-
-    if {$event eq "read"} {
-        append bodies($session) $data
-
-        return
-    }
-
-    if {$event ne "write"} {
-        error "Invalid event $event"
-    }
 
     #
     # If we have not forwarded the HTTP request to the SCGI service, then do
