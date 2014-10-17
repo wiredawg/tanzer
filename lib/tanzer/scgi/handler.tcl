@@ -210,8 +210,8 @@ namespace eval ::tanzer::scgi::handler {
     # Now, send off everything that's left over in the buffer, after the
     # headers.
     #
-    #$session write [string range $buffers($session) \
-    #    [expr {[$response headerLength] + 2}] end]
+    $session write [string range $buffers($session) \
+        [expr {[$response headerLength] + 4}] end]
 
     #
     # And discard the buffer cruft.
