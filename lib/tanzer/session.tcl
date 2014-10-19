@@ -172,7 +172,7 @@ namespace eval ::tanzer::session {
     set active 1
 
     if {$event eq "write"} {
-        return [{*}$handler write [self] ""]
+        return [{*}$handler write [self]]
     }
 
     if {$event ne "read"} {

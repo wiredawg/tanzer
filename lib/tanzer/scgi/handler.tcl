@@ -153,7 +153,7 @@ namespace eval ::tanzer::scgi::handler {
     append bodies($session) $data
 }
 
-::oo::define ::tanzer::scgi::handler method write {session data} {
+::oo::define ::tanzer::scgi::handler method write {session} {
     my variable socks buffers requested responses
 
     set response $responses($session)

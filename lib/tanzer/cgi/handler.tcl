@@ -176,7 +176,7 @@ namespace eval ::tanzer::cgi::handler {
     puts -nonewline $in $data
 }
 
-::oo::define ::tanzer::cgi::handler method write {session data} {
+::oo::define ::tanzer::cgi::handler method write {session} {
     my variable pipes buffers responses
 
     if {[array get pipes $session] eq {}} {

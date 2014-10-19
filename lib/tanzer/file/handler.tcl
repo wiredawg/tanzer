@@ -195,7 +195,7 @@ package require TclOO
     return
 }
 
-::oo::define ::tanzer::file::handler method write {session data} {
+::oo::define ::tanzer::file::handler method write {session} {
     my variable config
 
     set request [$session request]
