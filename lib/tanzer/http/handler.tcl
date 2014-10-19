@@ -61,7 +61,7 @@ namespace eval ::tanzer::http::handler {
     set sock [socket $config(host) $config(port)]
 
     fconfigure $sock \
-        -translation {binary binary} \
+        -translation binary \
         -blocking    0 \
         -buffering   none
 
