@@ -10,14 +10,14 @@ namespace eval ::tanzer::request {}
     superclass ::tanzer::message
 }
 
-::oo::define ::tanzer::request constructor {_session} {
+::oo::define ::tanzer::request constructor {newSession} {
     my variable session env headers buffer config \
         uri path params rewritten timestamp headerLength
 
     next -newline "\r\n" \
          -request
 
-    set session      $_session
+    set session      $newSession
     set env          [dict create]
     set headers      [dict create]
     set uri          {}
@@ -28,18 +28,14 @@ namespace eval ::tanzer::request {}
     set timestamp    [::tanzer::date::rfc2616 [clock seconds]]
 }
 
-::oo::define ::tanzer::request method uri {args} {
+::oo::define ::tanzer::request method uri {{newUri ""}} {
     my variable uri path
 
-    switch -- [llength $args] 0 {
+    if {$newUri eq ""} {
         return $uri
-    } 1 {
-        #
-    } default {
-        error "Invalid command invocation"
     }
 
-    set uri      [lindex $args 0]
+    set uri      $newUri
     set uriParts [split $uri "?"]
     set path     [::tanzer::uri::parts [lindex $uriParts 0]]
     set query    [join [lrange $uriParts 1 end] "?"]
@@ -174,7 +170,7 @@ namespace eval ::tanzer::request {}
     set requestLen [llength $path]
     set matching   [list]
     set pathInfo   [list]
-    set _params    [list]
+    set newParams    [list]
 
     set wildcard 0
 
@@ -253,54 +249,50 @@ namespace eval ::tanzer::request {}
     # If we've found any parameters, then merge them into the request
     # parameters dictionary.
     #
-    if {[llength $_params] > 0} {
-        my params $_params
+    if {[llength $newParams] > 0} {
+        my params $newParams
     }
 
     return 1
 }
 
-::oo::define ::tanzer::request method param {args} {
+::oo::define ::tanzer::request method param {name {value ""}} {
     my variable params
 
-    switch -- [llength $args] 1 {
-        return [dict get $params [lindex $args 0]]
-    } 2 {
-        return [dict set params {*}$args]
+    if {$value ne ""} {
+        dict set params $name $value
+
+        return
     }
 
-    error "Invalid command invocation"
+    return [dict get $params $name]
 }
 
-::oo::define ::tanzer::request method params {args} {
+::oo::define ::tanzer::request method params {{newParams {}}} {
     my variable params
 
-    set count [llength $args]
+    if {$newParams ne {}} {
+        set params [dict create {*}$newParams]
 
-    if {$count == 0} {
-        return $params
-    } elseif {$count == 1} {
-        foreach {name value} [lindex $args 0] {
-            dict set params $name $value
-        }
-
-        return $params
-    } elseif {$count % 2 == 0} {
-        return [dict set params {*}$args]
+        return
     }
 
-    error "Invalid command invocation"
+    return $params
 }
 
-::oo::define ::tanzer::request method env {args} {
+::oo::define ::tanzer::request method env {{name ""} {value ""}} {
     my variable env
 
-    if {[llength $args] == 1} {
-        return [dict get $env [lindex $args 0]]
-    }
+    if {$value ne ""} {
+        dict set env $name $value
 
-    if {[llength $args] == 2} {
-        return [dict set env {*}$args]
+        return
+    } elseif {$name ne ""} {
+        return [if {[dict exists $env $name]} {
+            dict get $env $name
+        } else {
+            list ""
+        }]
     }
 
     return $env

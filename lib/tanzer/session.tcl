@@ -9,14 +9,14 @@ namespace eval ::tanzer::session {
 
 ::oo::class create ::tanzer::session
 
-::oo::define ::tanzer::session constructor {_server _sock _proto} {
+::oo::define ::tanzer::session constructor {newServer newSock newProto} {
     my variable server sock proto request readBytes route handler \
         cleanup state response buffer config remaining keepalive \
         active watchdog
 
-    set server    $_server
-    set sock      $_sock
-    set proto     $_proto
+    set server    $newServer
+    set sock      $newSock
+    set proto     $newProto
     set request   {}
     set route     {}
     set handler   {}
@@ -30,7 +30,7 @@ namespace eval ::tanzer::session {
     set watchdog  [after [expr {$::tanzer::session::timeout * 1000}] \
         [self] ping]
 
-    set config(readBufferSize) [$_server config readBufferSize]
+    set config(readBufferSize) [$newServer config readBufferSize]
 }
 
 ::oo::define ::tanzer::session destructor {
@@ -67,13 +67,7 @@ namespace eval ::tanzer::session {
         return
     }
 
-    if {$cleanup eq {}} {
-        return
-    }
-
-    set ret [eval $cleanup]
-    set cleanup {}
-    return $ret
+    return $cleanup
 }
 
 #
@@ -285,24 +279,28 @@ namespace eval ::tanzer::session {
     return
 }
 
-::oo::define ::tanzer::session method server {args} {
+::oo::define ::tanzer::session method server {{newServer ""}} {
     my variable server
 
-    if {[llength $args] == 0} {
-        return $server
+    if {$newServer ne ""} {
+        set server $newServer
+
+        return
     }
 
-    return [$server {*}$args]
+    return $server
 }
 
-::oo::define ::tanzer::session method sock {args} {
+::oo::define ::tanzer::session method sock {{newSock ""}} {
     my variable sock
 
-    if {[llength $args] == 0} {
-        return $sock
+    if {$newSock ne ""} {
+        set sock $newSock
+
+        return
     }
 
-    return [chan {*}$args $sock]
+    return $sock
 }
 
 ::oo::define ::tanzer::session method request {args} {
@@ -335,22 +333,18 @@ namespace eval ::tanzer::session {
     return $request
 }
 
-::oo::define ::tanzer::session method config {args} {
+::oo::define ::tanzer::session method config {{name ""} {value ""}} {
     my variable config
 
-    if {[llength $args] == 0} {
-        return [array get config]
+    if {$value ne ""} {
+        set config($name) $value
+
+        return
+    } elseif {$name ne ""} {
+        return $config($name)
     }
 
-    if {[llength $args] == 1} {
-        return $config([lindex $args 0])
-    }
-
-    if {[llength $args] == 2} {
-        return [set config([lindex $args 0]) [lindex $args 1]]
-    }
-
-    error "Invalid command invocation"
+    return [array get config]
 }
 
 ::oo::define ::tanzer::session method state {} {
@@ -373,7 +367,7 @@ namespace eval ::tanzer::session {
     return [string length $data]
 }
 
-::oo::define ::tanzer::session method send {_response} {
+::oo::define ::tanzer::session method send {newResponse} {
     my variable server sock response keepalive
 
     if {$response ne {}} {
@@ -385,16 +379,16 @@ namespace eval ::tanzer::session {
     # for the sake of the client who might be too confused otherwise to
     # unambiguously carry on.
     #
-    if {![$_response headerExists Content-Length]} {
+    if {![$newResponse headerExists Content-Length]} {
         set keepalive 0
     }
 
-    $_response header Connection [expr {$keepalive? "Keep-Alive": "Close"}]
-    $_response send $sock
+    $newResponse header Connection [expr {$keepalive? "Keep-Alive": "Close"}]
+    $newResponse send $sock
 
-    $server log [self] $_response
+    $server log [self] $newResponse
 
-    set response $_response
+    set response $newResponse
 }
 
 ::oo::define ::tanzer::session method responded {} {
@@ -424,16 +418,16 @@ namespace eval ::tanzer::session {
     return [expr {[eof $sock] && [$request empty]}]
 }
 
-::oo::define ::tanzer::session method keepalive {args} {
+::oo::define ::tanzer::session method keepalive {{newValue ""}} {
     my variable keepalive
 
-    switch -- [llength $args] 0 {
-        return $keepalive
-    } 1 {
-        return [set keepalive [lindex $args 0]]
+    if {$newValue ne ""} {
+        set keepalive $newValue
+
+        return
     }
 
-    error "Invalid command invocation"
+    return $keepalive
 }
 
 ::oo::define ::tanzer::session method route {} {

@@ -41,15 +41,17 @@ proc ::tanzer::file::fragment::parseRangeRequest {request size mimeType} {
 
 ::oo::class create ::tanzer::file::fragment
 
-::oo::define ::tanzer::file::fragment constructor {_min _max _size _mimeType} {
+::oo::define ::tanzer::file::fragment constructor {newMin newMax newSize newMimeType} {
     my variable min max size offset mimeType header
 
-    set min      $_min
-    set max      $_max
-    set size     $_size
-    set offset   $_min
-    set mimeType $_mimeType
+    set min      $newMin
+    set max      $newMax
+    set size     $newSize
+    set offset   $newMin
+    set mimeType $newMimeType
     set header   {}
+
+    return
 }
 
 ::oo::define ::tanzer::file::fragment method contentRange {} {

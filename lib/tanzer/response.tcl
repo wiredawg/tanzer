@@ -35,28 +35,28 @@ proc ::tanzer::response::lookup {status} {
     superclass ::tanzer::message
 }
 
-::oo::define ::tanzer::response constructor {_status args} {
+::oo::define ::tanzer::response constructor {newStatus {newHeaders {}}} {
     my variable version status headers
 
     next -response
 
     set version $::tanzer::message::defaultVersion
-    set status  $_status
+    set status  $newStatus
     set headers {}
 
-    if {[llength $args] > 0} {
-        my headers [lindex $args 0]
+    if {$newHeaders ne {}} {
+        my headers $newHeaders
     }
 }
 
-::oo::define ::tanzer::response method status {args} {
+::oo::define ::tanzer::response method status {{newStatus ""}} {
     my variable status
 
-    switch -- [llength $args] 0 {
-        return $status
-    } 1 {
-        return [set status [lindex $args 0]]
+    if {$newStatus ne ""} {
+        set status $newStatus
+
+        return
     }
 
-    error "Invalid command invocation"
+    return $status
 }

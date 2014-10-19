@@ -12,7 +12,7 @@ namespace eval ::tanzer::server {
 
 ::oo::class create ::tanzer::server
 
-::oo::define ::tanzer::server constructor {args} {
+::oo::define ::tanzer::server constructor {{newOpts {}}} {
     my variable routes config sessions logger
 
     set opts   {}
@@ -25,8 +25,8 @@ namespace eval ::tanzer::server {
         proto          "scgi"
     }
 
-    if {[llength $args] == 1} {
-        set opts [lindex $args 0]
+    if {$newOpts ne {}} {
+        set opts [dict create {*}$newOpts]
     }
 
     foreach {key value} $opts {
@@ -77,18 +77,16 @@ namespace eval ::tanzer::server {
     }
 }
 
-::oo::define ::tanzer::server method config {args} {
+::oo::define ::tanzer::server method config {name {value ""}} {
     my variable config
 
-    if {[llength $args] == 1} {
-        return $config([lindex $args 0])
+    if {$value ne ""} {
+        set config($name) $value
+
+        return
     }
 
-    if {[llength $args] == 2} {
-        return [set config([lindex $args 0]) [lindex $args 1]]
-    }
-
-    error "Invalid command invocation"
+    return $config($name)
 }
 
 ::oo::define ::tanzer::server method log {args} {

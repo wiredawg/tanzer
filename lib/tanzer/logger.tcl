@@ -6,42 +6,44 @@ package require TclOO
 namespace eval ::tanzer::logger {}
 
 proc ::tanzer::logger::format {subcommand args} {
-    switch -- $subcommand "log" {
-        set server  [lindex $args 0]
-        set session [lindex $args 1]
-        set request [$session request]
-
-        #
-        # TODO: Figure out how to log these sorts of events
-        #
-        if {$request eq {}} {
-            return
-        }
-
-        if {[llength $args] == 3} {
-            set response [lindex $args 2]
-        } else {
-            set response [$session response]
-        }
-
-        return [::format {%s %s - [%s] "%s %s %s" %d %d "%s" "%s"} \
-            [$request client] \
-            [$request host] \
-            [$request timestamp] \
-            [$request method] \
-            [$request env REQUEST_URI] \
-            [$request proto] \
-            [$response status] \
-            [$response length] \
-            [$request referer] \
-            [$request agent]]
-    } "err" {
+    switch -- $subcommand "err" {
         set server [lindex $args 0]
 
         return [concat [lrange $args 1 end] $::errorInfo]
+    } "log" {
+        #
+    } default {
+        error "Invalid subcommand $subcommand"
     }
 
-    error "Invalid subcommand $subcommand"
+    set server  [lindex $args 0]
+    set session [lindex $args 1]
+    set request [$session request]
+
+    #
+    # TODO: Figure out how to log these sorts of events
+    #
+    if {$request eq {}} {
+        return
+    }
+
+    set response [if {[llength $args] == 3} {
+        lindex $args 2
+    } else {
+        $session response
+    }]
+
+    return [::format {%s %s - [%s] "%s %s %s" %d %d "%s" "%s"} \
+        [$request client] \
+        [$request host] \
+        [$request timestamp] \
+        [$request method] \
+        [$request env REQUEST_URI] \
+        [$request proto] \
+        [$response status] \
+        [$response length] \
+        [$request referer] \
+        [$request agent]]
 }
 
 proc ::tanzer::logger::default {subcommand args} {

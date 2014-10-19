@@ -240,11 +240,11 @@ proc ::tanzer::message::field {name} {
     return 1
 }
 
-::oo::define ::tanzer::message method version {args} {
+::oo::define ::tanzer::message method version {{newVersion ""}} {
     my variable version
 
-    if {[llength $args] == 1} {
-        set version [lindex $args 0]
+    if {$newVersion ne ""} {
+        set version $newVersion
 
         return
     }
@@ -262,59 +262,38 @@ proc ::tanzer::message::field {name} {
     return $headerLength
 }
 
-::oo::define ::tanzer::message method header {name args} {
+::oo::define ::tanzer::message method header {name {value ""}} {
     my variable headers
 
-    if {[llength $args] == 0} {
-        return [dict get $headers [::tanzer::message::field $name]]
-    } elseif {[llength $args] == 1} {
-        set name  [::tanzer::message::field $name]
-        set value [lindex $args 0]
+    set name [::tanzer::message::field $name]
 
+    if {$value ne ""} {
         dict set headers $name $value
 
-        return [list $name $value]
+        return
     }
 
-    error "Invalid command invocation"
+    return [dict get $headers $name]
 }
 
-::oo::define ::tanzer::message method headers {args} {
+::oo::define ::tanzer::message method headers {{newHeaders {}}} {
     my variable headers
 
-    if {[llength $args] == 0} {
+    if {$newHeaders eq {}} {
         return $headers
     }
 
-    if {[llength $args] == 1} {
-        foreach {name value} [lindex $args 0] {
-            my header $name $value
-        }
-
-        return $headers
+    foreach {name value} $newHeaders {
+        my header $name $value
     }
 
-    if {{llength $args} % 2 == 0} {
-        foreach {name value} $args {
-            my header $name $value
-        }
-
-        return $headers
-    }
-
-    error "Invalid arguments"
+    return
 }
 
-::oo::define ::tanzer::message method headerExists {args} {
+::oo::define ::tanzer::message method headerExists {name} {
     my variable headers
 
-    foreach key $args {
-        if {[dict exists $headers $key]} {
-            return 1
-        }
-    }
-
-    return 0
+    return [dict exists $headers $name]
 }
 
 ::oo::define ::tanzer::message method length {} {
@@ -353,10 +332,12 @@ proc ::tanzer::message::field {name} {
     return $data
 }
 
-::oo::define ::tanzer::message method buffer {_data} {
+::oo::define ::tanzer::message method buffer {newData} {
     my variable data
 
-    append data $_data
+    append data $newData
+
+    return
 }
 
 ::oo::define ::tanzer::message method send {sock} {

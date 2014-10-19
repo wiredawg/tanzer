@@ -9,10 +9,10 @@ package require TclOO
     superclass ::tanzer::file
 }
 
-::oo::define ::tanzer::file::partial constructor {_path _st _config request} {
+::oo::define ::tanzer::file::partial constructor {newPath newSt newConfig request} {
     my variable fragments st multipart mismatched
 
-    next $_path $_st $_config
+    next $newPath $newSt $newConfig
 
     set mismatched [expr {![my rangeMatch $request]}]
 

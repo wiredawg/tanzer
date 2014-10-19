@@ -27,7 +27,7 @@ proc ::tanzer::file::mimeType {path} {
 
 ::oo::class create ::tanzer::file
 
-::oo::define ::tanzer::file constructor {_path _st _config} {
+::oo::define ::tanzer::file constructor {newPath newSt newConfig} {
     my variable config path fh st etag
 
     set required {
@@ -35,22 +35,22 @@ proc ::tanzer::file::mimeType {path} {
     }
 
     foreach requirement $required {
-        if {[dict exists $_config $requirement]} {
-            set config($requirement) [dict get $_config $requirement]
+        if {[dict exists $newConfig $requirement]} {
+            set config($requirement) [dict get $newConfig $requirement]
         } else {
             error "Required configuration value $requirement not provided"
         }
     }
 
-    set       path $_path
+    set       path $newPath
     set       etag {}
-    array set st   $_st
+    array set st   $newSt
 
     if {$st(type) ne "file"} {
         error "Unsupported operation on file of type $st(type)"
     }
 
-    set fh [open $_path]
+    set fh [open $newPath]
 
     fconfigure $fh \
         -translation binary \
