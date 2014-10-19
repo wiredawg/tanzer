@@ -148,15 +148,19 @@ namespace eval ::tanzer::http::handler {
 
         incr lengths($session) -[fcopy $socks($session) $sock -size $len]
 
-        #
-        # If we weren't able to read anything from the HTTP service, then let's
-        # wrap up this session.
-        #
-        if {[eof $socks($session)]} {
+        if {[eof $socks($session)] || $lengths($session) == 0} {
             my close $session
         }
 
         return
+    }
+
+    #
+    # If we weren't able to read anything from the HTTP service, then let's
+    # wrap up this session.
+    #
+    if {[eof $socks($session)]} {
+        my close $session
     }
 
     #
