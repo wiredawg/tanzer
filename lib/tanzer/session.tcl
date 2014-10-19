@@ -86,6 +86,18 @@ namespace eval ::tanzer::session {
 }
 
 #
+# Called to allow a request handler to indicate to the session handler that the
+# session is still indeed active, even if the request handler decides to side
+# step the session handler for I/O event dispatch in such cases as letting the
+# request handler monitor a non-server socket.
+#
+::oo::define ::tanzer::session method tick {} {
+    my variable active
+
+    set active 1
+}
+
+#
 # Called by a watchdog timer to make sure the session is still alive, and to
 # reset the timeout if it is.
 #
