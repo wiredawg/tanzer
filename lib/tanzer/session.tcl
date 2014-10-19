@@ -368,7 +368,9 @@ namespace eval ::tanzer::session {
 ::oo::define ::tanzer::session method write {data} {
     my variable sock
 
-    return [puts -nonewline $sock $data]
+    puts -nonewline $sock $data
+
+    return [string length $data]
 }
 
 ::oo::define ::tanzer::session method send {_response} {
