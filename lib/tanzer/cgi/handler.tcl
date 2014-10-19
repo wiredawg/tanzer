@@ -86,7 +86,9 @@ namespace eval ::tanzer::cgi::handler {
     pipe stdout_r stdout_w
 
     foreach fh [list $stdin_r $stdin_w $stdout_r $stdout_w] {
-        fconfigure $fh -translation binary
+        fconfigure $fh \
+            -translation binary \
+            -blocking    0
     }
 
     fcntl $stdin_w  NOBUF 1
