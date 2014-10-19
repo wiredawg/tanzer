@@ -103,7 +103,7 @@ package require TclOO
     return $mismatched
 }
 
-::oo::define ::tanzer::file::partial method stream {event session data} {
+::oo::define ::tanzer::file::partial method stream {event session} {
     my variable config fh fragments mismatched
 
     #
@@ -111,7 +111,7 @@ package require TclOO
     # whole entity body.
     #
     if {$mismatched} {
-        return [next $event $session $data]
+        return [next $event $session]
     }
 
     set fragment [my fragment]

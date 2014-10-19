@@ -136,7 +136,7 @@ proc ::tanzer::file::mimeType {path} {
     return 0
 }
 
-::oo::define ::tanzer::file method stream {event session data} {
+::oo::define ::tanzer::file method stream {event session} {
     my variable fh config
 
     fcopy $fh [$session sock] -size $config(readBufferSize)

@@ -11,7 +11,7 @@ set server [::tanzer::server new {
 }]
 
 $server route GET /* * [::tanzer::http::handler new {
-    host "naive.xtort.us"
+    host "localhost"
     port 80
 }]
 
