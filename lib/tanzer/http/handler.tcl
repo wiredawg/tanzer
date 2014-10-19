@@ -1,29 +1,26 @@
 package provide tanzer::http::handler 0.0.1
+package require tanzer::forwarder
 package require tanzer::response
 package require tanzer::error
 package require TclOO
 package require Tclx
 
-namespace eval ::tanzer::http::handler {
-    variable defaultStatus 500
+::oo::class create ::tanzer::http::handler {
+    superclass ::tanzer::forwarder
 }
-
-::oo::class create ::tanzer::http::handler
 
 ::oo::define ::tanzer::http::handler constructor {opts} {
     my variable config socks buffers \
         lengths requested responses
+
+    next $opts
 
     set requirements {
         host "No HTTP service host provided"
         port "No HTTP service port provided"
     }
 
-    set defaults {
-        rewrite {}
-    }
-
-    array set config    $defaults
+    array set config {}
 
     foreach varName {socks buffers lengths requested responses} {
         array set $varName {}
@@ -36,17 +33,13 @@ namespace eval ::tanzer::http::handler {
 
         set config($name) [dict get $opts $name]
     }
-
-    foreach {name value} $defaults {
-        if {[dict exists $opts $name]} {
-            set config($name) [dict get $opts $name]
-        }
-    }
 }
 
 ::oo::define ::tanzer::http::handler method open {session} {
     my variable config socks buffers \
         requested responses
+
+    next $session
 
     set request [$session request]
 
@@ -70,7 +63,7 @@ namespace eval ::tanzer::http::handler {
     set lengths($session)   0
     set requested($session) 0
     set responses($session) [::tanzer::response new \
-        $::tanzer::http::handler::defaultStatus]
+        $::tanzer::forwarder::defaultStatus]
 
     $session cleanup [self] cleanup $session
 }

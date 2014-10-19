@@ -1,18 +1,22 @@
 package provide tanzer::cgi::handler 0.0.1
+package require tanzer::forwarder
 package require tanzer::response
 package require tanzer::error
 package require TclOO
 package require Tclx
 
 namespace eval ::tanzer::cgi::handler {
-    variable proto         "CGI/1.1"
-    variable defaultStatus 500
+    variable proto "CGI/1.1"
 }
 
-::oo::class create ::tanzer::cgi::handler
+::oo::class create ::tanzer::cgi::handler {
+    superclass ::tanzer::forwarder
+}
 
 ::oo::define ::tanzer::cgi::handler constructor {opts} {
     my variable config pipes buffers responses
+
+    next $opts
 
     set requirements {
         program "No CGI executable provided"
@@ -20,11 +24,7 @@ namespace eval ::tanzer::cgi::handler {
         root    "No document root provided"
     }
 
-    set defaults {
-        rewrite {}
-    }
-
-    array set config    $defaults
+    array set config    {}
     array set pipes     {}
     array set buffers   {}
     array set responses {}
@@ -36,28 +36,16 @@ namespace eval ::tanzer::cgi::handler {
 
         set config($name) [dict get $opts $name]
     }
-
-    foreach {name value} $defaults {
-        if {[dict exists $opts $name]} {
-            set config($name) [dict get $opts $name]
-        }
-    }
 }
 
 ::oo::define ::tanzer::cgi::handler method open {session} {
     my variable config pipes buffers responses
 
+    next $session
+
     set server  [$session server]
     set route   [$session route]
     set request [$session request]
-
-    if {[array get config rewrite] ne {}} {
-        foreach {re newFormat} $config(rewrite) {
-            if {[$request rewrite $re $newFormat]} {
-                break
-            }
-        }
-    }
 
     set addr [lindex [chan configure [$session sock] -sockname] 0]
 
@@ -124,7 +112,7 @@ namespace eval ::tanzer::cgi::handler {
 
     set buffers($session)   ""
     set responses($session) [::tanzer::response new \
-        $::tanzer::cgi::handler::defaultStatus]
+        $::tanzer::forwarder::defaultStatus]
 
     $responses($session) config -newline "\n"
 

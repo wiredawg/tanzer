@@ -1,28 +1,28 @@
 package provide tanzer::scgi::handler 0.0.1
+package require tanzer::forwarder
 package require tanzer::response
 package require tanzer::error
 package require TclOO
 package require Tclx
 
 namespace eval ::tanzer::scgi::handler {
-    variable version         1
-    variable defaultStatus 500
+    variable version 1
 }
 
-::oo::class create ::tanzer::scgi::handler
+::oo::class create ::tanzer::scgi::handler {
+    superclass ::tanzer::forwarder
+}
 
 ::oo::define ::tanzer::scgi::handler constructor {opts} {
     my variable config socks buffers \
         bodies requested responses
 
+    next $opts
+
     set requirements {
         host "No SCGI service host provided"
         port "No SCGI service port provided"
         name "No program name provided"
-    }
-
-    set defaults {
-        rewrite {}
     }
 
     array set config    $defaults
@@ -38,12 +38,6 @@ namespace eval ::tanzer::scgi::handler {
         }
 
         set config($name) [dict get $opts $name]
-    }
-
-    foreach {name value} $defaults {
-        if {[dict exists $opts $name]} {
-            set config($name) [dict get $opts $name]
-        }
     }
 }
 
@@ -88,17 +82,10 @@ namespace eval ::tanzer::scgi::handler {
     my variable config socks buffers \
         requested responses
 
+    next $session
+
     set request [$session request]
-
-    if {[array get config rewrite] ne {}} {
-        foreach {re newFormat} $config(rewrite) {
-            if {[$request rewrite $re $newFormat]} {
-                break
-            }
-        }
-    }
-
-    set sock [socket $config(host) $config(port)]
+    set sock    [socket $config(host) $config(port)]
 
     fconfigure $sock \
         -translation binary \
@@ -110,7 +97,7 @@ namespace eval ::tanzer::scgi::handler {
     set bodies($session)    ""
     set requested($session) 0
     set responses($session) [::tanzer::response new \
-        $::tanzer::scgi::handler::defaultStatus]
+        $::tanzer::forwarder::defaultStatus]
 
     $session cleanup [self] cleanup $session
 }
