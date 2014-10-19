@@ -36,24 +36,17 @@ proc ::tanzer::response::lookup {status} {
 }
 
 ::oo::define ::tanzer::response constructor {_status args} {
-    my variable version status headers data
+    my variable version status headers
 
     next -response
 
     set version $::tanzer::message::defaultVersion
     set status  $_status
     set headers {}
-    set data    ""
 
     if {[llength $args] > 0} {
         my headers [lindex $args 0]
     }
-}
-
-::oo::define ::tanzer::response method version {} {
-    my variable version
-
-    return $version
 }
 
 ::oo::define ::tanzer::response method status {args} {
@@ -66,16 +59,4 @@ proc ::tanzer::response::lookup {status} {
     }
 
     error "Invalid command invocation"
-}
-
-::oo::define ::tanzer::response method data {} {
-    my variable data
-
-    return $data
-}
-
-::oo::define ::tanzer::response method buffer {_data} {
-    my variable data
-
-    append data $_data
 }

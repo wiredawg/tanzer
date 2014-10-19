@@ -32,9 +32,11 @@ proc ::tanzer::message::field {name} {
 ::oo::class create ::tanzer::message
 
 ::oo::define ::tanzer::message constructor {args} {
-    my variable opts ready
+    my variable opts ready data version
 
-    set ready 0
+    set ready   0
+    set data    {}
+    set version $::tanzer::message::defaultVersion
     
     array set opts {
         newline      "\r\n"
@@ -48,8 +50,6 @@ proc ::tanzer::message::field {name} {
     if {[llength $args] > 0} {
         my config {*}$args
     }
-
-    my header Server "$::tanzer::server::name/$::tanzer::server::version"
 }
 
 ::oo::define ::tanzer::message method config {args} {
@@ -347,13 +347,33 @@ proc ::tanzer::message::field {name} {
     return 0
 }
 
+::oo::define ::tanzer::message method data {} {
+    my variable data
+
+    return $data
+}
+
+::oo::define ::tanzer::message method buffer {_data} {
+    my variable data
+
+    append data $_data
+}
+
 ::oo::define ::tanzer::message method send {sock} {
     my variable opts headers data
 
+    set tmpHeaders $headers
+
     if {$opts(request)} {
+        dict set tmpHeaders User-Agent \
+            "$::tanzer::server::name/$::tanzer::server::version"
+
         puts -nonewline $sock [format "%s %s %s\r\n" \
             [my method] [my uri] [my version]]
     } elseif {$opts(response)} {
+        dict set tmpHeaders Server \
+            "$::tanzer::server::name/$::tanzer::server::version"
+
         set status [my status]
 
         puts -nonewline $sock [format "%s %d %s\r\n" \
@@ -366,8 +386,8 @@ proc ::tanzer::message::field {name} {
         my header Content-Length $len
     }
 
-    foreach {name value} $headers {
-        puts -nonewline $sock "[::tanzer::message::field $name]: $value\r\n"
+    foreach {name value} $tmpHeaders {
+        puts -nonewline $sock "$name: $value\r\n"
     }
 
     puts -nonewline $sock "\r\n"
