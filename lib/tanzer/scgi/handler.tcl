@@ -3,7 +3,6 @@ package require tanzer::forwarder
 package require tanzer::response
 package require tanzer::error
 package require TclOO
-package require Tclx
 
 namespace eval ::tanzer::scgi::handler {
     variable version 1

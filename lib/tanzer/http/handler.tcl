@@ -3,7 +3,6 @@ package require tanzer::forwarder
 package require tanzer::response
 package require tanzer::error
 package require TclOO
-package require Tclx
 
 ::oo::class create ::tanzer::http::handler {
     superclass ::tanzer::forwarder
