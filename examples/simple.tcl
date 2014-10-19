@@ -4,7 +4,7 @@ package require tanzer
 package require tanzer::http
 package require tanzer::response
 
-proc simpleResponder {event session data} {
+proc simpleResponder {event session args} {
     switch -- $event "read" {
         #
         # This is executed every time there is data that has just been read
