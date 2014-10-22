@@ -206,7 +206,7 @@ namespace eval ::tanzer::cgi::handler {
 
     append buffers($session) $buf
 
-    if {![$response parse $buffers($session)]} {
+    if {![$response parse buffers($session)]} {
         return
     }
 
@@ -238,14 +238,12 @@ namespace eval ::tanzer::cgi::handler {
     $session send $response
 
     #
-    # Now, send off everything that's left over in the buffer, after the
-    # headers.
+    # Now, send off everything that's left over in the buffer.
     #
-    $session write [string range $buffers($session) \
-        [expr {[$response headerLength] + 2}] end]
+    $session write $buffers($session)
 
     #
-    # And discard the buffer cruft.
+    # And discard the buffer.
     #
     unset buffers($session)
 

@@ -32,9 +32,10 @@ proc ::tanzer::message::field {name} {
 ::oo::class create ::tanzer::message
 
 ::oo::define ::tanzer::message constructor {args} {
-    my variable opts ready data version
+    my variable opts ready chunked data version
 
     set ready   0
+    set chunked ""
     set data    {}
     set version $::tanzer::message::defaultVersion
     
@@ -102,7 +103,7 @@ proc ::tanzer::message::field {name} {
     return [expr {$ready == 0}]
 }
 
-::oo::define ::tanzer::message method parse {buffer} {
+::oo::define ::tanzer::message method parse {varName} {
     my variable opts version status ready env headers \
         path uri headerLength
 
@@ -110,8 +111,11 @@ proc ::tanzer::message::field {name} {
         return 1
     }
 
+    upvar 1 $varName buffer
+
     set bufferLength [string length $buffer]
     set headerLength [string first "$opts(newline)$opts(newline)" $buffer]
+    set bodyStart    [expr {$headerLength + (2 * $opts(newlinelen))}]
 
     #
     # If we cannot find the end of the headers, then determine if the buffer
@@ -229,6 +233,11 @@ proc ::tanzer::message::field {name} {
     }
 
     #
+    # Truncate the header data from the buffer, now.
+    #
+    set buffer [string range $buffer $bodyStart end]
+
+    #
     # Finally, update the ready flag to indicate that the request is now
     # usable to the session handler.
     #
@@ -296,12 +305,52 @@ proc ::tanzer::message::field {name} {
     return [dict exists $headers $name]
 }
 
-::oo::define ::tanzer::message method length {} {
-    if {[my headerExists Content-Length]} {
-        return [my header Content-Length]
+::oo::define ::tanzer::message method encodingAccepted {encoding} {
+    if {![my headerExists Accept-Encoding]} {
+        return 0
+    }
+
+    set acceptable [my header Accept-Encoding]
+
+    foreach acceptableEncoding [regexp -all -inline {[^,\s]+} $acceptable] {
+        switch -nocase -- $encoding $acceptableEncoding {
+            return 1
+        }
     }
 
     return 0
+}
+
+::oo::define ::tanzer::message method chunked {} {
+    my variable chunked
+
+    if {$chunked ne ""} {
+        return $chunked
+    }
+
+    if {![my headerExists Transfer-Encoding]} {
+        return [set chunked 0]
+    }
+
+    switch -nocase -- [my header Transfer-Encoding] Chunked {
+        return [set chunked 1]
+    }
+
+    return [set chunked 0]
+}
+
+::oo::define ::tanzer::message method length {} {
+    my variable data
+
+    set len [string length $data]
+
+    return [if {$len > 0} {
+        list $len
+    } elseif {[my headerExists Content-Length]} {
+        my header Content-Length
+    } else {
+        list 0
+    }]
 }
 
 ::oo::define ::tanzer::message method keepalive {} {
@@ -310,7 +359,7 @@ proc ::tanzer::message::field {name} {
     # session handler sort those details out.
     #
     if {![my headerExists Connection]} {
-        return 1
+        return 0
     }
 
     #
@@ -364,6 +413,11 @@ proc ::tanzer::message::field {name} {
     set len [string length $data]
 
     if {$len > 0} {
+        if {[my chunked]} {
+            ::tanzer::error throw [expr {$opts(request)? 400: 500}] \
+                "Cannot use chunked transfer encoding in fixed length entities"
+        }
+
         my header Content-Length $len
     }
 

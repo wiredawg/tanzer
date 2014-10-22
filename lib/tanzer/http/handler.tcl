@@ -161,7 +161,7 @@ package require TclOO
     #
     append buffers($session) [read $socks($session) $size]
 
-    if {![$response parse $buffers($session)]} {
+    if {![$response parse buffers($session)]} {
         return
     }
 
@@ -173,11 +173,9 @@ package require TclOO
     $session send $response
 
     #
-    # Now, send off everything that's left over in the buffer, after the
-    # headers.
+    # Now, send off everything that's left over in the buffer.
     #
-    incr lengths($session) -[$session write [string range $buffers($session) \
-        [expr {[$response headerLength] + 4}] end]]
+    incr lengths($session) -[$session write $buffers($session)]
 
     #
     # And discard the buffer cruft.

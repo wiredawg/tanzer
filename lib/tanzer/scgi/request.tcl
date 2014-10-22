@@ -95,9 +95,11 @@ namespace eval ::tanzer::scgi::request {
     return
 }
 
-::oo::define ::tanzer::scgi::request method parse {buffer} {
+::oo::define ::tanzer::scgi::request method parse {varName} {
     my variable ready env path uri \
         headerLength
+
+    upvar $varName buffer
 
     set bufferSize [string length $buffer]
 

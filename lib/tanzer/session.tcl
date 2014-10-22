@@ -1,4 +1,5 @@
 package provide tanzer::session 0.0.1
+package require tanzer::message::chunk
 package require tanzer::response
 package require tanzer::error
 package require TclOO
@@ -10,7 +11,7 @@ namespace eval ::tanzer::session {
 ::oo::class create ::tanzer::session
 
 ::oo::define ::tanzer::session constructor {newServer newSock newProto} {
-    my variable server sock proto request readBytes route handler \
+    my variable server sock proto request route handler \
         cleanup state response buffer config remaining keepalive \
         active watchdog
 
@@ -163,7 +164,8 @@ namespace eval ::tanzer::session {
     my variable sock server request keepalive \
         buffer config handler active
 
-    set active 1
+    set active   1
+    set streamed 0
 
     if {$event eq "write"} {
         return [{*}$handler write [self]]
@@ -200,7 +202,7 @@ namespace eval ::tanzer::session {
         #
         # Bail if the request is not yet parseable.
         #
-        if {![$request parse $buffer]} {
+        if {![$request parse buffer]} {
             return
         }
 
@@ -228,22 +230,41 @@ namespace eval ::tanzer::session {
         # to the handler as a read event, and subsequently trim the buffer
         # to only the parts we need.
         #
-        set start  [expr {[$request headerLength] + 4}]
-        set end    [expr {$start + $remaining}]
-        set data   [string range $buffer $start $end]
-        set buffer [string range $buffer $end end]
+        set start 0
+        set end   [expr {$remaining - 1}]
+        set data  [string range $buffer $start $end]
+    } else {
+        append buffer $data
     }
 
     #
     # Pass the current block of data to the handler.
     #
-    {*}$handler read [self] $data
+    if {[$request chunked]} {
+        #
+        # If there is no more chunk data to decode, then we can indicate that
+        # we are now ready to transition to write-ready events.
+        #
+        if {![::tanzer::message::chunk parse buffer {*}$handler read [self]]} {
+            set streamed 1
+        }
+    } else {
+        {*}$handler read [self] $data
 
-    #
-    # Decrement the length of the data passed to the request handler from the
-    # number of bytes left for this current request.
-    #
-    incr remaining -[string length $data]
+        #
+        # Decrement the length of the data passed to the request handler from
+        # the number of bytes left for this current request.
+        #
+        incr remaining -[string length $data]
+
+        #
+        # If there is no more body to be read from the request body, then we
+        # can transition to write-ready events.
+        #
+        if {$remaining == 0} {
+            set streamed 1
+        }
+    }
 
     #
     # If the request is now ready, then bind the event handler to the socket
@@ -257,8 +278,10 @@ namespace eval ::tanzer::session {
     # the session and spawn up a new request handler, at least in the case
     # of HTTP.
     #
-    fileevent $sock readable {}
-    fileevent $sock writable [list $server respond write $sock]
+    if {$streamed} {
+        fileevent $sock readable {}
+        fileevent $sock writable [list $server respond write $sock]
+    }
 
     return
 }
