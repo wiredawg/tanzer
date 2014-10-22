@@ -144,7 +144,7 @@ proc ::tanzer::message::field {name} {
     set start 0
     set end   [expr {[string first $opts(newline) $preamble $start] - 1}]
 
-    while {1} {
+    while {$end > 0} {
         set line [string range $preamble $start $end]
 
         if {[regexp -nocase {^HTTP/(?:0.9|1.0|1.1)\s+} $line {}]} {
@@ -217,10 +217,6 @@ proc ::tanzer::message::field {name} {
 
         set start [expr {$end + $opts(newlinelen) + 1}]
         set end   [expr {[string first "\r\n" $preamble $start] - 1}]
-
-        if {$end < 0} {
-            break
-        }
 
         incr index
     }
