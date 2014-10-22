@@ -135,8 +135,8 @@ namespace eval ::tanzer::cgi::handler {
     ::close $out
     wait $pid
 
-    array unset pipes    $session
-    array unset buffers  $session
+    array unset pipes     $session
+    array unset buffers   $session
     array unset responses $session
 
     return
