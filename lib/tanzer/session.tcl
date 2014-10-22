@@ -68,7 +68,13 @@ namespace eval ::tanzer::session {
         return
     }
 
-    return $cleanup
+    if {$cleanup eq {}} {
+        return
+    }
+
+    set ret [{*}$cleanup]
+    set cleanup {}
+    return $ret
 }
 
 #
