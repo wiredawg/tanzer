@@ -88,7 +88,7 @@ namespace eval ::tanzer::scgi::handler {
 
     fconfigure $sock \
         -translation binary \
-        -blocking    0 \
+        -blocking    1 \
         -buffering   none
 
     set socks($session)     $sock

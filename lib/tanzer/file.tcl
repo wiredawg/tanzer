@@ -54,7 +54,8 @@ proc ::tanzer::file::mimeType {path} {
 
     fconfigure $fh \
         -translation binary \
-        -blocking    0
+        -buffering   none \
+        -blocking    1
 }
 
 ::oo::define ::tanzer::file destructor {

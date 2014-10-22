@@ -76,7 +76,8 @@ namespace eval ::tanzer::cgi::handler {
     foreach fh [list $stdin_r $stdin_w $stdout_r $stdout_w] {
         fconfigure $fh \
             -translation binary \
-            -blocking    0
+            -buffering   none \
+            -blocking    1
     }
 
     fcntl $stdin_w  NOBUF 1
