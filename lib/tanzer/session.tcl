@@ -389,11 +389,17 @@ namespace eval ::tanzer::session {
 }
 
 ::oo::define ::tanzer::session method write {data} {
-    my variable sock
+    my variable sock response
 
-    puts -nonewline $sock $data
+    set length [string length $data]
 
-    return [string length $data]
+    if {[$response chunked]} {
+        puts -nonewline $sock [format "%x\r\n$data\r\n" $length]
+    } else {
+        puts -nonewline $sock $data
+    }
+
+    return $length
 }
 
 ::oo::define ::tanzer::session method send {newResponse} {
