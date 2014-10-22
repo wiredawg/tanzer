@@ -409,21 +409,14 @@ namespace eval ::tanzer::session {
         error "Already sent response"
     }
 
-    #
-    # If the response indicates no body length, then we should kill the session
-    # for the sake of the client who might be too confused otherwise to
-    # unambiguously carry on.
-    #
-    if {![$newResponse headerExists Content-Length]} {
-        set keepalive 0
-    }
-
     $newResponse header Connection [expr {$keepalive? "Keep-Alive": "Close"}]
     $newResponse send $sock
 
+    set response $newResponse
+
     $server log [self] $newResponse
 
-    set response $newResponse
+    return
 }
 
 ::oo::define ::tanzer::session method responded {} {
