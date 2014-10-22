@@ -5,6 +5,7 @@ package ifneeded tanzer::error          0.0.1 [list source [file join $dir tanze
 package ifneeded tanzer::forwarder      0.0.1 [list source [file join $dir tanzer/forwarder.tcl]]
 package ifneeded tanzer::logger         0.0.1 [list source [file join $dir tanzer/logger.tcl]]
 package ifneeded tanzer::message        0.0.1 [list source [file join $dir tanzer/message.tcl]]
+package ifneeded tanzer::message::chunk 0.0.1 [list source [file join $dir tanzer/message/chunk.tcl]]
 package ifneeded tanzer::request        0.0.1 [list source [file join $dir tanzer/request.tcl]]
 package ifneeded tanzer::response       0.0.1 [list source [file join $dir tanzer/response.tcl]]
 package ifneeded tanzer::route          0.0.1 [list source [file join $dir tanzer/route.tcl]]
