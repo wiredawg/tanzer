@@ -202,9 +202,7 @@ namespace eval ::tanzer::cgi::handler {
     # Read a buffer's worth of data from the CGI subprocess and see if it's a
     # parseable response.
     #
-    set buf [read $out $size]
-
-    append buffers($session) $buf
+    append buffers($session) [read $out $size]
 
     if {![$response parse buffers($session)]} {
         return
