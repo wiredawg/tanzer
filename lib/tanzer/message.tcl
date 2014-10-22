@@ -359,6 +359,15 @@ proc ::tanzer::message::field {name} {
     }
 
     #
+    # If there is no Content-Length header, and this is not a chunked message,
+    # then we can safely presume that we should say "this message ought to be
+    # the last in this session".
+    #
+    if {![my headerExists Content-Length] && ![my chunked]} {
+        return 0
+    }
+
+    #
     # Otherwise, if a value does exist, then if it explicitly indicates that
     # the session is to be kept alive, then say "yes".  Otherwise, no.
     #
