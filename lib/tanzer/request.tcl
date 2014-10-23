@@ -85,57 +85,6 @@ namespace eval ::tanzer::request {}
     return $path
 }
 
-::oo::define ::tanzer::request method hostMatches {route} {
-    set host    [my host]
-    set pattern [$route host]
-
-    if {$host eq {}} {
-        #
-        # Force requests without Host: to go through a host route catch-all.
-        #
-        if {$pattern ne "*"} {
-            return 0
-        }
-    } elseif {$host eq $pattern} {
-        return 1
-    }
-
-    set hostParts    [split $host    "."]
-    set patternParts [split $pattern "."]
-
-    set h [expr {[llength $hostParts   ] - 1}]
-    set p [expr {[llength $patternParts] - 1}]
-
-    while {$h >= 0} {
-        set hostPart    [lindex $hostParts    $h]
-        set patternPart [lindex $patternParts $p]
-
-        if {$patternPart eq "*"} {
-            if {$p != 0} {
-                error "Invalid pattern $pattern"
-            }
-
-            return 1
-        } elseif {$hostPart ne $patternPart} {
-            return 0
-        } else {
-            incr p -1
-        }
-
-        incr h -1
-    }
-
-    #
-    # If the host pattern contained no wildcard, and differs in number of
-    # components, then fail.
-    #
-    if {$h != $p} {
-        return 0
-    }
-
-    return 1
-}
-
 ::oo::define ::tanzer::request method matches {route} {
     my variable params path
 
@@ -144,24 +93,14 @@ namespace eval ::tanzer::request {}
     #
     # Bail early if the route method does not match.
     #
-    if {$method ne "*"} {
-        set foundMethod 0
-
-        foreach methodCandidate $method {
-            if {$method eq $methodCandidate} {
-                set foundMethod 1
-            }
-        }
-
-        if {!$foundMethod} {
-            return 0
-        }
+    if {![regexp -nocase "^${method}\$" [my method]]} {
+        return 0
     }
 
     #
-    # Also bail if the host does not match.
+    # Also bail if the host does not match the pattern regex.
     #
-    if {![my hostMatches $route]} {
+    if {![regexp -nocase "^[$route host]\$" [my host]]} {
         return 0
     }
 
@@ -170,7 +109,7 @@ namespace eval ::tanzer::request {}
     set requestLen [llength $path]
     set matching   [list]
     set pathInfo   [list]
-    set newParams    [list]
+    set newParams  [list]
 
     set wildcard 0
 

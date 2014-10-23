@@ -68,7 +68,7 @@ package require TclOO
 
             lappend handlers($site) $handler
 
-            set routes($handler) [list * "[dict get $program name]/*"]
+            set routes($handler) [list {.*} "[dict get $program name]/*"]
         }
 
         set handler [list [::tanzer::file::handler new [dict create \
@@ -77,7 +77,7 @@ package require TclOO
 
         lappend handlers($site) $handler
 
-        set routes($handler) [list * /*]
+        set routes($handler) [list {.*} /*]
 
         foreach domain [concat $site $aliases($site)] {
             foreach handler $handlers($site) {

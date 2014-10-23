@@ -22,7 +22,7 @@ set server [::tanzer::server new [list \
     proto "scgi" \
 ]]
 
-$server route * /* * [::tanzer::file::handler new [list \
+$server route {.*} /* {.*} [::tanzer::file::handler new [list \
     root     $root \
     listings 1 \
 ]]

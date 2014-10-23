@@ -10,7 +10,7 @@ set server [::tanzer::server new {
     proto "http"
 }]
 
-$server route GET /* * [::tanzer::scgi::handler new {
+$server route GET /* {.*} [::tanzer::scgi::handler new {
     host "localhost"
     port 1337
     name "/"
