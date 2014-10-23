@@ -1,4 +1,4 @@
-package provide tanzer::route 0.0.1
+package provide tanzer::route 0.1
 package require tanzer::error
 package require tanzer::uri
 package require TclOO

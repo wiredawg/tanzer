@@ -1,4 +1,4 @@
-package provide tanzer::message 0.0.1
+package provide tanzer::message 0.1
 package require TclOO
 
 namespace eval ::tanzer::message {

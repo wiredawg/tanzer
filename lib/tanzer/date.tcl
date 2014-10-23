@@ -1,4 +1,4 @@
-package provide tanzer::date 0.0.1
+package provide tanzer::date 0.1
 
 namespace eval ::tanzer::date {
     variable rfc2616Format "%a, %d %b %Y %T %Z"

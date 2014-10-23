@@ -1,4 +1,4 @@
-package provide tanzer::message::chunk 0.0.1
+package provide tanzer::message::chunk 0.1
 
 namespace eval ::tanzer::message::chunk {
     namespace ensemble create

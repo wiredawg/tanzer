@@ -1,4 +1,4 @@
-package provide tanzer::file::handler 0.0.1
+package provide tanzer::file::handler 0.1
 package require tanzer::file::listing
 package require tanzer::file::partial
 package require tanzer::file

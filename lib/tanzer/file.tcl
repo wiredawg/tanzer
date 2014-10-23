@@ -1,4 +1,4 @@
-package provide tanzer::file 0.0.1
+package provide tanzer::file 0.1
 package require tanzer::response
 package require tanzer::error
 

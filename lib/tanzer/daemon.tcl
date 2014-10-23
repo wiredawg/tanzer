@@ -1,4 +1,4 @@
-package provide tanzer::daemon 0.0.1
+package provide tanzer::daemon 0.1
 package require tanzer
 package require tanzer::response
 package require tanzer::file::handler

@@ -1,4 +1,4 @@
-package provide tanzer::file::partial 0.0.1
+package provide tanzer::file::partial 0.1
 package require tanzer::file::fragment
 package require tanzer::file
 package require tanzer::error

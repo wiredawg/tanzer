@@ -1,4 +1,4 @@
-package provide tanzer::http::request 0.0.1
+package provide tanzer::http::request 0.1
 package require tanzer::request
 package require tanzer::error
 package require tanzer::uri

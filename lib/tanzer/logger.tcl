@@ -1,4 +1,4 @@
-package provide tanzer::logger 0.0.1
+package provide tanzer::logger 0.1
 package require tanzer::date
 package require tanzer::uri
 package require TclOO

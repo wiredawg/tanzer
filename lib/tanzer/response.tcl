@@ -1,4 +1,4 @@
-package provide tanzer::response 0.0.1
+package provide tanzer::response 0.1
 package require tanzer::message
 package require TclOO
 

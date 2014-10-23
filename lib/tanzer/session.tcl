@@ -1,4 +1,4 @@
-package provide tanzer::session 0.0.1
+package provide tanzer::session 0.1
 package require tanzer::message::chunk
 package require tanzer::response
 package require tanzer::error

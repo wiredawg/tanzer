@@ -1,4 +1,4 @@
-package provide tanzer::server 0.0.1
+package provide tanzer::server 0.1
 package require tanzer::error
 package require tanzer::route
 package require tanzer::logger
@@ -7,7 +7,7 @@ package require TclOO
 
 namespace eval ::tanzer::server {
     variable name    "tanzer"
-    variable version "0.0.1"
+    variable version "0.1"
 }
 
 ::oo::class create ::tanzer::server

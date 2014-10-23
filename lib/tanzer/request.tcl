@@ -1,4 +1,4 @@
-package provide tanzer::request 0.0.1
+package provide tanzer::request 0.1
 package require tanzer::message
 package require tanzer::date
 package require tanzer::uri

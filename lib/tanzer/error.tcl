@@ -1,4 +1,4 @@
-package provide tanzer::error 0.0.1
+package provide tanzer::error 0.1
 package require tanzer::response
 
 namespace eval ::tanzer::error {

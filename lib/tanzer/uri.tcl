@@ -1,4 +1,4 @@
-package provide tanzer::uri 0.0.1
+package provide tanzer::uri 0.1
 
 namespace eval ::tanzer::uri {}
 

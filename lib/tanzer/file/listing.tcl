@@ -1,4 +1,4 @@
-package provide tanzer::file::listing 0.0.1
+package provide tanzer::file::listing 0.1
 package require tanzer::response
 package require tanzer::date
 package require tanzer::uri
