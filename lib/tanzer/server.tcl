@@ -5,13 +5,39 @@ package require tanzer::logger
 package require tanzer::session
 package require TclOO
 
+## @file tanzer/server.tcl
+# The connection acceptance server
+#
 namespace eval ::tanzer::server {
     variable name    "tanzer"
     variable version "0.1"
 }
 
+##
+# `::tanzer::server` manages the listener socket and creates new sessions for
+# each connecting client.
+#
 ::oo::class create ::tanzer::server
 
+##
+# Create a new server, with optional `$newOpts` list of pairs indicating
+# configuration.  Accepted values are:
+#
+# - `readBufferSize`
+#
+#   Defaults to 4096.  The size of buffer used to read from remote sockets and
+#   local files.
+#
+# - `port`
+#
+#   The TCP port number to open a listening socket for.
+#
+# - `proto`
+#
+#   The protocol to accept connections for.  Defaults to `http`, but can be
+#   `scgi`.
+# .
+#
 ::oo::define ::tanzer::server constructor {{newOpts {}}} {
     my variable routes config sessions logger
 
@@ -21,8 +47,8 @@ namespace eval ::tanzer::server {
 
     array set config {
         readBufferSize 4096
-        port           1337
-        proto          "scgi"
+        port           8080
+        proto          "http"
     }
 
     if {$newOpts ne {}} {
@@ -77,6 +103,10 @@ namespace eval ::tanzer::server {
     }
 }
 
+##
+# Query configuration value `$name` from server, or set configuration for
+# `$name` with `$value`.
+#
 ::oo::define ::tanzer::server method config {name {value ""}} {
     my variable config
 
@@ -181,8 +211,7 @@ namespace eval ::tanzer::server {
         -blocking    0 \
         -buffering   none
 
-    set session [::tanzer::session create \
-        ::tanzer::session-$sock [self] $sock $config(proto)]
+    set session [::tanzer::new [self] $sock $config(proto)]
 
     $session set sockaddr [list $addr $port]
 
