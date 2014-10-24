@@ -14,8 +14,7 @@ if {$argc != 2} {
     usage
 }
 
-set port [lindex $::argv 0]
-set root [lindex $::argv 1]
+lassign $::argv port root
 
 set server [::tanzer::server new [list \
     port  $port \

@@ -16,8 +16,8 @@ proc ::tanzer::logger::format {subcommand args} {
         error "Invalid subcommand $subcommand"
     }
 
-    set server  [lindex $args 0]
-    set session [lindex $args 1]
+    lassign $args server session
+
     set request [$session request]
 
     #

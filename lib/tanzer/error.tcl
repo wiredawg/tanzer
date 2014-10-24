@@ -17,9 +17,7 @@ proc ::tanzer::error::throw {status msg} {
 
 proc ::tanzer::error::run {script} {
     if {[catch {uplevel 1 $script} error]} {
-        set type  [lindex $::errorCode 0]
-        set errno [lindex $::errorCode 1]
-        set msg   [lindex $::errorCode 2]
+        lassign $::errorCode type errno msg
 
         if {[::tanzer::error servable $error]} {
             error $error
@@ -60,10 +58,9 @@ proc ::tanzer::error::fatal {} {
 }
 
 proc ::tanzer::error::response {error} {
-    set ns     [lindex $error 0]
-    set status [lindex $error 1]
-    set msg    [lindex $error 2]
-    set name   [::tanzer::response::lookup $status]
+    lassign $error ns status msg
+
+    set name [::tanzer::response::lookup $status]
 
     if {$ns ne [namespace current]} {
         error "Unrecognized error type $ns"

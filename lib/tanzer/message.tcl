@@ -159,8 +159,7 @@ proc ::tanzer::message::field {name} {
                 ::tanzer::error throw 500 "Malformed HTTP response"
             }
 
-            set version [lindex $responseParts 0]
-            set status  [lindex $responseParts 1]
+            lassign $responseParts version status
         } elseif {[regexp -nocase {^(?:[a-z]+)\s+} $line {}]} {
             if {!$opts(request) || $action ne {} || $index != 0} {
                 ::tanzer::error throw $opts(errorStatus) $opts(errorMessage)
@@ -176,9 +175,7 @@ proc ::tanzer::message::field {name} {
                 ::tanzer::error throw 400 "Malformed HTTP request"
             }
 
-            set httpMethod  [lindex $action 0]
-            set httpUri     [lindex $action 1]
-            set httpVersion [lindex $action 2]
+            lassign $action httpMethod httpUri httpVersion
 
             if {$httpVersion eq {}} {
                 set httpVersion $::tanzer::message::defaultVersion
