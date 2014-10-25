@@ -211,7 +211,7 @@ namespace eval ::tanzer::server {
         -blocking    0 \
         -buffering   none
 
-    set session [::tanzer::new [self] $sock $config(proto)]
+    set session [::tanzer::session new [self] $sock $config(proto)]
 
     $session set sockaddr [list $addr $port]
 
