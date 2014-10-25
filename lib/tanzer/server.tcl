@@ -125,12 +125,56 @@ namespace eval ::tanzer::server {
     return [$logger log [self] {*}$args]
 }
 
+##
+# Route a request handler to the server.  Arguments are as follows:
+#
+# - `$method`
+#
+#   A non-anchored regular expression performing a case insensitive match on
+#   the incoming HTTP request method.  Anchoring is performed by the request
+#   route matching engine.
+#
+# - `$pattern`
+#
+#   A URI path, containing any number of path components describing named
+#   parameters in the `:param` style.  Paths ending with `*` will match any
+#   incoming URI path parts before the glob.
+#
+# - `$host`
+#
+#   A non-anchored regular expression performing a case insensitive match on
+#   the incoming HTTP Host: request header.  Anchoring is performed by the
+#   request route matching engine.
+#
+# - `$args`
+#
+#   Any number of arguments desribing the request handler to be dispatched
+#   for requests that match the route described by an invocation to this
+#   method.
+#
+#   The following arguments will be appended to the script specified in
+#   `$args`:
+#
+#   - An event, `read` or `write`, indicating the session socket is ready to be
+#     read from or written to
+#
+#   - A reference to a `::tanzer::session` object
+#
+#   - When dispatching a `read` event, a chunk of data read from the request
+#     body
+#
+#   .
+# .
+#
 ::oo::define ::tanzer::server method route {method pattern host args} {
     my variable routes
 
     lappend routes [::tanzer::route new $method $pattern $host $args]
 }
 
+##
+# Return a list of the current routed request handlers.
+#
 ::oo::define ::tanzer::server method routes {} {
     my variable routes
 
