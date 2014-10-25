@@ -8,6 +8,10 @@ package require TclOO
 ::oo::define ::tanzer::route constructor {newMethod newPattern newHost newScript} {
     my variable method pattern host script
 
+    if {[catch {regexp $newHost ""}]} {
+        error "Invalid host pattern $newHost"
+    }
+
     set method  $newMethod
     set host    $newHost
     set script  $newScript
