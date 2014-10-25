@@ -137,6 +137,10 @@ namespace eval ::tanzer::server {
     return $routes
 }
 
+##
+# Make the server completely forget about `$sock`.  The server will forget
+# about the session handler associated with the socket.
+#
 ::oo::define ::tanzer::server method forget {sock} {
     my variable sessions
 
@@ -147,6 +151,10 @@ namespace eval ::tanzer::server {
     unset sessions($sock)
 }
 
+##
+# Close socket `$sock`, destroy the associated session handler, and forget
+# about the socket and session handler.
+#
 ::oo::define ::tanzer::server method close {sock} {
     my variable sessions
 
@@ -161,6 +169,11 @@ namespace eval ::tanzer::server {
     my forget $sock
 }
 
+##
+# The default I/O event handler associated with new connection sockets opened
+# by the server.  `$event` is one of `read` or `write`.  Not meant to be called
+# directly.
+#
 ::oo::define ::tanzer::server method respond {event sock} {
     my variable sessions logger
 
@@ -205,6 +218,12 @@ namespace eval ::tanzer::server {
     }
 }
 
+##
+# The callback to `[socket -server]`.  Creates a new ::tanzer::session
+# object associated with `$sock`, and stores the remote address and socket
+# port for `$sock` in the new session object.  The default event handler will
+# be installed for `$sock` for only `read` events.
+#
 ::oo::define ::tanzer::server method accept {sock addr port} {
     my variable config sessions
 
@@ -224,12 +243,18 @@ namespace eval ::tanzer::server {
     return
 }
 
+##
+# Starts the server.  Incoming connections are passed on to @ref accept.
+#
 ::oo::define ::tanzer::server method listen {} {
     my variable config
 
     socket -server [list [self] accept] $config(port)
 }
 
+##
+# Returns the TCP port the server is configured to listen on.
+#
 ::oo::define ::tanzer::server method port {} {
     my variable config
 
