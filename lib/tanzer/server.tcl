@@ -154,6 +154,8 @@ namespace eval ::tanzer::server {
         return
     }
 
+    close $sock
+
     $sessions($sock) destroy
 
     my forget $sock
