@@ -99,7 +99,9 @@ namespace eval ::tanzer::cgi::handler {
         return
     }
 
-    ::close $pipes($session)
+    catch {
+        ::close $pipes($session)
+    }
 
     array unset pipes     $session
     array unset buffers   $session
