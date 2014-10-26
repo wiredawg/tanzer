@@ -3,7 +3,6 @@ package require tanzer::response
 package require tanzer::date
 package require tanzer::uri
 package require TclOO
-package require Tclx
 
 namespace eval ::tanzer::file::listing {
     variable typeRanks [dict create {*}{
@@ -84,7 +83,7 @@ proc ::tanzer::file::listing::compare {a b} {
 proc ::tanzer::file::listing::items {localDir path} {
     set items [list]
 
-    foreach name [concat .. [readdir $localDir]] {
+    foreach name [concat .. [glob -nocomplain -tails -directory $localDir *]] {
         set subpath [::tanzer::uri::filter [concat $path [list $name]]]
 
         if {$subpath eq {}} {
