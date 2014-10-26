@@ -3,7 +3,6 @@ package require tanzer::forwarder
 package require tanzer::response
 package require tanzer::error
 package require TclOO
-package require Tclx
 
 namespace eval ::tanzer::cgi::handler {
     variable proto "CGI/1.1"
@@ -70,47 +69,20 @@ namespace eval ::tanzer::cgi::handler {
             $value
     }
 
-    pipe stdin_r  stdin_w
-    pipe stdout_r stdout_w
+    set envargs [list]
 
-    foreach fh [list $stdin_r $stdin_w $stdout_r $stdout_w] {
-        fconfigure $fh \
-            -translation binary \
-            -buffering   none \
-            -blocking    1
+    foreach {key value} $childenv {
+        lappend envargs "$key=$value"
     }
 
-    fcntl $stdin_w  NOBUF 1
-    fcntl $stdout_r NOBUF 1
+    set pipe [open [list |/usr/bin/env -i {*}$envargs $config(program)] r+]
 
-    set child [fork]
+    fconfigure $pipe \
+        -translation binary \
+        -buffering   none \
+        -blocking    1
 
-    if {$child == 0} {
-        close $stdin_w
-        close $stdout_r
-
-        dup $stdin_r  stdin
-        dup $stdout_w stdout
-
-        foreach {name unused} [array get ::env] {
-            unset ::env($name)
-        }
-
-        array set ::env $childenv
-
-        execl $config(program)
-
-        exit 127
-    }
-
-    close $stdin_r
-    close $stdout_w
-
-    set pipes($session) [dict create \
-        in  $stdin_w \
-        out $stdout_r \
-        pid $child]
-
+    set pipes($session)     $pipe
     set buffers($session)   ""
     set responses($session) [::tanzer::response new \
         $::tanzer::forwarder::defaultStatus]
@@ -127,13 +99,7 @@ namespace eval ::tanzer::cgi::handler {
         return
     }
 
-    foreach name {in out pid} {
-        set $name [dict get $pipes($session) $name]
-    }
-
-    ::close $in
-    ::close $out
-    wait $pid
+    ::close $pipes($session)
 
     array unset pipes     $session
     array unset buffers   $session
@@ -151,18 +117,13 @@ namespace eval ::tanzer::cgi::handler {
 }
 
 ::oo::define ::tanzer::cgi::handler method read {session data} {
-    my variable pipes responses
+    my variable pipes
 
     if {[array get pipes $session] eq {}} {
         my open $session
     }
 
-    set pipe     $pipes($session)
-    set response $responses($session)
-    set in       [dict get $pipe in]
-    set out      [dict get $pipe out]
-
-    puts -nonewline $in $data
+    puts -nonewline $pipes($session) $data
 }
 
 ::oo::define ::tanzer::cgi::handler method write {session} {
@@ -174,8 +135,6 @@ namespace eval ::tanzer::cgi::handler {
 
     set pipe     $pipes($session)
     set response $responses($session)
-    set in       [dict get $pipe in]
-    set out      [dict get $pipe out]
 
     set size [$session config readBufferSize]
     set sock [$session sock]
@@ -189,9 +148,9 @@ namespace eval ::tanzer::cgi::handler {
     # server process and the CGI process, and move on.
     #
     if {[$session responded]} {
-        fcopy $out $sock -size $size
+        fcopy $pipe $sock -size $size
 
-        if {[eof $out]} {
+        if {[eof $pipe]} {
             my close $session
         }
 
@@ -202,7 +161,7 @@ namespace eval ::tanzer::cgi::handler {
     # Read a buffer's worth of data from the CGI subprocess and see if it's a
     # parseable response.
     #
-    append buffers($session) [read $out $size]
+    append buffers($session) [read $pipe $size]
 
     if {![$response parse buffers($session)]} {
         return
