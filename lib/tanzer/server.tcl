@@ -5,9 +5,12 @@ package require tanzer::logger
 package require tanzer::session
 package require TclOO
 
-## @file tanzer/server.tcl
+##
+# @file tanzer/server.tcl
+#
 # The connection acceptance server
 #
+
 namespace eval ::tanzer::server {
     variable name    "tanzer"
     variable version "0.1"
