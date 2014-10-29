@@ -1,15 +1,16 @@
 package provide tanzer::server 0.1
-package require tanzer::error
-package require tanzer::route
-package require tanzer::logger
-package require tanzer::session
-package require TclOO
 
 ##
 # @file tanzer/server.tcl
 #
 # The connection acceptance server
 #
+
+package require tanzer::error
+package require tanzer::route
+package require tanzer::logger
+package require tanzer::session
+package require TclOO
 
 namespace eval ::tanzer::server {
     variable name    "tanzer"

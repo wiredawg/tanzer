@@ -1,11 +1,12 @@
 package provide tanzer::error 0.1
-package require tanzer::response
 
 ##
 # @file tanzer/error.tcl
 #
 # Error handling and reporting facilities
 #
+
+package require tanzer::response
 
 ##
 # Provides structured error handling and reporting facilties as a namespace
@@ -59,6 +60,8 @@ proc ::tanzer::error::throw {status msg} {
 # * If `$::errorCode` indicates an `EPERM`, then a 403 Forbidden is thrown.
 #
 # * All other error conditions result in a 500 Internal Server Error.
+#
+# .
 #
 proc ::tanzer::error::run {script} {
     if {[catch {uplevel 1 $script} error]} {
