@@ -1,12 +1,47 @@
 package provide tanzer::forwarder 0.1
+
+##
+# @file tanzer/forwarder.tcl
+#
+# HTTP request forwarding base functionality
+#
+
 package require TclOO
 
 namespace eval ::tanzer::forwarder {
+    ##
+    # The default status to use when parsing and relaying incoming HTTP
+    # messages for forwarding.  Default value is `500`.
+    #
     variable defaultStatus 500
 }
 
+##
+# The HTTP request forwarding base class.
+#
 ::oo::class create ::tanzer::forwarder
 
+##
+# Create a new HTTP request forwarder.
+#
+# Options include:
+#
+# * `rewrite`
+# 
+#   A list of regex, `[format]` pairs which, upon the regex matching a literal
+#   request URI string, will replace the URI with a new string produced from
+#   the formatted regular expression subexpression matches.  For instance:
+#
+#   @code
+#   ::tanzer::forwarder new {
+#       rewrite {
+#           {/git?repo_name=/(.*)\.git$}             "/git/%s"
+#           {/git?repo_name=/(.*)\.git&commit=(.*)$} "/git/%s/commits/%s"
+#       }
+#   }
+#   @endcode
+# .
+#
 ::oo::define ::tanzer::forwarder constructor {opts} {
     my variable rewrite
 
