@@ -1,4 +1,11 @@
 package provide tanzer::logger 0.1
+
+##
+# @file tanzer/logger.tcl
+#
+# The tanzer logging facility
+#
+
 package require tanzer::date
 package require tanzer::uri
 package require TclOO
@@ -7,31 +14,21 @@ namespace eval ::tanzer::logger {}
 
 proc ::tanzer::logger::format {subcommand args} {
     switch -- $subcommand "err" {
-        set server [lindex $args 0]
-
-        return [concat [lrange $args 1 end] $::errorInfo]
+        return [concat $args $::errorInfo]
     } "log" {
         #
     } default {
         error "Invalid subcommand $subcommand"
     }
 
-    lassign $args server session
-
-    set request [$session request]
+    lassign $args request response
 
     #
     # TODO: Figure out how to log these sorts of events
     #
-    if {$request eq {}} {
+    if {$request eq {} || $response eq {}} {
         return
     }
-
-    set response [if {[llength $args] == 3} {
-        lindex $args 2
-    } else {
-        $session response
-    }]
 
     return [::format {%s %s - [%s] "%s %s %s" %d %d "%s" "%s"} \
         [$request client] \
@@ -50,8 +47,30 @@ proc ::tanzer::logger::default {subcommand args} {
     puts [::tanzer::logger::format $subcommand {*}$args]
 }
 
+##
+# The tanzer logging facility.
+#
 ::oo::class create ::tanzer::logger
 
+##
+# Create a new logger.  The following configuration options may be specified in
+# `$opts` as a list of key-value pairs:
+#
+# * `accessLog`
+#
+#   The path to a file to record incoming requests to.  If this is not
+#   specified, then incoming requests will be logged to standard output.
+#
+# * `errorLog`
+#
+#   The path to a file to record internal server errors to.  If this is not
+#   specified, then internal server errors will be logged to standard output.
+#
+# * `logStackTraces`
+#
+#   A boolean value, defaulting to `1`, indicating whether or not to log stack
+#   traces when handling error logs.
+#
 ::oo::define ::tanzer::logger constructor {opts} {
     my variable config files
 
@@ -83,20 +102,27 @@ proc ::tanzer::logger::default {subcommand args} {
     my open
 }
 
+##
+# Close all log files held by the current logger object.
+#
 ::oo::define ::tanzer::logger method close {} {
     my variable files
 
     foreach key {accessLog errorLog} {
         if {[array get config $key] ne {}} {
             close $files($key)
+            unset files($key)
         }
-
-        unset files($key)
     }
 
     return
 }
 
+##
+# Open all log files specified at logger construction time.  If the log files
+# are already opened, then they will be closed and reopened.  This may be a
+# useful thing if log files are rotated and need to be recreated.
+#
 ::oo::define ::tanzer::logger method open {} {
     my variable config files
 
@@ -114,23 +140,36 @@ proc ::tanzer::logger::default {subcommand args} {
     return
 }
 
+##
+# Write `$line` to the logging destination `$dest` (one of `accessLog` or
+# `errorLog`), immediately flushing the output to disk.
+#
 ::oo::define ::tanzer::logger method write {dest line} {
     my variable files
 
     puts $files($dest) $line
     flush $files($dest)
-}
-
-::oo::define ::tanzer::logger method log {server session args} {
-    my write accessLog [::tanzer::logger::format log $server $session {*}$args]
 
     return
 }
 
-::oo::define ::tanzer::logger method err {server error} {
+##
+# Record the incoming `$request` and its `$response` to the access log.
+#
+::oo::define ::tanzer::logger method log {request response} {
+    my write accessLog [::tanzer::logger::format log $request $response]
+
+    return
+}
+
+##
+# Record the specified `$error` to the error log, appending any stack traces if
+# `logStackTraces` is set to `1`.
+#
+::oo::define ::tanzer::logger method err {error} {
     my variable config
 
-    my write errorLog [::tanzer::logger::format err $server $error]
+    my write errorLog [::tanzer::logger::format err $error]
 
     if {$config(logStackTraces)} {
         my write errorLog $::errorInfo

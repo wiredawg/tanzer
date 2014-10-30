@@ -123,10 +123,12 @@ namespace eval ::tanzer::server {
     return $config($name)
 }
 
-::oo::define ::tanzer::server method log {args} {
+::oo::define ::tanzer::server method log {request response} {
     my variable logger
 
-    return [$logger log [self] {*}$args]
+    $logger log $request $response
+
+    return
 }
 
 ##
@@ -239,7 +241,7 @@ namespace eval ::tanzer::server {
         # then simply log the error and move on.
         #
         if {[$session responded]} {
-            $logger err [self] $e
+            $logger err $e
 
             my close $sock
 
@@ -248,12 +250,12 @@ namespace eval ::tanzer::server {
 
         if {[::tanzer::error servable $e]} {
             if {[::tanzer::error status $e] >= 500} {
-                $logger err [self] $e
+                $logger err $e
             }
 
             set response [::tanzer::error response $e]
         } else {
-            $logger err [self] $e
+            $logger err $e
 
             set response [::tanzer::error response [::tanzer::error fatal]]
         }

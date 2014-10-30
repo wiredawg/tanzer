@@ -48,9 +48,9 @@ package require TclOO
     return $script
 }
 
-#
-# Given an ::tanzer::uri object, return the relative path string matched by the
-# ending glob.
+##
+# Given an ::tanzer::uri object in `$path`, return the relative path string
+# matched by the ending glob.
 #
 ::oo::define tanzer::route method relative {path} {
     my variable pattern

@@ -403,7 +403,7 @@ namespace eval ::tanzer::session {
 }
 
 ::oo::define ::tanzer::session method send {newResponse} {
-    my variable server sock response keepalive
+    my variable server sock request response keepalive
 
     if {$response ne {}} {
         error "Already sent response"
@@ -414,7 +414,7 @@ namespace eval ::tanzer::session {
 
     set response $newResponse
 
-    $server log [self] $newResponse
+    $server log $request $response
 
     return
 }
