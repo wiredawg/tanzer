@@ -254,16 +254,6 @@ proc ::tanzer::message::field {name} {
     return $version
 }
 
-::oo::define ::tanzer::message method uri {args} {
-    error "Not implemented"
-}
-
-::oo::define ::tanzer::message method headerLength {} {
-    my variable headerLength
-
-    return $headerLength
-}
-
 ::oo::define ::tanzer::message method header {name {value ""}} {
     my variable headers
 
