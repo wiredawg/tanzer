@@ -171,7 +171,7 @@ namespace eval ::tanzer::scgi::request {
     # and determine if the request is too long or short.
     #
     set remaining [expr {
-        [string length $buffer] - [my headerLength] - [my length]}]
+        [string length $buffer] - $headerLength - [my length]}]
 
     if {$remaining < 0} {
         ::tanzer::error throw 400 "Request body too long"
