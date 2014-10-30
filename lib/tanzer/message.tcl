@@ -1,11 +1,33 @@
 package provide tanzer::message 0.1
+
+##
+# @file tanzer/message.tcl
+#
+# HTTP message object and parser
+#
+
 package require TclOO
 
+##
+# Global variables specific to parsing HTTP/1.1 messages
+#
 namespace eval ::tanzer::message {
+    ##
+    # The maximum length of any HTTP message, including request or response
+    # preamble, and headers, is `1MB`.
+    #
     variable maxLength 1048576
-    variable defaultVersion   "HTTP/1.1"
+
+    ##
+    # The default HTTP protocol version assumed is `HTTP/1.1`.
+    #
+    variable defaultVersion "HTTP/1.1"
 }
 
+##
+# Determine if the HTTP version string provided in `$version` is supported by
+# ::tanzer::message.
+#
 proc ::tanzer::message::supportedVersion {version} {
     switch $version {
         "HTTP/0.9" -
@@ -18,25 +40,46 @@ proc ::tanzer::message::supportedVersion {version} {
     return 0
 }
 
+##
+# Convert a message field `$name` into a standard representation with
+# consistent camel case capitalization.
+#
+# For example:
+#
+#     @code
+#     ::tanzer::message::field X-FOO-BAR
+#
+#     ::tanzer::message::field x-foo-bar
+#     @endcode
+#
+# ...All yield `X-Foo-Bar`.
+#
 proc ::tanzer::message::field {name} {
-    set parts [split $name -]
+    set parts [split $name "-"]
     set new   [list]
 
     foreach part $parts {
         lappend new [string toupper [string tolower $part] 0 0]
     }
 
-    return [join $new -]
+    return [join $new "-"]
 }
 
+##
+# The HTTP message object.
+#
 ::oo::class create ::tanzer::message
 
+##
+# Create a new HTTP message.  All arguments in `$args` are passed to the method
+# ::tanzer::message::setup verbatim.
+#
 ::oo::define ::tanzer::message constructor {args} {
-    my variable opts ready chunked data version
+    my variable opts ready chunked body version
 
     set ready   0
     set chunked ""
-    set data    {}
+    set body    {}
     set version $::tanzer::message::defaultVersion
     
     array set opts {
@@ -49,11 +92,27 @@ proc ::tanzer::message::field {name} {
     }
 
     if {[llength $args] > 0} {
-        my config {*}$args
+        my setup {*}$args
     }
 }
 
-::oo::define ::tanzer::message method config {args} {
+##
+# Set up the current message object.  Flags include:
+#
+# * `-newline value`
+#
+#   Specify the newline sequence (like `"\r\n"` or `"\n"`) used to parse any
+#   data specified for this message.
+#
+# * `-request`
+#
+#   Configure the current message as an HTTP request.
+#
+# * `-response`
+#
+#   Configure the current message as an HTTP response.
+#
+::oo::define ::tanzer::message method setup {args} {
     my variable opts
 
     if {[llength $args] == 0} {
@@ -91,18 +150,31 @@ proc ::tanzer::message::field {name} {
     return
 }
 
+##
+# Returns true if the current request or response object has been successfully
+# parsed by ::tanzer::message::parse.
+#
 ::oo::define ::tanzer::message method ready {} {
     my variable ready
 
     return $ready
 }
 
+##
+# Treturns true if the current request or response object has not yet been
+# fully parsed by ::tanzer::message::parse.
+#
 ::oo::define ::tanzer::message method incomplete {} {
     my variable ready
 
     return [expr {$ready == 0}]
 }
 
+##
+# Parse the HTTP message present in a buffer named `$varName` in the calling
+# context.  All headers, request or response data will be parsed and set as
+# appropriate in the current message object.
+#
 ::oo::define ::tanzer::message method parse {varName} {
     my variable opts version status ready env headers \
         path uri headerLength
@@ -242,6 +314,10 @@ proc ::tanzer::message::field {name} {
     return 1
 }
 
+##
+# Return the current message HTTP version string, or, if one was not parsed,
+# use the default assumed in ::tanzer::message::defaultVersion.
+#
 ::oo::define ::tanzer::message method version {{newVersion ""}} {
     my variable version
 
@@ -254,6 +330,11 @@ proc ::tanzer::message::field {name} {
     return $version
 }
 
+##
+# Get or set the value of a message header.  If only `$name` is specified, then
+# return the value of the header.  If `$value` is also specified, then set or
+# replace the current value of `$name` with `$value`.
+#
 ::oo::define ::tanzer::message method header {name {value ""}} {
     my variable headers
 
@@ -268,6 +349,12 @@ proc ::tanzer::message::field {name} {
     return [dict get $headers $name]
 }
 
+##
+# Get or set all headers associated with the current message.  If a list of
+# key-value pairs is specified in `$newHeaders`, then set each of the headers
+# contained therein using ::tanzer::message::header.  Otherwise, return the
+# dictionary of headers for the current message.
+#
 ::oo::define ::tanzer::message method headers {{newHeaders {}}} {
     my variable headers
 
@@ -282,12 +369,20 @@ proc ::tanzer::message::field {name} {
     return
 }
 
+##
+# Returns true if the header `$name` exists in the current message.
+#
 ::oo::define ::tanzer::message method headerExists {name} {
     my variable headers
 
     return [dict exists $headers $name]
 }
 
+##
+# Returns true if an `Accept-Encoding:` header is defined in the current
+# message, and the value `$encoding` is one of the lsited accepted encodings
+# specified in the message.  Otherwise, returns false.
+#
 ::oo::define ::tanzer::message method encodingAccepted {encoding} {
     if {![my headerExists Accept-Encoding]} {
         return 0
@@ -304,6 +399,11 @@ proc ::tanzer::message::field {name} {
     return 0
 }
 
+##
+# Returns true if the current message is presumed to use a chunked transfer
+# encoded body, as indicated by the presence of a `Transfer-Encoding:` header
+# with a value of `Chunked` (case insensitive).  Otherwise, returns false.
+#
 ::oo::define ::tanzer::message method chunked {} {
     my variable chunked
 
@@ -322,10 +422,37 @@ proc ::tanzer::message::field {name} {
     return [set chunked 0]
 }
 
-::oo::define ::tanzer::message method length {} {
-    my variable data
+##
+# Append the bytes in `$data` to the current message body.
+#
+::oo::define ::tanzer::message method buffer {data} {
+    my variable body
 
-    set len [string length $data]
+    append body $data
+
+    return
+}
+
+##
+# Return any body data buffered for the current message.
+#
+::oo::define ::tanzer::message method body {} {
+    my variable body
+
+    return $body
+}
+
+##
+# Returns the length of the current message body.  If a message body was
+# buffered using ::tanzer::message::buffer, then the total length of the
+# message body buffered is returned.  Otherwise, if a `Content-Length:` header
+# value is present, return that.  If neither of these conditions are true, then
+# return zero to indicate an empty message body.
+#
+::oo::define ::tanzer::message method length {} {
+    my variable body
+
+    set len [string length $body]
 
     return [if {$len > 0} {
         list $len
@@ -336,6 +463,12 @@ proc ::tanzer::message::field {name} {
     }]
 }
 
+##
+# Returns true if there is a `Connection:` header specifying a `keep-alive`
+# (case insensitive) value present in the current message.  Or, if there is no
+# `Content-Length:` header specified for the current message, then return false
+# regardless.  In any other case, return false.
+#
 ::oo::define ::tanzer::message method keepalive {} {
     #
     # It's unknown if we want to keep the session alive, so let's let the
@@ -358,8 +491,6 @@ proc ::tanzer::message::field {name} {
     # Otherwise, if a value does exist, then if it explicitly indicates that
     # the session is to be kept alive, then say "yes".  Otherwise, no.
     #
-    set value [my header Connection]
-
     switch -nocase -- [my header Connection] Keep-Alive {
         return 1
     }
@@ -367,22 +498,12 @@ proc ::tanzer::message::field {name} {
     return 0
 }
 
-::oo::define ::tanzer::message method data {} {
-    my variable data
-
-    return $data
-}
-
-::oo::define ::tanzer::message method buffer {newData} {
-    my variable data
-
-    append data $newData
-
-    return
-}
-
+##
+# Encode and send the current message, headers, body and request or response
+# preamble, to the remote end specified by `$sock`.
+#
 ::oo::define ::tanzer::message method send {sock} {
-    my variable opts headers data
+    my variable opts headers body
 
     set tmpHeaders $headers
 
@@ -402,7 +523,7 @@ proc ::tanzer::message::field {name} {
             [my version] $status [::tanzer::response::lookup $status]]
     }
 
-    set len [string length $data]
+    set len [string length $body]
 
     if {$len > 0} {
         if {[my chunked]} {
@@ -420,6 +541,6 @@ proc ::tanzer::message::field {name} {
     puts -nonewline $sock "\r\n"
 
     if {$len > 0} {
-        puts -nonewline $sock $data
+        puts -nonewline $sock $body
     }
 }
