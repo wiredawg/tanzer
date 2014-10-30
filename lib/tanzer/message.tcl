@@ -101,8 +101,8 @@ proc ::tanzer::message::field {name} {
 #
 # * `-newline value`
 #
-#   Specify the newline sequence (like `"\r\n"` or `"\n"`) used to parse any
-#   data specified for this message.
+#   Specify the newline sequence used to parse any data specified for this
+#   message.
 #
 # * `-request`
 #
