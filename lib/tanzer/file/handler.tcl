@@ -63,7 +63,7 @@ package require TclOO
         }
     }
 
-    return [join [concat $config(root) $relative] "/"]
+    return [join [concat [list $config(root)] $relative] "/"]
 }
 
 ::oo::define ::tanzer::file::handler method serve {session localPath st} {
