@@ -10,7 +10,7 @@ package provide tanzer::date 0.1
 # Parse and generate RFC 2616 timestamps.
 #
 namespace eval ::tanzer::date {
-   variable rfc2616Format "%a, %d %b %Y %T %Z"
+    variable rfc2616Format "%a, %d %b %Y %T %Z"
 }
 
 ##
