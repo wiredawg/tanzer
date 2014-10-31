@@ -1,4 +1,11 @@
 package provide tanzer::request 0.1
+
+##
+# @file tanzer/request.tcl
+#
+# The HTTP/1.1 request object
+#
+
 package require tanzer::message
 package require tanzer::date
 package require tanzer::uri
