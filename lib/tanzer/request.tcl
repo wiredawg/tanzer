@@ -15,8 +15,8 @@ package require TclOO
 # Create a request object attached to the session specified in `$newSession`.
 #
 ::oo::define ::tanzer::request constructor {newSession} {
-    my variable session env headers buffer config \
-        uri path params rewritten timestamp headerLength
+    my variable session env headers buffer uri path \
+        params rewritten timestamp headerLength
 
     next -newline "\r\n" \
          -request
