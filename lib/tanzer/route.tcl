@@ -1,10 +1,30 @@
 package provide tanzer::route 0.1
+
+##
+# @file tanzer/route.tcl
+#
+# The HTTP request handler route specification object
+#
+
 package require tanzer::error
 package require tanzer::uri
 package require TclOO
 
+##
+# The HTTP request handler route specification object, wherein the HTTP request
+# method regular expression, path glob pattern, host regular expression, and
+# request handler script are kept; routes are held by ::tanzer::server in a
+# flat list, and compared by ::tanzer::server in order until it finds a route
+# object that ::tanzer::request deems matching.
+#
 ::oo::class create ::tanzer::route
 
+##
+# Create a new route object with the specified case-insensitive HTTP method 
+# regular expression in `$newMethod`, request path pattern in `$newPattern`,
+# `Host:` header match pattern in `$newHost`, and request handler in
+# `$newScript`.
+#
 ::oo::define ::tanzer::route constructor {newMethod newPattern newHost newScript} {
     my variable method pattern host script
 
@@ -24,24 +44,37 @@ package require TclOO
     $pattern destroy
 }
 
+##
+# Returns the host matching regular expression for the current route.
+#
 ::oo::define ::tanzer::route method host {} {
     my variable host
 
     return $host
 }
 
+##
+# Returns the method routing regular expression for the current route.
+#
 ::oo::define ::tanzer::route method method {} {
     my variable method
 
     return $method
 }
 
+
+##
+# Returns the request path routing pattern for the current route.
+#
 ::oo::define ::tanzer::route method pattern {} {
     my variable pattern
 
     return $pattern
 }
 
+##
+# Returns the request handler callback script for the current route.
+#
 ::oo::define ::tanzer::route method script {} {
     my variable script
 
