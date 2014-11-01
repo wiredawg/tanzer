@@ -1,8 +1,21 @@
 package provide tanzer::response 0.1
+
+##
+# @file tanzer/response.tcl
+#
+# The HTTP response object
+#
+
 package require tanzer::message
 package require TclOO
 
+##
+# A namespace containing HTTP statuses.
+#
 namespace eval ::tanzer::response {
+    ##
+    # The HTTP statuses that are served and recognized by tanzer.
+    #
     variable statuses
 
     array set statuses {
@@ -21,6 +34,10 @@ namespace eval ::tanzer::response {
     }
 }
 
+##
+# Given the HTTP status code in `$status`, return a text representation
+# thereof, or an empty string when passed an unrecognized HTTP status.
+#
 proc ::tanzer::response::lookup {status} {
     variable statuses
 
@@ -31,10 +48,18 @@ proc ::tanzer::response::lookup {status} {
     return ""
 }
 
+##
+# The HTTP response class.
+#
 ::oo::class create ::tanzer::response {
     superclass ::tanzer::message
 }
 
+##
+# Create a new response object with the status indicated in `$newStatus`.  If
+# a list of header/value pairs is provided in `$newHeaders`, then load those
+# default headers.
+#
 ::oo::define ::tanzer::response constructor {newStatus {newHeaders {}}} {
     my variable version status headers
 
@@ -49,6 +74,10 @@ proc ::tanzer::response::lookup {status} {
     }
 }
 
+##
+# Return the HTTP status code of the current response.  If `$newStatus` is
+# provided, then set the status code with the value provided.
+#
 ::oo::define ::tanzer::response method status {{newStatus ""}} {
     my variable status
 
