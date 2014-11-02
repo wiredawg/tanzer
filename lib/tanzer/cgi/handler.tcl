@@ -1,4 +1,11 @@
 package provide tanzer::cgi::handler 0.1
+
+##
+# @file tanzer/cgi/handler.tcl
+#
+# A request handler providing support for executing CGI/1.1 programs
+#
+
 package require tanzer::forwarder
 package require tanzer::response
 package require tanzer::error
@@ -8,10 +15,47 @@ namespace eval ::tanzer::cgi::handler {
     variable proto "CGI/1.1"
 }
 
+##
+# The CGI/1.1 inbound request handler.
+#
 ::oo::class create ::tanzer::cgi::handler {
     superclass ::tanzer::forwarder
 }
 
+##
+# Create a new CGI/1.1 inbound request handler.
+#
+# The following values must be specified as a list of key-value pairs in
+# `$opts`:
+#
+# * `program`
+#
+#   The path to a CGI/1.1 executable.
+#
+# * `name`
+#
+#   The script name to report to the CGI/1.1 executable via the `SCRIPT_NAME`
+#   environment variable.
+#
+# * `root`
+#
+#   The document to report to the CGI/1.1 executable via the `DOCUMENT_ROOT`
+#   environment variable.
+#
+# .
+#
+# The CGI/1.1 handler is deliberately meant to provide service for one
+# executable, primarily due to security concerns.  However, the flexibility
+# afforded by associating an arbitrary route path with any number of these
+# request handlers provides advantages over requiring a CGI dispatcher to
+# locate scripts in a designated cgi-bin directory.
+#
+# The CGI/1.1 handler functions simply: After being given the incoming request,
+# it executes the CGI program with the appropriate environment variables, and
+# parses the CGI program's response into a new ::tanzer::response object, which
+# is then sent to the client.  The response body is subsequently passed to the
+# client unmodified.
+#
 ::oo::define ::tanzer::cgi::handler constructor {opts} {
     my variable config pipes buffers responses
 
