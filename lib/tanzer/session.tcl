@@ -83,18 +83,18 @@ namespace eval ::tanzer::session {
     my variable watchdog
 
     array set opts {
-        disable 0
+        cancel 0
     }
 
     foreach arg $args {
-        switch -- $arg "-disable" {
-            set opts(disable) 1
+        switch -- $arg "-cancel" {
+            set opts(cancel) 1
         } default {
             error "Invalid flag $arg"
         }
     }
 
-    if {$opts(disable)} {
+    if {$opts(cancel)} {
         if {$watchdog ne {}} {
             after cancel $watchdog
             set watchdog {}
