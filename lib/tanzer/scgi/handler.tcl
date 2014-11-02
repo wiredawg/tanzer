@@ -1,4 +1,11 @@
 package provide tanzer::scgi::handler 0.1
+
+##
+# @file tanzer/scgi/handler.tcl
+#
+# The SCGI client request handler
+#
+
 package require tanzer::forwarder
 package require tanzer::response
 package require tanzer::error
@@ -8,10 +15,42 @@ namespace eval ::tanzer::scgi::handler {
     variable version 1
 }
 
+##
+# The SCGI client, implemented as a request handler.
+#
 ::oo::class create ::tanzer::scgi::handler {
     superclass ::tanzer::forwarder
 }
 
+##
+# The following values must be provided in a list of key-value pairs listed in
+# `$opts`.
+#
+# * `host`
+#
+#   The hostname or address of the SCGI service to dispatch requests to.
+#
+# * `port`
+#
+#   The TCP port of the SCGI service to dispatch requests to.
+#
+# * `name`
+#
+#   The name of the script that shall be identified to the service via the
+#   `SCRIPT_NAME` SCGI request parameter.
+#
+# .
+#
+# All inbound requests are transformed into an SCGI request as per the official
+# SCGI protocol specificaton:
+#
+#     http://python.ca/scgi/protocol.txt
+#
+# The response from the SCGI service is parsed into a ::tanzer::response
+# message object, and sent by the session handler to the client.  In all cases,
+# this request handler shall forward request to the remote service, and
+# response bodies from the SCGI service to the originating client.
+#
 ::oo::define ::tanzer::scgi::handler constructor {opts} {
     my variable config socks buffers \
         bodies requested responses
@@ -40,6 +79,12 @@ namespace eval ::tanzer::scgi::handler {
     }
 }
 
+##
+# Not meant to be called directly.
+#
+# Given the session handler specified in `$session`, serialize the current
+# request into an SCGI protocol request return value.
+#
 ::oo::define ::tanzer::scgi::handler method encodeRequest {session} {
     my variable config bodies
 
@@ -48,13 +93,13 @@ namespace eval ::tanzer::scgi::handler {
     set addr    [lindex [chan configure [$session sock] -sockname] 0]
 
     set env [list \
-        SCGI              $::tanzer::scgi::handler::version \
-        SERVER_SOFTWARE   "$::tanzer::server::name/$::tanzer::server::version" \
-        SERVER_ADDR       $addr \
-        SERVER_PORT       [$server port] \
-        SCRIPT_NAME       $config(name) \
-        REQUEST_METHOD    [$request method] \
-        PWD               [pwd]]
+        SCGI            $::tanzer::scgi::handler::version \
+        SERVER_SOFTWARE "$::tanzer::server::name/$::tanzer::server::version" \
+        SERVER_ADDR     $addr \
+        SERVER_PORT     [$server port] \
+        SCRIPT_NAME     $config(name) \
+        REQUEST_METHOD  [$request method] \
+        PWD             [pwd]]
 
     lappend env CONTENT_LENGTH [string length $bodies($session)]
 
