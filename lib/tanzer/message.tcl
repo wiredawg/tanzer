@@ -506,6 +506,17 @@ proc ::tanzer::message::field {name} {
     my variable opts headers body
 
     set tmpHeaders $headers
+    set len        [string length $body]
+
+    if {$len > 0 && [my chunked]} {
+        ::tanzer::error throw [expr {$opts(request)? 400: 500}] \
+            "Cannot use chunked transfer encoding in fixed length entities"
+    }
+
+    #
+    # Temporarily enable buffering to prevent too many write() system calls.
+    #
+    fconfigure $sock -buffering full
 
     if {$opts(request)} {
         dict set tmpHeaders User-Agent \
@@ -523,14 +534,7 @@ proc ::tanzer::message::field {name} {
             [my version] $status [::tanzer::response::lookup $status]]
     }
 
-    set len [string length $body]
-
     if {$len > 0} {
-        if {[my chunked]} {
-            ::tanzer::error throw [expr {$opts(request)? 400: 500}] \
-                "Cannot use chunked transfer encoding in fixed length entities"
-        }
-
         my header Content-Length $len
     }
 
@@ -543,4 +547,13 @@ proc ::tanzer::message::field {name} {
     if {$len > 0} {
         puts -nonewline $sock $body
     }
+
+    #
+    # Flush the buffers and disable buffering.
+    #
+    flush $sock
+
+    fconfigure $sock -buffering none
+
+    return
 }
