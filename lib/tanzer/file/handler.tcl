@@ -1,4 +1,11 @@
 package provide tanzer::file::handler 0.1
+
+##
+# @file tanzer/file/handler.tcl
+#
+# The file request handler
+#
+
 package require tanzer::file::listing
 package require tanzer::file::partial
 package require tanzer::file
@@ -6,8 +13,30 @@ package require tanzer::error
 package require tanzer::response
 package require TclOO
 
+##
+# The file request handler class.  Provides read-only static file service.
+#
 ::oo::class create ::tanzer::file::handler
 
+##
+# The following values should be specified in a list of key-value pairs in
+# `$opts`:
+#
+# * `listings`
+#
+#   A boolean indicating whether directory listings should be enabled.  Default
+#   value is `0`.
+#
+# * `indexFile`
+#
+#   The name of the index file to look for when serving a request for a
+#   directory path.  Default value is `index.html`.
+#
+# .
+#
+# In order to facilitate service of file hierarchies, the file request handler
+# should be bound to a wildcard glob route path, such as `/foo/*`.
+#
 ::oo::define ::tanzer::file::handler constructor {opts} {
     my variable config
 
@@ -37,6 +66,14 @@ package require TclOO
     }
 }
 
+##
+# Not intended for use as a public method.
+#
+# Given the path component of the request URI in `$request`, and the parts of
+# the path that match everything at and after any possible `*` glob portion
+# of the path glob in `$route`, determine the location of the local file to be
+# served.
+#
 ::oo::define ::tanzer::file::handler method resolve {request route} {
     my variable config
 
