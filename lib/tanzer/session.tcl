@@ -49,10 +49,10 @@ namespace eval ::tanzer::session {
     set remaining 0
     set keepalive 1
     set active    0
-    set watchdog  [after [expr {$::tanzer::session::timeout * 1000}] \
-        [self] ping]
 
     set config(readBufferSize) [$newServer config readBufferSize]
+
+    my monitor
 }
 
 ::oo::define ::tanzer::session destructor {
@@ -70,14 +70,41 @@ namespace eval ::tanzer::session {
     if {$sock ne {}} {
         $server forget $sock
         close $sock
-        set sock {}
     }
 
-    if {$watchdog ne {}} {
-        after cancel $watchdog
-    }
-
+    my monitor -cancel
     my cleanup
+}
+
+##
+# Install the watchdog timer for the current session.
+#
+::oo::define ::tanzer::session method monitor {args} {
+    my variable watchdog
+
+    array set opts {
+        disable 0
+    }
+
+    foreach arg $args {
+        switch -- $arg "-disable" {
+            set opts(disable) 1
+        } default {
+            error "Invalid flag $arg"
+        }
+    }
+
+    if {$opts(disable)} {
+        if {$watchdog ne {}} {
+            after cancel $watchdog
+            set watchdog {}
+        }
+
+        return
+    }
+
+    set watchdog [after [expr {$::tanzer::session::timeout * 1000}] \
+        [self] ping]
 }
 
 ##
@@ -188,6 +215,11 @@ namespace eval ::tanzer::session {
     if {[string length $buffer] > 0} {
         my handle read
     }
+
+    #
+    # Finally, reenable the watchdog timer for the current session.
+    #
+    my monitor
 }
 
 ##
@@ -202,12 +234,14 @@ namespace eval ::tanzer::session {
 #
 ::oo::define ::tanzer::session method handle {event} {
     my variable sock server request keepalive \
-        buffer config handler active
+        buffer config handler active watchdog
 
     set active   1
     set streamed 0
 
     if {$event eq "write"} {
+        my monitor -cancel
+
         return [{*}$handler write [self]]
     }
 
