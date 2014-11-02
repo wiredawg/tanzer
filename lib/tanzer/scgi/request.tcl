@@ -1,4 +1,11 @@
 package provide tanzer::scgi::request 0.1
+
+##
+# @file tanzer/scgi/request.tcl
+#
+# Facility for supporting inbound SCGI reuqests
+#
+
 package require tanzer::request
 package require tanzer::error
 package require tanzer::uri
@@ -9,12 +16,15 @@ namespace eval ::tanzer::scgi::request {
     variable keepalive 1
 }
 
+##
+# The facilities for providing SCGI services.  Incrementally parses an inbound
+# SCGI request, and decodes all request parameters into the appropriate HTTP
+# message header values.  Not meant to be used directly; but rather, SCGI
+# service can be achieved in ::tanzer::server by choosing `proto` configuration
+# value `scgi` rather than the default `http`.
+#
 ::oo::class create ::tanzer::scgi::request {
     superclass ::tanzer::request
-}
-
-::oo::define ::tanzer::scgi::request method keepalive {} {
-    return 0
 }
 
 ::oo::define ::tanzer::scgi::request method tokenize {data} {
