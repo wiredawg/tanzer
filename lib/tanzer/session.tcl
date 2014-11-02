@@ -1,15 +1,36 @@
 package provide tanzer::session 0.1
+
+##
+# @file tanzer/session.tcl
+#
+# The HTTP session handler
+#
+
 package require tanzer::message::chunk
 package require tanzer::response
 package require tanzer::error
 package require TclOO
 
+##
+# Default values for ::tanzer::session object state.
+#
 namespace eval ::tanzer::session {
     variable timeout 5
 }
 
+##
+# The HTTP session handler class.  For each new inbound connection accepted, a
+# new session handler is created to handle requests for the server object
+# `$newServer`, referencing channel `$newSock`, and request protocol in
+# `$newProto`.
+#
 ::oo::class create ::tanzer::session
 
+##
+# Create a new session handler to service an incoming request from server
+# `$newServer`, inbound from channel `$newSock`, in the request protocol
+# specified in `$newProto`.
+#
 ::oo::define ::tanzer::session constructor {newServer newSock newProto} {
     my variable server sock proto request route handler \
         cleanup state response buffer config remaining keepalive \
@@ -59,6 +80,13 @@ namespace eval ::tanzer::session {
     my cleanup
 }
 
+##
+# When `$args` is not empty, specify a callback to be dispatched whenever the
+# current session handler is ready to clean any associated state and prepare
+# to handle a new request, or to end.  Otherwise, when no arguments are
+# specified, any previously provided cleanup callback is executed precisely
+# once, and the callback is cleared.
+#
 ::oo::define ::tanzer::session method cleanup {args} {
     my variable cleanup
 
@@ -77,8 +105,8 @@ namespace eval ::tanzer::session {
     return $ret
 }
 
-#
-# Delegate events to a different request handler.
+##
+# Delegate events to a different request handler as specified in `$args.
 #
 ::oo::define ::tanzer::session method delegate {args} {
     my variable handler
@@ -86,7 +114,7 @@ namespace eval ::tanzer::session {
     return [set handler $args]
 }
 
-#
+##
 # Called to allow a request handler to indicate to the session handler that the
 # session is still indeed active, even if the request handler decides to side
 # step the session handler for I/O event dispatch in such cases as letting the
@@ -98,7 +126,7 @@ namespace eval ::tanzer::session {
     set active 1
 }
 
-#
+##
 # Called by a watchdog timer to make sure the session is still alive, and to
 # reset the timeout if it is.
 #
@@ -115,9 +143,9 @@ namespace eval ::tanzer::session {
     set watchdog [after [expr {$::tanzer::session::timeout * 1000}] [self] ping]
 }
 
-#
-# Called by request handlers to reset session state and handle keepalive
-# sessions.
+##
+# Clear any state associated with the session's current request, and prepare
+# the session handler to handle a new request.
 #
 ::oo::define ::tanzer::session method nextRequest {} {
     my variable server sock buffer handler route \
@@ -162,7 +190,13 @@ namespace eval ::tanzer::session {
     }
 }
 
-#
+##
+# Handle the `read` or `write` event as specified in `$event`.  Upon the
+# receipt of `read` events, continue to buffer and retain request data until
+# enough data is present to parse a full request message, route the request to
+# the appropriate request handler, and delegate all subsequent `write` events
+# to the new handler.
+# 
 # This is the first bit of code that gets executed by the server upon receipt
 # of a ready event.
 #
@@ -292,12 +326,19 @@ namespace eval ::tanzer::session {
     return
 }
 
+##
+# Obtain a piece of state named by `$key` held by the current session handler.
+#
 ::oo::define ::tanzer::session method get {key} {
     my variable state
 
     return [dict get $state $key]
 }
 
+##
+# Given a list of key-value pairs in `$args`, set the internal general purpose
+# state.
+#
 ::oo::define ::tanzer::session method set {args} {
     my variable state
 
@@ -308,30 +349,33 @@ namespace eval ::tanzer::session {
     return
 }
 
-::oo::define ::tanzer::session method server {{newServer ""}} {
+##
+# Return a reference to the server for which the current session handler is
+# open.
+#
+::oo::define ::tanzer::session method server {} {
     my variable server
-
-    if {$newServer ne ""} {
-        set server $newServer
-
-        return
-    }
 
     return $server
 }
 
-::oo::define ::tanzer::session method sock {{newSock ""}} {
+##
+# Return a reference to the socket channel the current request handler is
+# reading from and writing to.
+#
+::oo::define ::tanzer::session method sock {} {
     my variable sock
-
-    if {$newSock ne ""} {
-        set sock $newSock
-
-        return
-    }
 
     return $sock
 }
 
+##
+# When no arguments are specified in `$args`, return a reference to the most
+# recent request parsed by the current session handler.  Otherwise, if the flag
+# `-new` is specified, then create a new request object to parse an inbound
+# request of the protocol for which this session handler is servicing, save the
+# reference to the new request object, and return that.
+#
 ::oo::define ::tanzer::session method request {args} {
     my variable proto request keepalive
 
@@ -362,6 +406,12 @@ namespace eval ::tanzer::session {
     return $request
 }
 
+##
+# Return the value of configuration variable `$name` as set at object
+# instantiation time.  If `$value` is also provided, then set or replace the
+# configuration option `$name` with `$value`.  Otherwise, return a list of
+# key-value pairs containing all current configuration data.
+#
 ::oo::define ::tanzer::session method config {{name ""} {value ""}} {
     my variable config
 
@@ -376,18 +426,32 @@ namespace eval ::tanzer::session {
     return [array get config]
 }
 
+##
+# Return all caller-provided state for the current session handler object.
+#
 ::oo::define ::tanzer::session method state {} {
     my variable state
 
     return $state
 }
 
+##
+# Read a block of data from the current session's socket.  The read buffer
+# size is the `readBufferSize` configuration option in ::tanzer::server.
+#
 ::oo::define ::tanzer::session method read {} {
     my variable config sock 
 
     return [read $sock $config(readBufferSize)]
 }
 
+##
+# Write `$data` to the current session's socket, and return the number of
+# bytes written.  If the session has a response object already prepared, and
+# that response contains a `Transfer-Encoding:` header which indicates the
+# `chunked` encoding, then `$data` will be written to the remote end in a
+# chunked transfer encoded fragment.
+#
 ::oo::define ::tanzer::session method write {data} {
     my variable sock response
 
@@ -402,6 +466,17 @@ namespace eval ::tanzer::session {
     return $length
 }
 
+##
+# Send the response object in `$newResponse` to the client.  If the session
+# handler has determined that the session can and should be kept alive, then a
+# `Connection:` header is set with the `Keep-Alive` value, otherwise `Close`.
+# Then, all headers are sent down the wire, and any response data buffered in
+# `$newResponse` is sent as well.
+#
+# After sending the response, `$newResponse` is kept by the session handler for
+# future reference by callers, and log the current session's request and new
+# response with the server.
+#
 ::oo::define ::tanzer::session method send {newResponse} {
     my variable server sock request response keepalive
 
@@ -419,18 +494,29 @@ namespace eval ::tanzer::session {
     return
 }
 
+##
+# Returns true if a response has been sent for the last request handled by this
+# session.
+#
 ::oo::define ::tanzer::session method responded {} {
     my variable response
 
     return [expr {$response ne {}}]
 }
 
+##
+# Returns a reference to the message sent in response to the most recent
+# request handled by the current session handler
+#
 ::oo::define ::tanzer::session method response {} {
     my variable response
 
     return $response
 }
 
+##
+# Send a 301 Redirect to the client, referring them to the new location `$uri`.
+#
 ::oo::define ::tanzer::session method redirect {uri} {
     set response [::tanzer::response new 301]
 
@@ -440,12 +526,20 @@ namespace eval ::tanzer::session {
     my send $response
 }
 
+##
+# Returns true if no data has been parsed for the current request, and if the
+# remote socket has reached end-of-file status.
+#
 ::oo::define ::tanzer::session method ended {} {
     my variable sock request
 
     return [expr {[eof $sock] && [$request empty]}]
 }
 
+##
+# Return true if the current session is to be kept alive.  Otherwise, set the
+# keepalive flag according to `$newValue`.
+#
 ::oo::define ::tanzer::session method keepalive {{newValue ""}} {
     my variable keepalive
 
@@ -458,6 +552,13 @@ namespace eval ::tanzer::session {
     return $keepalive
 }
 
+##
+# Search through the server's route table in order for the first route that
+# matches the current request, make note of that route, and return the route
+# to the caller.  If a route has already been selected for the current request,
+# then return that immediately.  Otherwise, if no suitable route can be matched
+# to the current request, then throw a 404 error.
+#
 ::oo::define ::tanzer::session method route {} {
     my variable server request route handler
 
