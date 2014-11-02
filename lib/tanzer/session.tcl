@@ -167,7 +167,7 @@ namespace eval ::tanzer::session {
     }
 
     set active 0
-    set watchdog [after [expr {$::tanzer::session::timeout * 1000}] [self] ping]
+    my monitor
 }
 
 ##
