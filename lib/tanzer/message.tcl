@@ -470,6 +470,8 @@ proc ::tanzer::message::field {name} {
 # regardless.  In any other case, return false.
 #
 ::oo::define ::tanzer::message method keepalive {} {
+    my variable opts body
+
     #
     # It's unknown if we want to keep the session alive, so let's let the
     # session handler sort those details out.
@@ -483,7 +485,12 @@ proc ::tanzer::message::field {name} {
     # then we can safely presume that we should say "this message ought to be
     # the last in this session".
     #
-    if {![my headerExists Content-Length] && ![my chunked]} {
+    if {
+         $opts(response)
+      && ![my headerExists Content-Length]
+      && ![my chunked]
+      && [string length $body] == 0
+    } {
         return 0
     }
 

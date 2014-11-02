@@ -140,8 +140,6 @@ package require TclOO
     my variable socks buffers lengths \
         requested responses
 
-    $session tick
-
     set request  [$session request]
     set response $responses($session)
 
@@ -153,6 +151,8 @@ package require TclOO
         $request send $socks($session)
 
         set requested($session) 1
+
+        $session monitor -cancel
 
         fileevent [$session sock] readable {}
         fileevent [$session sock] writable {}

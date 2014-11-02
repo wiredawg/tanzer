@@ -32,9 +32,8 @@ namespace eval ::tanzer::session {
 # specified in `$newProto`.
 #
 ::oo::define ::tanzer::session constructor {newServer newSock newProto} {
-    my variable server sock proto request route handler \
-        cleanup state response buffer config remaining keepalive \
-        active watchdog
+    my variable server sock proto request route handler cleanup \
+        state response buffer config remaining keepalive watchdog
 
     set server    $newServer
     set sock      $newSock
@@ -48,7 +47,7 @@ namespace eval ::tanzer::session {
     set buffer    ""
     set remaining 0
     set keepalive 1
-    set active    0
+    set watchdog  {}
 
     set config(readBufferSize) [$newServer config readBufferSize]
 
@@ -57,7 +56,7 @@ namespace eval ::tanzer::session {
 
 ::oo::define ::tanzer::session destructor {
     my variable server sock request response \
-        active watchdog cleanup
+        watchdog cleanup
 
     if {$request ne {}} {
         $request destroy
@@ -104,7 +103,7 @@ namespace eval ::tanzer::session {
     }
 
     set watchdog [after [expr {$::tanzer::session::timeout * 1000}] \
-        [self] ping]
+        [self] destroy]
 }
 
 ##
@@ -141,33 +140,10 @@ namespace eval ::tanzer::session {
     return [set handler $args]
 }
 
-##
-# Called to allow a request handler to indicate to the session handler that the
-# session is still indeed active, even if the request handler decides to side
-# step the session handler for I/O event dispatch in such cases as letting the
-# request handler monitor a non-server socket.
-#
-::oo::define ::tanzer::session method tick {} {
-    my variable active
+::oo::define ::tanzer::session method ready {} {
+    my variable sock keepalive
 
-    set active 1
-}
-
-##
-# Called by a watchdog timer to make sure the session is still alive, and to
-# reset the timeout if it is.
-#
-::oo::define ::tanzer::session method ping {} {
-    my variable active watchdog
-
-    if {!$active} {
-        my destroy
-
-        return
-    }
-
-    set active 0
-    my monitor
+    return [expr {$keepalive && ![eof $sock]}]
 }
 
 ##
@@ -200,12 +176,7 @@ namespace eval ::tanzer::session {
     fileevent $sock readable [list $server respond read $sock]
     fileevent $sock writable {}
 
-    #
-    # Determine if we need to kill the session posthaste.
-    #
-    if {!$keepalive || [eof $sock]} {
-        my destroy
-
+    if {![my ready]} {
         return
     }
 
@@ -234,14 +205,13 @@ namespace eval ::tanzer::session {
 #
 ::oo::define ::tanzer::session method handle {event} {
     my variable sock server request keepalive \
-        buffer config handler active watchdog
+        buffer config handler watchdog
 
-    set active   1
+    my monitor -cancel
+
     set streamed 0
 
     if {$event eq "write"} {
-        my monitor -cancel
-
         return [{*}$handler write [self]]
     }
 
