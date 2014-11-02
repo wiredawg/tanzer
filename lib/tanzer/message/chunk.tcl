@@ -1,10 +1,24 @@
 package provide tanzer::message::chunk 0.1
 
+##
+# @file tanzer/message/chunk.tcl
+#
+# HTTP/1.1 Chunked Transfer Encoding support
+#
+
 namespace eval ::tanzer::message::chunk {
     namespace ensemble create
     namespace export   parse
 }
 
+##
+# Called as `[::tanzer::message::chunk parse]`.
+#
+# Given the name of a buffer in the caller's context in `$varName`, and a
+# chunk body handler callback specified in `$args`, parse each chunk from the
+# buffer and pass it to the callback.  The buffer is trimmed after each
+# successfully parsed chunk.
+#
 proc ::tanzer::message::chunk::parse {varName args} {
     upvar 1 $varName buffer
 
