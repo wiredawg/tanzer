@@ -51,10 +51,6 @@ proc ::tanzer::uri::join {parts} {
     return [::join $parts "/"]
 }
 
-proc ::tanzer::uri::clean {uri} {
-    return [::tanzer::uri::join [::tanzer::uri::split $uri]]
-}
-
 proc ::tanzer::uri::parts {uri} {
     set out [list]
 
