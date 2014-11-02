@@ -1,13 +1,46 @@
 package provide tanzer::http::handler 0.1
+
+##
+# @file tanzer/http/handler.tcl
+#
+# The HTTP request forwarder
+#
+
 package require tanzer::forwarder
 package require tanzer::response
 package require tanzer::error
 package require TclOO
 
+##
+# The HTTP request forwarder.  Forwards a ::tanzer::request message object to
+# a remote HTTP service, unmodified; any request body provided by the inbound
+# client is forwarded to the remote HTTP service.
+#
 ::oo::class create ::tanzer::http::handler {
     superclass ::tanzer::forwarder
 }
 
+##
+# The following values must be specified in a list of key-value pairs in
+# `$opts`.
+#
+# * `host`
+#
+#   The hostname or address of the remote HTTP service
+#
+# * `port`
+#
+#   The port number of the remote HTTP service
+#
+# .
+#
+# The mechanism by which this request handler functions is simple: It first
+# opens a connection with the remote host, then sends the current request to
+# the remote service.  Then, the remote service's response is parsed into a new
+# ::tanzer::response object, which is in turn sent to the originating client;
+# thereafter, the response body is piped via `[fcopy]` to the originating
+# client.
+#
 ::oo::define ::tanzer::http::handler constructor {opts} {
     my variable config socks buffers \
         lengths requested responses
