@@ -480,6 +480,29 @@ namespace eval ::tanzer::session {
 }
 
 ##
+# Begin an asynchronous background [fcopy] operation from `$in` to `$out`,
+# ending when `$in` has reached end-of-file status.  Any errors encountered
+# along the way are thrown, and the `$cleanup` callback is called.
+#
+::oo::define ::tanzer::session method pipe {in out cleanup} {
+    foreach event {readable writable} {
+        fileevent $out $event {}
+    }
+
+    fcopy $in $out -command [list apply {
+        {cleanup copied args} {
+            if {[llength $args] > 0} {
+                error [lindex $args 0]
+            }
+
+            {*}$cleanup
+        }
+     } $cleanup]
+
+    return
+}
+
+##
 # Send the response object in `$newResponse` to the client.  If the session
 # handler has determined that the session can and should be kept alive, then a
 # `Connection:` header is set with the `Keep-Alive` value, otherwise `Close`.

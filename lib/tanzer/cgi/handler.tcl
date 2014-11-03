@@ -194,7 +194,11 @@ namespace eval ::tanzer::cgi::handler {
     # server process and the CGI process, and move on.
     #
     if {[$session responded]} {
-        my pipe $pipe $sock $session
+        $session pipe $pipe $sock [list apply {
+            {forwarder session} {
+                $forwarder close $session
+            }
+        } [self] $session]
 
         return
     }

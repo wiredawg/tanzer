@@ -211,7 +211,11 @@ namespace eval ::tanzer::scgi::handler {
     # wrap up this session.
     #
     if {[$session responded]} {
-        my pipe $socks($session) $sock $session
+        $session pipe $socks($session) $sock [list apply {
+            {forwarder session} {
+                $forwarder close $session
+            }
+        } [self] $session]
 
         return
     }

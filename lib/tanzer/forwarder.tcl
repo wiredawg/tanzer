@@ -75,26 +75,3 @@ namespace eval ::tanzer::forwarder {
 
     return
 }
-
-##
-# Begin an asynchronous background [fcopy] operation from `$in` to `$out`,
-# ending when `$in` has reached end-of-file status.  Any errors encountered
-# along the way are thrown, and the state for `$session` is cleaned up.
-#
-::oo::define ::tanzer::forwarder method pipe {in out session} {
-    foreach event {readable writable} {
-        fileevent $out $event {}
-    }
-
-    fcopy $in $out -command [list apply {
-        {forwarder session copied args} {
-            if {[llength $args] > 0} {
-                error [lindex $args 0]
-            }
-
-            $forwarder close $session
-        }
-    } [self] $session]
-
-    return
-}
