@@ -194,28 +194,7 @@ namespace eval ::tanzer::cgi::handler {
     # server process and the CGI process, and move on.
     #
     if {[$session responded]} {
-        #
-        # First, disable callbacks for readable and writable events on the
-        # client socket.
-        #
-        foreach eventType {readable writable} {
-            fileevent $sock $eventType {}
-        }
-
-        #
-        # Next, install an asynchronous stream copy background task to read
-        # from the pipe and write to the socket until the pipe has reached
-        # end-of-file.
-        #
-        fcopy $pipe $sock -command [list apply {
-            {handler session copied args} {
-                if {[llength $args] > 0} {
-                    error [lindex $args 0]
-                }
-
-                $handler close $session
-            }
-        } [self] $session]
+        my pipe $pipe $sock $session
 
         return
     }

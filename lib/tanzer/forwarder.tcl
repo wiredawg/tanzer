@@ -52,6 +52,10 @@ namespace eval ::tanzer::forwarder {
     }]
 }
 
+::oo::define ::tanzer::forwarder method cleanup {session} {
+    error "Not implemented"
+}
+
 ::oo::define ::tanzer::forwarder method open {session} {
     my variable rewrite
 
@@ -62,4 +66,35 @@ namespace eval ::tanzer::forwarder {
             break
         }
     }
+}
+
+::oo::define ::tanzer::forwarder method close {session} {
+    my cleanup $session
+
+    $session nextRequest
+
+    return
+}
+
+##
+# Begin an asynchronous background [fcopy] operation from `$in` to `$out`,
+# ending when `$in` has reached end-of-file status.  Any errors encountered
+# along the way are thrown, and the state for `$session` is cleaned up.
+#
+::oo::define ::tanzer::forwarder method pipe {in out session} {
+    foreach event {readable writable} {
+        fileevent $out $event {}
+    }
+
+    fcopy $in $out -command [list apply {
+        {forwarder session copied args} {
+            if {[llength $args] > 0} {
+                error [lindex $args 0]
+            }
+
+            $forwarder close $session
+        }
+    } [self] $session]
+
+    return
 }

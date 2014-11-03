@@ -184,6 +184,10 @@ namespace eval ::tanzer::scgi::handler {
     append bodies($session) $data
 }
 
+::oo::define ::tanzer::scgi::handler method pipe {in out} {
+
+}
+
 ::oo::define ::tanzer::scgi::handler method write {session} {
     my variable socks buffers requested responses
 
@@ -207,11 +211,7 @@ namespace eval ::tanzer::scgi::handler {
     # wrap up this session.
     #
     if {[$session responded]} {
-        fcopy $socks($session) $sock -size $size
-
-        if {[eof $socks($session)]} {
-            my close $session
-        }
+        my pipe $socks($session) $sock $session
 
         return
     }
