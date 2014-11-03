@@ -173,6 +173,15 @@ namespace eval ::tanzer::session {
     set route   {}
     set handler {}
 
+    #
+    # If the session shant be kept alive, then end it.
+    #
+    if {!$keepalive} {
+        my destroy
+
+        return
+    }
+
     fileevent $sock readable [list $server respond read $sock]
     fileevent $sock writable {}
 
