@@ -152,8 +152,6 @@ package require TclOO
 
         set requested($session) 1
 
-        $session monitor -cancel
-
         fileevent [$session sock] readable {}
         fileevent [$session sock] writable {}
 
