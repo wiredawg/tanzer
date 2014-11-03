@@ -488,6 +488,10 @@ namespace eval ::tanzer::session {
         error "Already sent response"
     }
 
+    if {![$newResponse keepalive]} {
+        set keepalive 0
+    }
+
     $newResponse header Connection [expr {$keepalive? "Keep-Alive": "Close"}]
     $newResponse send $sock
 
