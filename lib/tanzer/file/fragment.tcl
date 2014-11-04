@@ -44,6 +44,10 @@ proc ::tanzer::file::fragment::parseRangeRequest {request size mimeType} {
 ::oo::define ::tanzer::file::fragment constructor {newMin newMax newSize newMimeType} {
     my variable min max size offset mimeType header
 
+    if {$newMin > $newMax || $newMin > $newSize || $newMax > $newSize} {
+        ::tanzer::error throw 416 "Invalid byte range value"
+    }
+
     set min      $newMin
     set max      $newMax
     set size     $newSize
