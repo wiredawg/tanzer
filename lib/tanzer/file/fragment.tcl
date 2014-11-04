@@ -29,10 +29,6 @@ proc ::tanzer::file::fragment::parseRangeRequest {request size mimeType} {
             ::tanzer::error throw 416 "Invalid byte range value"
         }
 
-        if {$min < 0 || $min >= $size || $max >= $size || $max < 0} {
-            ::tanzer::error throw 416 "Invalid byte range value"
-        }
-
         lappend ranges [::tanzer::file::fragment new $min $max $size $mimeType]
     }
 
@@ -44,7 +40,7 @@ proc ::tanzer::file::fragment::parseRangeRequest {request size mimeType} {
 ::oo::define ::tanzer::file::fragment constructor {newMin newMax newSize newMimeType} {
     my variable min max size offset mimeType header
 
-    if {$newMin > $newMax || $newMin > $newSize || $newMax > $newSize} {
+    if {$newMin < 0 || $newMin >= $newSize || $newMax >= $newSize || $newMax < 0} {
         ::tanzer::error throw 416 "Invalid byte range value"
     }
 
@@ -78,12 +74,6 @@ proc ::tanzer::file::fragment::parseRangeRequest {request size mimeType} {
         $::tanzer::file::fragment::boundary $min $max $size $mimeType]]
 }
 
-::oo::define ::tanzer::file::fragment method done {} {
-    my variable offset max
-
-    return [expr {$offset >= $max}]
-}
-
 ::oo::define ::tanzer::file::fragment method size {args} {
     my variable offset max
 
@@ -112,39 +102,14 @@ proc ::tanzer::file::fragment::parseRangeRequest {request size mimeType} {
     return $ret
 }
 
+::oo::define ::tanzer::file::fragment method offset {} {
+    my variable offset
+
+    return $offset
+}
+
 ::oo::define ::tanzer::file::fragment method firstChunk {} {
     my variable min offset
 
     return [expr {$min == $offset}]
-}
-
-::oo::define ::tanzer::file::fragment method pipe {in out readBufferSize} {
-    my variable min max offset
-
-    #
-    # Do nothing if the offset exceeds the range boundary.
-    #
-    if {$offset >= $max} {
-        return 0
-    }
-
-    seek $in $offset
-
-    set size [expr {1 + $max - $offset}]
-
-    if {$size > $readBufferSize} {
-        set size $readBufferSize
-    }
-
-    if {[fcopy $in $out -size $size] != $size} {
-        error "Incomplete read"
-    }
-
-    if {[eof $in]} {
-        return 0
-    }
-
-    incr offset $size
-
-    return $size
 }

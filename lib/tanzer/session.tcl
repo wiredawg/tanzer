@@ -491,10 +491,10 @@ namespace eval ::tanzer::session {
 ::oo::define ::tanzer::session method reset {{event "any"}} {
     my variable sock server
 
-    set listen [dict create {
-        "readable" 0
-        "writable" 0
-    }]
+    set listen [dict create \
+        "readable" 0 \
+        "writable" 0 \
+    ]
 
     switch -- $event "read" {
         dict set listen readable 1
@@ -508,12 +508,11 @@ namespace eval ::tanzer::session {
     }
 
     foreach type [dict keys $listen] {
-
-        if {[dict get $listen type]} {
-            set callback [list $server respond $event $sock]
+        set callback [if [dict get $listen type] {
+            list $server respond $event $sock
         } else {
-            set callback {}
-        }
+            list
+        }]
 
         fileevent $sock $type $callback
     }

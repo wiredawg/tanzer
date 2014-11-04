@@ -15,6 +15,7 @@ package require TclOO
     next $newPath $newSt $newConfig
 
     set mismatched [expr {![my rangeMatch $request]}]
+    set fragments  {}
 
     if {$mismatched} {
         set fragments {}
@@ -23,7 +24,7 @@ package require TclOO
         set fragments [::tanzer::file::fragment::parseRangeRequest \
             $request $st(size) [my mimeType]]
 
-        set multipart  [expr {[llength $fragments] > 1}]
+        set multipart [expr {[llength $fragments] > 1}]
     }
 }
 
@@ -134,30 +135,44 @@ package require TclOO
         $session write [$fragment header]
     }
 
-    #
-    # If we were not able to pipe any data from the input file to the output
-    # socket, then finish the request.
-    #
-    if {![$fragment pipe $fh [$session sock] $config(readBufferSize)]} {
-        $session nextRequest
-        my destroy
-        return
+    set sock [$session sock]
+
+    foreach event {readable writable} {
+        fileevent $sock $event {}
     }
 
-    #
-    # If we are done with the current fragment, then move on to the next.
-    #
-    if {[$fragment done]} {
-        #
-        # If we just served the final fragment chunk, then send the terminating
-        # fragment boundary.
-        #
-        if {[my final]} {
-            $session write "\r\n--$::tanzer::file::fragment::boundary--\r\n"
+    seek $fh [$fragment offset]
+
+    fcopy $fh $sock -size [$fragment size] -command [list apply {
+        {self session written args} {
+            #
+            # If we were not able to pipe any data from the input file to the output
+            # socket, then finish the request.
+            #
+            if {[llength $args] == 1} {
+                $session nextRequest
+                return
+            }
+
+            #
+            # Since we are done with the current fragment, then move on to the
+            # next.
+            #
+            if {[$self final]} {
+                $session write "\r\n--$::tanzer::file::fragment::boundary--\r\n"
+            }
+
+            #
+            # Move on to the next partial file fragment.
+            #
+            $self fragment -next
+
+            #
+            # Pass control of the socket back to the session handler.
+            #
+            $session reset write
         }
-
-        my fragment -next
-    }
+    } [self] $session]
 
     return
 }
