@@ -480,6 +480,48 @@ namespace eval ::tanzer::session {
 }
 
 ##
+# Reset the socket attached to the current session to monitor for the event
+# type specified in `$event`, either `read`, `write`, or `any`, to indicate
+# both.  I/O readiness events will be dispatched by the server once again,
+# which shall then dispatch the handler specified in the last call to the
+# method ::tanzer::session::delegate.
+#
+# `$event` defaults to `any` if it is not specified.
+#
+::oo::define ::tanzer::session method reset {{event "any"}} {
+    my variable sock server
+
+    set listen [dict create {
+        "readable" 0
+        "writable" 0
+    }]
+
+    switch -- $event "read" {
+        dict set listen readable 1
+    } "write" {
+        dict set listen writable 1
+    } "any" {
+        dict set listen readable 1
+        dict set listen writable 1
+    } default {
+        error "Invalid event $event"
+    }
+
+    foreach type [dict keys $listen] {
+
+        if {[dict get $listen type]} {
+            set callback [list $server respond $event $sock]
+        } else {
+            set callback {}
+        }
+
+        fileevent $sock $type $callback
+    }
+
+    return
+}
+
+##
 # Begin an asynchronous background [fcopy] operation from `$in` to `$out`,
 # ending when `$in` has reached end-of-file status.  Any errors encountered
 # along the way are thrown, and the `$cleanup` callback is called.
