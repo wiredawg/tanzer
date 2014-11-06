@@ -49,7 +49,7 @@ namespace eval ::tanzer::session {
     set keepalive 1
     set watchdog  {}
 
-    set config(readBufferSize) [$newServer config readBufferSize]
+    set config(readsize) [$newServer config readsize]
 
     my monitor
 }
@@ -234,7 +234,7 @@ namespace eval ::tanzer::session {
     # data and pass it off to the request to see if the data is complete enough
     # to allow it to parse the headers, at least.
     #
-    set data [read $sock $config(readBufferSize)]
+    set data [read $sock $config(readsize)]
 
     #
     # Create a request if one does not exist already.
@@ -450,12 +450,12 @@ namespace eval ::tanzer::session {
 
 ##
 # Read a block of data from the current session's socket.  The read buffer
-# size is the `readBufferSize` configuration option in ::tanzer::server.
+# size is the `readsize` configuration option in ::tanzer::server.
 #
 ::oo::define ::tanzer::session method read {} {
     my variable config sock 
 
-    return [read $sock $config(readBufferSize)]
+    return [read $sock $config(readsize)]
 }
 
 ##

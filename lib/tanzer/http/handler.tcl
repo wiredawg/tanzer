@@ -88,7 +88,8 @@ package require TclOO
     fconfigure $sock \
         -translation binary \
         -blocking    0 \
-        -buffering   none
+        -buffering   full \
+        -buffersize  [$session config readsize]
 
     set socks($session)     $sock
     set buffers($session)   ""
@@ -161,7 +162,7 @@ package require TclOO
         return
     }
 
-    set size [$session config readBufferSize]
+    set size [$session config readsize]
     set sock [$session sock]
 
     if {[$session responded]} {

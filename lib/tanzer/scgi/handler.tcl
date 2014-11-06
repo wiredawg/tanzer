@@ -133,8 +133,9 @@ namespace eval ::tanzer::scgi::handler {
 
     fconfigure $sock \
         -translation binary \
-        -blocking    1 \
-        -buffering   none
+        -blocking    0 \
+        -buffering   full \
+        -buffersize  [$session config readsize]
 
     set socks($session)     $sock
     set buffers($session)   ""
@@ -199,11 +200,12 @@ namespace eval ::tanzer::scgi::handler {
     #
     if {!$requested($session)} {
         puts -nonewline $socks($session) [my encodeRequest $session]
+        flush $socks($session)
 
         set requested($session) 1
     }
 
-    set size [$session config readBufferSize]
+    set size [$session config size]
     set sock [$session sock]
 
     #

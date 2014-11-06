@@ -520,11 +520,6 @@ proc ::tanzer::message::field {name} {
             "Cannot use chunked transfer encoding in fixed length entities"
     }
 
-    #
-    # Temporarily enable buffering to prevent too many write() system calls.
-    #
-    fconfigure $sock -buffering full
-
     if {$opts(request)} {
         dict set tmpHeaders User-Agent \
             "$::tanzer::server::name/$::tanzer::server::version"
@@ -555,12 +550,7 @@ proc ::tanzer::message::field {name} {
         puts -nonewline $sock $body
     }
 
-    #
-    # Flush the buffers and disable buffering.
-    #
     flush $sock
-
-    fconfigure $sock -buffering none
 
     return
 }

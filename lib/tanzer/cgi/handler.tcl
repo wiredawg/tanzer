@@ -123,8 +123,9 @@ namespace eval ::tanzer::cgi::handler {
 
     fconfigure $pipe \
         -translation binary \
-        -buffering   none \
-        -blocking    1
+        -buffering   full \
+        -buffersize  [$session config readsize] \
+        -blocking    0
 
     set pipes($session)     $pipe
     set buffers($session)   ""
@@ -182,7 +183,7 @@ namespace eval ::tanzer::cgi::handler {
     set pipe     $pipes($session)
     set response $responses($session)
 
-    set size [$session config readBufferSize]
+    set size [$session config readsize]
     set sock [$session sock]
 
     #

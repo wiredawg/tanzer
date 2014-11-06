@@ -27,7 +27,7 @@ namespace eval ::tanzer::server {
 # Create a new server, with optional `$newOpts` list of pairs indicating
 # configuration.  Accepted values are:
 #
-# - `readBufferSize`
+# - `readsize`
 #
 #   Defaults to 4096.  The size of buffer used to read from remote sockets and
 #   local files.
@@ -50,9 +50,9 @@ namespace eval ::tanzer::server {
     set logger ::tanzer::logger::default
 
     array set config {
-        readBufferSize 4096
-        port           8080
-        proto          "http"
+        readsize 4096
+        port     8080
+        proto    "http"
     }
 
     if {$newOpts ne {}} {
@@ -278,7 +278,8 @@ namespace eval ::tanzer::server {
     fconfigure $sock \
         -translation binary \
         -blocking    0 \
-        -buffering   none
+        -buffering   full \
+        -buffersize  $config(readsize)
 
     set session [::tanzer::session new [self] $sock $config(proto)]
 

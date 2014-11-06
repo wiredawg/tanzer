@@ -44,7 +44,7 @@ proc ::tanzer::file::mimeType {path} {
 #
 # Configuration values required in `$newConfig`:
 #
-# * `readBufferSize`
+# * `readsize`
 # 
 #   The number of bytes of a file to read at a time.
 #
@@ -52,7 +52,7 @@ proc ::tanzer::file::mimeType {path} {
     my variable config path fh st etag
 
     set required {
-        readBufferSize
+        readsize
     }
 
     foreach requirement $required {
