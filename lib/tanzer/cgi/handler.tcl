@@ -187,19 +187,11 @@ namespace eval ::tanzer::cgi::handler {
     set sock [$session sock]
 
     #
-    # If we weren't able to read anything from the CGI process, then let's wrap
-    # up this session.
-    #
-    #
-    # If we've already sent out a response, then just ferry data between the
-    # server process and the CGI process, and move on.
+    # If we've already responded to the request, then pipe all remaining data
+    # from the CGI process to the client socket, and bail out.
     #
     if {[$session responded]} {
-        $session pipe $pipe $sock [list apply {
-            {forwarder session} {
-                $forwarder close $session
-            }
-        } [self] $session]
+        my pipe $pipe $sock $session
 
         return
     }

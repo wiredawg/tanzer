@@ -68,6 +68,28 @@ namespace eval ::tanzer::forwarder {
     }
 }
 
+##
+# Pipe all remaining data from channel `$in` to client socket `$sock`, and
+# yield `$session` to handle the next request.
+#
+::oo::define ::tanzer::forwarder method pipe {in sock session} {
+    foreach event {readable writable} {
+        fileevent $sock $event {}
+    }
+
+    fcopy $in $sock -command [list apply {
+        {session copied args} {
+            if {[llength $args] > 0} {
+                ::tanzer::error throw 500 [lindex $args 0]
+            }
+
+            $session nextRequest
+        }
+    } $session]
+
+    return
+}
+
 ::oo::define ::tanzer::forwarder method close {session} {
     my cleanup $session
 

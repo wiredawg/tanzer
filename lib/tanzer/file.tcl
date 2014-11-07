@@ -203,11 +203,21 @@ proc ::tanzer::file::mimeType {path} {
 ::oo::define ::tanzer::file method stream {event session} {
     my variable fh
 
-    $session pipe $fh [$session sock] [list apply {
-        {file session} {
+    set sock [$session sock]
+
+    foreach event {readable writable} {
+        fileevent $sock $event {}
+    }
+
+    fcopy $fh $sock -command [list apply {
+        {session copied args} {
+            if {[llength $args] > 0} {
+                ::tanzer::error throw 500 [lindex $args 0]
+            }
+
             $session nextRequest
         }
-    } [self] $session]
+    } $session]
 
     return
 }

@@ -182,8 +182,7 @@ namespace eval ::tanzer::session {
         return
     }
 
-    fileevent $sock readable [list $server respond read $sock]
-    fileevent $sock writable {}
+    my reset read
 
     if {![my ready]} {
         return
@@ -516,29 +515,6 @@ namespace eval ::tanzer::session {
 
         fileevent $sock $type $callback
     }
-
-    return
-}
-
-##
-# Begin an asynchronous background [fcopy] operation from `$in` to `$out`,
-# ending when `$in` has reached end-of-file status.  Any errors encountered
-# along the way are thrown, and the `$cleanup` callback is called.
-#
-::oo::define ::tanzer::session method pipe {in out cleanup} {
-    foreach event {readable writable} {
-        fileevent $out $event {}
-    }
-
-    fcopy $in $out -command [list apply {
-        {cleanup copied args} {
-            if {[llength $args] > 0} {
-                error [lindex $args 0]
-            }
-
-            {*}$cleanup
-        }
-     } $cleanup]
 
     return
 }
