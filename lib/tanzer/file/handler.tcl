@@ -32,6 +32,13 @@ package require TclOO
 #   The name of the index file to look for when serving a request for a
 #   directory path.  Default value is `index.html`.
 #
+# * `filters`
+#
+#   A list of key-value pairs indicating special filters to apply to files
+#   whose base names match a regular expression in the key portion of each
+#   pair, and a command prefix to pass the name of the current object to as
+#   its value.
+#
 # .
 #
 # In order to facilitate service of file hierarchies, the file request handler
@@ -43,6 +50,7 @@ package require TclOO
     set defaults {
         listings  0
         indexFile index.html
+        filters   {}
     }
 
     set requirements {
@@ -103,22 +111,57 @@ package require TclOO
     return [join [concat [list $config(root)] $relative] "/"]
 }
 
+::oo::define ::tanzer::file::handler method filter {session localPath st} {
+    my variable config
+
+    set name [file tail $localPath]
+
+    foreach {pattern filter} $config(filters) {
+        if {[regexp $pattern $name]} {
+            return $filter
+        }
+    }
+
+    return
+}
+
 ::oo::define ::tanzer::file::handler method serve {session localPath st} {
-    set config   [$session config]
-    set request  [$session request]
-    set method   [$request method]
-    set range    [$request headerExists Range]
+    set request [$session request]
+    set method  [$request method]
+    set filter  [my filter $session $localPath $st]
+
+    #
+    # Only support Range: requests when we are applying no filter to the
+    # local file.
+    #
+    set range [expr {
+        [$request headerExists Range] && [llength $filter] == 0
+    }]
+
     set response [::tanzer::response new [expr {$range? 206: 200}]]
     set serve    1
 
     set file [if {$range} {
-        ::tanzer::file::partial new $localPath $st $config $request
+        ::tanzer::file::partial new $localPath $st [$session config] $request
     } else {
-        ::tanzer::file new $localPath $st $config
+        ::tanzer::file new $localPath $st [$session config]
     }]
 
     $session cleanup $file destroy
 
+    #
+    # If there is a filter found for the current file, then delegate all future
+    # events to that and bail.
+    #
+    if {[llength $filter] > 0} {
+        $session delegate {*}$filter $file
+
+        return
+    }
+
+    #
+    # Otherwise, proceed to serve the file as normal.
+    #
     switch -- $method "GET" {#} "HEAD" {
         if {$range} {
             ::tanzer::error throw 405 "Invalid request method with Range:"
