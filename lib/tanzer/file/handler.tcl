@@ -126,18 +126,19 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::file::handler method serve {session localPath st} {
-    set request [$session request]
-    set method  [$request method]
-    set filter  [my filter $session $localPath $st]
-
     #
-    # Only support Range: requests when we are applying no filter to the
-    # local file.
+    # If there is a filter found for the current file, then delegate all future
+    # events to that and bail.
     #
-    set range [expr {
-        [$request headerExists Range] && [llength $filter] == 0
-    }]
+    if {[llength $filter] > 0} {
+        $session delegate {*}$filter $session $localPath $st
 
+        return
+    }
+
+    set request  [$session request]
+    set method   [$request method]
+    set range    [$request headerExists Range]
     set response [::tanzer::response new [expr {$range? 206: 200}]]
     set serve    1
 
@@ -148,16 +149,6 @@ package require TclOO
     }]
 
     $session cleanup $file destroy
-
-    #
-    # If there is a filter found for the current file, then delegate all future
-    # events to that and bail.
-    #
-    if {[llength $filter] > 0} {
-        $session delegate {*}$filter $file
-
-        return
-    }
 
     #
     # Otherwise, proceed to serve the file as normal.
