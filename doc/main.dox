@@ -1,0 +1,110 @@
+/*!
+ * @mainpage Documentation
+ *
+ * @tableofcontents
+ *
+ * @section sec_intro Introduction
+ *
+ * tänzer is a very lightweight web server framework which utilizes the
+ * inherent beauty of Tcl's builtin event loop to great effect.  tänzer hopes
+ * to uphold the idea of an anti-framework: To stay out of the way as much as
+ * possible and provide only the bare minimum boilerplate basics of providing
+ * for most HTTP service needs.  A great emphasis is placed on performance,
+ * simplicity, understandability, and low project overhead.
+ *
+ * Herein is a brief overview of the API and the functionality it provides.
+ *
+ * @section sec_api API reference
+ *
+ * @subsection sub_server Server internals
+ *
+ * * ::tanzer::server
+ *
+ *   The socket responder, session keeper, log manager, error handler and
+ *   request handler routing table.
+ *
+ * * ::tanzer::error
+ *
+ *   The error handling and reporting facility.
+ *
+ * * ::tanzer::logger
+ *
+ *   The request logging facility.
+ *
+ * * ::tanzer::route
+ *
+ *   The request handler routing table entry class.
+ *
+ * * ::tanzer::session
+ *
+ *   The HTTP session management class.
+ *
+ * .
+ *
+ * @subsection sub_message HTTP messages
+ *
+ * * ::tanzer::message
+ *
+ *   The base HTTP message class providing semantics for parsing and encoding
+ *   HTTP messages of any sort.
+ *
+ * * ::tanzer::request
+ *
+ *   The HTTP request class.
+ *
+ * * ::tanzer::response
+ *
+ *   The HTTP response class.
+ *
+ * .
+ *
+ * @subsection sub_handler HTTP request handlers
+ *
+ * * ::tanzer::forwarder
+ *
+ *   Base class for implementing request handlers which forward requests to
+ *   other programs and services.
+ *
+ * * ::tanzer::file::handler
+ *
+ *   The request handler which provides static file service.
+ *
+ * * ::tanzer::cgi::handler
+ *
+ *   The request handler which dispatches inbound requests to CGI executables.
+ *
+ * * ::tanzer::scgi::handler
+ *
+ *   The request handler which dispatches inbound requests to SCGI services.
+ *
+ * * ::tanzer::http::handler
+ *
+ *   The request handler which dispatches inbound requests to external HTTP
+ *   services.
+ *
+ * .
+ *
+ * @subsection sub_proto Request protocol support
+ *
+ * * ::tanzer::http::request
+ *
+ *   The inbound HTTP request parser.  This is the default first responder to
+ *   inbound connections.
+ *
+ * * ::tanzer::scgi::request
+ *
+ *   The inbound SCGI request parser.  This allows one to serve their tänzer
+ *   applications as an SCGI service.
+ *
+ * .
+ *
+ * @subsection sub_util Utility packages
+ *
+ * * ::tanzer::date
+ *
+ *   RFC 2616 timestamp parsing and generation package.
+ *
+ * * ::tanzer::uri
+ *
+ *   Request path and URI manipulation routines.
+ */
