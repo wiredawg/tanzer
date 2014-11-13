@@ -1108,7 +1108,7 @@ dl.citelist dd {
 
 div.toc {
     padding: 8px;
-    margin: 0;
+    margin: 8px;
     background-color: #fafafa;
     border: 1px solid #c0c0c0;
     border-radius: 2px 2px 2px 2px;
