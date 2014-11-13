@@ -27,15 +27,16 @@ namespace eval ::tanzer::server {
 # Create a new server, with optional `$newOpts` list of pairs indicating
 # configuration.  Accepted values are:
 #
+# - `proto`
+#
+#   The protocol to accept connections for.  Defaults to `http`, but can be
+#   `scgi`.
+#
 # - `readsize`
 #
 #   Defaults to 4096.  The size of buffer used to read from remote sockets and
 #   local files.
 #
-# - `proto`
-#
-#   The protocol to accept connections for.  Defaults to `http`, but can be
-#   `scgi`.
 # .
 #
 ::oo::define ::tanzer::server constructor {{newOpts {}}} {
@@ -266,6 +267,10 @@ namespace eval ::tanzer::server {
 # new ::tanzer::session object associated with `$sock`, and installs the 
 # server's default event handler for `$sock` for only `read` events, initially.
 #
+# Use this method directly if you intend to listen on multiple sockets, a
+# different host address, or if you wish to use ::tls::socket to create a
+# listener instead.
+#
 ::oo::define ::tanzer::server method accept {sock addr port} {
     my variable config sessions
 
@@ -282,4 +287,14 @@ namespace eval ::tanzer::server {
     set sessions($sock) $session
 
     return
+}
+
+##
+# Listen for inbound connections on `$port`, and enter the socket handling
+# event loop.
+#
+::oo::define ::tanzer::server method listen {port} {
+    socket -server [list [self] accept] $port
+
+    vwait forever
 }
