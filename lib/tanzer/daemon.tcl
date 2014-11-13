@@ -7,7 +7,7 @@ package require TclOO
 
 ::oo::class create ::tanzer::daemon
 
-::oo::define ::tanzer::daemon constructor {config} {
+::oo::define ::tanzer::daemon constructor {{config {port 80 proto http}}} {
     my variable port proto server sites \
         roots listings programs aliases
 
