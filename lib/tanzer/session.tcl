@@ -413,7 +413,7 @@ namespace eval ::tanzer::session {
         set request [$module new [self]]
         set peer    [chan configure $sock -peername]
 
-        $request env REMOTE_ADDR [lindex [chan configure $sock] 0]
+        $request env REMOTE_ADDR [lindex $peer 0]
     }
 
     return $request
