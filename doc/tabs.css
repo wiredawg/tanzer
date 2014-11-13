@@ -2,14 +2,19 @@
     /*background-image: url('tab_b.png');*/
     width: 100%;
     z-index: 101;
-    font-size: 13px;
     font-family: "Helvetica Neue", Helvetica, sans-serif;
 }
 
-.tabs2 {
-    font-size: 10px;
+.tabs {
+    background-color: #ffffff;
 }
+
+.tabs2 {
+    /*background-color: #eaeaea;*/
+}
+
 .tabs3 {
+    background-color: #e0e0e0;
     font-size: 9px;
 }
 
@@ -47,5 +52,6 @@
 .tablist li.current a {
     /*background-image: url('tab_a.png');*/
     /*background-repeat:repeat-x;*/
+    background-color: #f0f0f0;
     color: #d484c4;
 }
