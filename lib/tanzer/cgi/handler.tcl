@@ -86,17 +86,23 @@ namespace eval ::tanzer::cgi::handler {
 
     next $session
 
-    set server  [$session server]
-    set route   [$session route]
-    set request [$session request]
+    set server   [$session server]
+    set route    [$session route]
+    set request  [$session request]
+    set sock     [$session sock]
 
-    set addr [lindex [chan configure [$session sock] -sockname] 0]
+    set listener [chan configure $sock -sockname]
+    set peer     [chan configure $sock -peername]
 
     set childenv [dict create \
         GATEWAY_INTERFACE $::tanzer::cgi::handler::proto \
         SERVER_SOFTWARE   "$::tanzer::server::name/$::tanzer::server::version" \
-        SERVER_ADDR       $addr \
-        SERVER_PORT       [$server port] \
+        SERVER_ADDR       [lindex $listener 0] \
+        SERVER_HOST       [lindex $listener 1] \
+        SERVER_PORT       [lindex $listener 2] \
+        REMOTE_ADDR       [lindex $peer 0] \
+        REMOTE_HOST       [lindex $peer 1] \
+        REMOTE_PORT       [lindex $peer 2] \
         SCRIPT_FILENAME   $config(program) \
         SCRIPT_NAME       $config(name) \
         REQUEST_METHOD    [$request method] \
