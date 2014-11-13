@@ -5,15 +5,12 @@ package require tanzer::http
 package require tanzer::http::handler
 package require tanzer::response
 
-set server [::tanzer::server new {
-    port  8080
-    proto "http"
-}]
+set server [::tanzer::server new]
 
 $server route GET /* * [::tanzer::http::handler new {
     host "localhost"
     port 80
 }]
 
-$server listen
+set listener [socket -server [list $server accept] 8080]
 vwait forever

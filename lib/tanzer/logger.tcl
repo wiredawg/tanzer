@@ -36,7 +36,7 @@ proc ::tanzer::logger::format {subcommand args} {
         [$request timestamp] \
         [$request method] \
         [$request env REQUEST_URI] \
-        [$request proto] \
+        [$request version] \
         [$response status] \
         [$response length] \
         [$request referer] \

@@ -18,8 +18,8 @@ namespace eval ::tanzer::server {
 }
 
 ##
-# `::tanzer::server` manages the listener socket and creates new sessions for
-# each connecting client.
+# `::tanzer::server` accepts inbound connections and creates new session
+# objects for each connecting client.
 #
 ::oo::class create ::tanzer::server
 
@@ -31,10 +31,6 @@ namespace eval ::tanzer::server {
 #
 #   Defaults to 4096.  The size of buffer used to read from remote sockets and
 #   local files.
-#
-# - `port`
-#
-#   The TCP port number to open a listening socket for.
 #
 # - `proto`
 #
@@ -51,7 +47,6 @@ namespace eval ::tanzer::server {
 
     array set config {
         readsize 4096
-        port     8080
         proto    "http"
     }
 
@@ -267,10 +262,9 @@ namespace eval ::tanzer::server {
 }
 
 ##
-# The callback to `[socket -server]`.  Creates a new ::tanzer::session
-# object associated with `$sock`, and stores the remote address and socket
-# port for `$sock` in the new session object.  The default event handler will
-# be installed for `$sock` for only `read` events.
+# Accepts an inbound connection as a callback to `[socket -server]`.  Creates a
+# new ::tanzer::session object associated with `$sock`, and installs the 
+# server's default event handler for `$sock` for only `read` events, initially.
 #
 ::oo::define ::tanzer::server method accept {sock addr port} {
     my variable config sessions
@@ -283,29 +277,9 @@ namespace eval ::tanzer::server {
 
     set session [::tanzer::session new [self] $sock $config(proto)]
 
-    $session set sockaddr [list $addr $port]
-
     fileevent $sock readable [list [self] respond read $sock]
 
     set sessions($sock) $session
 
     return
-}
-
-##
-# Starts the server.  Incoming connections are passed on to @ref accept.
-#
-::oo::define ::tanzer::server method listen {} {
-    my variable config
-
-    socket -server [list [self] accept] $config(port)
-}
-
-##
-# Returns the TCP port the server is configured to listen on.
-#
-::oo::define ::tanzer::server method port {} {
-    my variable config
-
-    return $config(port)
 }

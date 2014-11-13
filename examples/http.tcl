@@ -21,16 +21,10 @@ set server [::tanzer::server new [list \
     proto "http" \
 ]]
 
-$server route GET /env/* {.*} [::tanzer::cgi::handler new {
-    program "/var/www/xantronix.net/doc/env.cgi"
-    name    "/env"
-    root    "/var/www/xantronix.net/doc"
-}]
-
 $server route {.*} /* {.*} [::tanzer::file::handler new [list \
     root     $root \
     listings 1 \
 ]]
 
-$server listen
+set listener [socket -server [list $server accept] $port]
 vwait forever
