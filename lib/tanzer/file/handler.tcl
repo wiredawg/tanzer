@@ -38,7 +38,6 @@ package require TclOO
 #   whose base names match a regular expression in the key portion of each
 #   pair, and a command prefix to pass the name of the current object to as
 #   its value.
-#
 # .
 #
 # In order to facilitate service of file hierarchies, the file request handler

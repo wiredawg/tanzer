@@ -38,7 +38,6 @@ namespace eval ::tanzer::scgi::handler {
 #
 #   The name of the script that shall be identified to the service via the
 #   `SCRIPT_NAME` SCGI request parameter.
-#
 # .
 #
 # All inbound requests are transformed into an SCGI request as per the official

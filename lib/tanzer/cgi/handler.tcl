@@ -41,7 +41,6 @@ namespace eval ::tanzer::cgi::handler {
 #
 #   The document to report to the CGI/1.1 executable via the `DOCUMENT_ROOT`
 #   environment variable.
-#
 # .
 #
 # The CGI/1.1 handler is deliberately meant to provide service for one

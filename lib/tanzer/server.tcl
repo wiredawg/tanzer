@@ -36,7 +36,6 @@ namespace eval ::tanzer::server {
 #
 #   Defaults to 4096.  The size of buffer used to read from remote sockets and
 #   local files.
-#
 # .
 #
 ::oo::define ::tanzer::server constructor {{newOpts {}}} {
@@ -164,7 +163,6 @@ namespace eval ::tanzer::server {
 #
 #   - When dispatching a `read` event, a chunk of data read from the request
 #     body
-#
 #   .
 # .
 #

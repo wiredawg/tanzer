@@ -38,7 +38,6 @@
  * * ::tanzer::session
  *
  *   The HTTP session management class.
- *
  * .
  *
  * @subsection sub_message HTTP messages
@@ -55,7 +54,6 @@
  * * ::tanzer::response
  *
  *   The HTTP response class.
- *
  * .
  *
  * @subsection sub_handler HTTP request handlers
@@ -81,7 +79,6 @@
  *
  *   The request handler which dispatches inbound requests to external HTTP
  *   services.
- *
  * .
  *
  * @subsection sub_proto Request protocol support
@@ -95,7 +92,6 @@
  *
  *   The inbound SCGI request parser.  This allows one to serve their tänzer
  *   applications as an SCGI service.
- *
  * .
  *
  * @subsection sub_util Utility packages
@@ -107,6 +103,5 @@
  * * ::tanzer::uri
  *
  *   Request path and URI manipulation routines.
- *
  * .
  */

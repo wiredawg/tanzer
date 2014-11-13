@@ -60,7 +60,6 @@ proc ::tanzer::error::throw {status msg} {
 # * If `$::errorCode` indicates an `EPERM`, then a 403 Forbidden is thrown.
 #
 # * All other error conditions result in a 500 Internal Server Error.
-#
 # .
 #
 proc ::tanzer::error::run {script} {

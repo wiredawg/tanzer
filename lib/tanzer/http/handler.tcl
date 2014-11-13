@@ -31,7 +31,6 @@ package require TclOO
 # * `port`
 #
 #   The port number of the remote HTTP service
-#
 # .
 #
 # The mechanism by which this request handler functions is simple: It first
