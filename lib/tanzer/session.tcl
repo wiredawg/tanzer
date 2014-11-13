@@ -389,7 +389,7 @@ namespace eval ::tanzer::session {
 # reference to the new request object, and return that.
 #
 ::oo::define ::tanzer::session method request {args} {
-    my variable proto request keepalive
+    my variable sock proto request keepalive
 
     array set opts {
         new 0
@@ -411,8 +411,9 @@ namespace eval ::tanzer::session {
         set module [format "::tanzer::%s::request" $proto]
 
         set request [$module new [self]]
+        set peer    [chan configure $sock -peername]
 
-        $request env REMOTE_ADDR [lindex [my get sockaddr] 0]
+        $request env REMOTE_ADDR [lindex [chan configure $sock] 0]
     }
 
     return $request
