@@ -621,8 +621,8 @@ span.mlabels {
 
 span.mlabel {
     background-color: #728DC1;
-    border-top:1px solid #5373B4;
-    border-left:1px solid #5373B4;
+    border-top:1px solid #c0c0c0;
+    border-left:1px solid #c0c0c0;
     border-right:1px solid #C4CFE5;
     border-bottom:1px solid #C4CFE5;
     text-shadow: none;
@@ -1062,7 +1062,7 @@ dl.section dd {
     padding: 0px;
     margin: 0px;
     width: 100%;
-    border-bottom: 1px solid #5373B4;
+    border-bottom: 1px solid #c0c0c0;
 }
 
 .image {
