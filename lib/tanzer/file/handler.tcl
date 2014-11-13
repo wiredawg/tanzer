@@ -130,6 +130,8 @@ package require TclOO
     # If there is a filter found for the current file, then delegate all future
     # events to that and bail.
     #
+    set filter [my filter $session $localPath $st]
+
     if {[llength $filter] > 0} {
         $session delegate {*}$filter $session $localPath $st
 
