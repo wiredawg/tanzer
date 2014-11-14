@@ -2,6 +2,7 @@ body {
     font: 400 14px/22px "Helvetica Neue", Helvetica, sans-serif;
     padding-left: 10%;
     padding-right: 10%;
+    margin: 0;
 }
 
 table, div, p, dl {
@@ -258,12 +259,6 @@ div.groupHeader {
 div.groupText {
     margin-left: 16px;
     font-style: italic;
-}
-
-body {
-    background-color: white;
-    color: black;
-    margin: 0;
 }
 
 div.contents {
@@ -1029,11 +1024,11 @@ dl.section dd {
 
 
 #projectlogo {
-    text-align: center;
-    vertical-align: bottom;
+    text-align:      left;
+    vertical-align:  bottom;
     border-collapse: separate;
-    margin:  8px;
-    padding: 8px;
+    margin:          8px;
+    padding:         8px;
 }
     
 #projectlogo img { 
