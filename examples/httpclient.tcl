@@ -7,7 +7,7 @@ package require tanzer::response
 
 set server [::tanzer::server new]
 
-$server route GET /* * [::tanzer::http::handler new {
+$server route GET /* {.*} [::tanzer::http::handler new {
     host "localhost"
     port 80
 }]
