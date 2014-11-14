@@ -212,6 +212,46 @@ namespace eval ::tanzer::server {
 }
 
 ##
+# Serve the error message `$e` for the session associated with `$sock`, and
+# immediately end the session and close the socket.
+#
+::oo::define ::tanzer::server method error {e sock} {
+    my variable sessions logger
+
+    set session $sessions($sock)
+
+    #
+    # If the session has already sent a response for the current request,
+    # then simply log the error and move on.
+    #
+    if {[$session responded]} {
+        $logger err $e
+
+        my close $sock
+
+        return
+    }
+
+    if {[::tanzer::error servable $e]} {
+        if {[::tanzer::error status $e] >= 500} {
+            $logger err $e
+        }
+
+        set response [::tanzer::error response $e]
+    } else {
+        $logger err $e
+
+        set response [::tanzer::error response [::tanzer::error fatal]]
+    }
+
+    $session send $response
+
+    my close $sock
+
+    return
+}
+
+##
 # The default I/O event handler associated with new connection sockets opened
 # by the server.  `$event` is one of `read` or `write`.  Not meant to be called
 # directly.
@@ -230,33 +270,7 @@ namespace eval ::tanzer::server {
     ::tanzer::error try {
         $session handle $event
     } catch e {
-        #
-        # If the session has already sent a response for the current request,
-        # then simply log the error and move on.
-        #
-        if {[$session responded]} {
-            $logger err $e
-
-            my close $sock
-
-            return
-        }
-
-        if {[::tanzer::error servable $e]} {
-            if {[::tanzer::error status $e] >= 500} {
-                $logger err $e
-            }
-
-            set response [::tanzer::error response $e]
-        } else {
-            $logger err $e
-
-            set response [::tanzer::error response [::tanzer::error fatal]]
-        }
-
-        $session send $response
-
-        my close $sock
+        my error $e $sock
     }
 }
 

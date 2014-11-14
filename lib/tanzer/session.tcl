@@ -107,6 +107,16 @@ namespace eval ::tanzer::session {
 }
 
 ##
+# Report the error `$e` to the server, and end the current session, resulting
+# in the destruction of the current object.
+#
+::oo::define ::tanzer::session method error {e} {
+    my variable server sock
+
+    $server error $e $sock
+}
+
+##
 # When `$args` is not empty, specify a callback to be dispatched whenever the
 # current session handler is ready to clean any associated state and prepare
 # to handle a new request, or to end.  Otherwise, when no arguments are

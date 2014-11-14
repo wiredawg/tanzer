@@ -149,8 +149,9 @@ package require TclOO
             # If we were not able to pipe any data from the input file to the output
             # socket, then finish the request.
             #
-            if {[llength $args] == 1} {
-                $session nextRequest
+            if {[llength $args] > 0} {
+                $session error [lindex $args 0]
+
                 return
             }
 

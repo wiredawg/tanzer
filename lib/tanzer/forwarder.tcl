@@ -80,7 +80,9 @@ namespace eval ::tanzer::forwarder {
     fcopy $in $sock -command [list apply {
         {session copied args} {
             if {[llength $args] > 0} {
-                ::tanzer::error throw 500 [lindex $args 0]
+                $session error [lindex $args 0]
+
+                return
             }
 
             $session nextRequest
