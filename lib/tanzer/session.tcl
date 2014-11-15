@@ -225,8 +225,6 @@ namespace eval ::tanzer::session {
     my variable sock server request keepalive \
         buffer config handler watchdog
 
-    my monitor -cancel
-
     set streamed 0
 
     if {$event eq "write"} {
@@ -267,6 +265,8 @@ namespace eval ::tanzer::session {
         if {![$request parse buffer]} {
             return
         }
+
+        my monitor -cancel
 
         #
         # If the request does not call for keepalive, then set the keepalive
