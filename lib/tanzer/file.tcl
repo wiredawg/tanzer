@@ -90,7 +90,9 @@ proc ::tanzer::file::mimeType {path} {
     my variable fh
 
     if {$fh ne {}} {
-        ::close $fh
+        catch {
+            ::close $fh
+        }
     }
 }
 

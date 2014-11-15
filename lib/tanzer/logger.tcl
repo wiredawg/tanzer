@@ -110,7 +110,10 @@ proc ::tanzer::logger::default {subcommand args} {
 
     foreach key {accessLog errorLog} {
         if {[array get config $key] ne {}} {
-            close $files($key)
+            catch {
+                close $files($key)
+            }
+
             unset files($key)
         }
     }

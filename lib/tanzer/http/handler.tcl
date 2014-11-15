@@ -107,7 +107,9 @@ package require TclOO
         return
     }
 
-    ::close $socks($session)
+    catch {
+        ::close $socks($session)
+    }
 
     array unset socks     $session
     array unset buffers   $session
