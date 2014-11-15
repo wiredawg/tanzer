@@ -7,7 +7,7 @@
     <tab type="pages" visible="yes" title="" intro="pages"/>
     <tab type="hierarchy" visible="yes" title="classes" intro=""/>
     <tab type="namespacelist" visible="yes" title="functions" intro=""/>
-    <tab type="user" url="http://tanzer.io/git/tanzer.git" title="source"/>
+    <tab type="user" url="http://tanzer.io/git/tanzer.git" title="source code"/>
   </navindex>
 
   <!-- Layout definition for a class page -->
