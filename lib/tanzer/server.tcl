@@ -244,9 +244,9 @@ namespace eval ::tanzer::server {
         set response [::tanzer::error response [::tanzer::error fatal]]
     }
 
-    try {
+    ::tanzer::error try {
         $session send $response
-    } catch {e} {
+    } catch e {
         $logger err $e
     }
 
