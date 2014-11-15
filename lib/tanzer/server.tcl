@@ -303,7 +303,11 @@ namespace eval ::tanzer::server {
 
 ##
 # Listen for inbound connections on `$port`, and enter the socket handling
-# event loop.
+# event loop.  This simply creates a new listener with `[socket -server]` and
+# dispatches all inbound connections to ::tanzer::server::accept.
+#
+# Do not use this if you intend to listen to listen on multiple sockets, or if
+# you wish to use TLS.
 #
 ::oo::define ::tanzer::server method listen {port} {
     socket -server [list [self] accept] $port
