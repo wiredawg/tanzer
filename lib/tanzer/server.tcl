@@ -244,7 +244,11 @@ namespace eval ::tanzer::server {
         set response [::tanzer::error response [::tanzer::error fatal]]
     }
 
-    $session send $response
+    try {
+        $session send $response
+    } catch {e} {
+        $logger err $e
+    }
 
     my close $sock
 
