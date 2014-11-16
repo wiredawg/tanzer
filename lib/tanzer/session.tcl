@@ -589,6 +589,8 @@ namespace eval ::tanzer::session {
 # Send a 301 Redirect to the client, referring them to the new location `$uri`.
 #
 ::oo::define ::tanzer::session method redirect {uri} {
+    my variable response
+
     set response [::tanzer::response new 301]
 
     $response header Location       $uri
