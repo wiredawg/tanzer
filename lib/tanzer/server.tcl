@@ -237,15 +237,16 @@ namespace eval ::tanzer::server {
             $logger err $e
         }
 
-        set response [::tanzer::error response $e]
+        $session response -new [::tanzer::error response $e]
     } else {
         $logger err $e
 
-        set response [::tanzer::error response [::tanzer::error fatal]]
+        $session response -new \
+            [::tanzer::error response [::tanzer::error fatal]]
     }
 
     ::tanzer::error try {
-        $session send $response
+        $session respond
     } catch e {
         $logger err $e
     }

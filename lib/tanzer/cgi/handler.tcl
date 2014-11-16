@@ -56,7 +56,7 @@ namespace eval ::tanzer::cgi::handler {
 # client unmodified.
 #
 ::oo::define ::tanzer::cgi::handler constructor {opts} {
-    my variable config pipes buffers responses
+    my variable config pipes buffers
 
     next $opts
 
@@ -66,10 +66,9 @@ namespace eval ::tanzer::cgi::handler {
         root    "No document root provided"
     }
 
-    array set config    {}
-    array set pipes     {}
-    array set buffers   {}
-    array set responses {}
+    array set config  {}
+    array set pipes   {}
+    array set buffers {}
 
     foreach {name message} $requirements {
         if {![dict exists $opts $name]} {
@@ -81,7 +80,7 @@ namespace eval ::tanzer::cgi::handler {
 }
 
 ::oo::define ::tanzer::cgi::handler method open {session} {
-    my variable config pipes buffers responses
+    my variable config pipes buffers
 
     next $session
 
@@ -134,16 +133,16 @@ namespace eval ::tanzer::cgi::handler {
 
     set pipes($session)     $pipe
     set buffers($session)   ""
-    set responses($session) [::tanzer::response new \
+
+    $session response -new [::tanzer::response new \
         $::tanzer::forwarder::defaultStatus]
 
-    $responses($session) setup -newline "\n"
-
+    $session response setup -newline "\n"
     $session cleanup [self] cleanup $session
 }
 
 ::oo::define ::tanzer::cgi::handler method cleanup {session} {
-    my variable pipes buffers responses
+    my variable pipes buffers
 
     if {[array get pipes $session] eq {}} {
         return
@@ -153,9 +152,8 @@ namespace eval ::tanzer::cgi::handler {
         ::close $pipes($session)
     }
 
-    array unset pipes     $session
-    array unset buffers   $session
-    array unset responses $session
+    array unset pipes   $session
+    array unset buffers $session
 
     return
 }
@@ -179,14 +177,13 @@ namespace eval ::tanzer::cgi::handler {
 }
 
 ::oo::define ::tanzer::cgi::handler method write {session} {
-    my variable pipes buffers responses
+    my variable pipes buffers
 
     if {[array get pipes $session] eq {}} {
         my open $session
     }
 
-    set pipe     $pipes($session)
-    set response $responses($session)
+    set pipe $pipes($session)
 
     set size [$session config readsize]
     set sock [$session sock]
@@ -207,7 +204,7 @@ namespace eval ::tanzer::cgi::handler {
     #
     append buffers($session) [read $pipe $size]
 
-    if {![$response parse buffers($session)]} {
+    if {![$session response parse buffers($session)]} {
         return
     }
 
@@ -215,28 +212,28 @@ namespace eval ::tanzer::cgi::handler {
     # Let's see if we've received a reasonable header to determine what sort
     # of response status to send off.
     #
-    if {[$response headerExists Status]} {
+    if {[$session response headerExists Status]} {
         #
         # If the CGI program explicitly mentions a Status:, then send that
         # along.
         #
-        $response status [lindex [$response header Status] 0]
-    } elseif {[$response headerExists Content-Type]} {
+        $session response status [lindex [$session response header Status] 0]
+    } elseif {[$session response headerExists Content-Type]} {
         #
         # Presume the CGI response is valid if it is qualified with a type.
         #
-        $response status 200
-    } elseif {[$response headerExists Location]} {
+        $session response status 200
+    } elseif {[$session response headerExists Location]} {
         #
         # Send a 301 Redirect if the CGI program indicated a Location: header.
         #
-        $response status 301
+        $session response status 301
     }
 
     #
     # Let's send this little piggy to the market.
     #
-    $session send $response
+    $session respond
 
     #
     # Now, send off everything that's left over in the buffer.

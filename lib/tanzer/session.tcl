@@ -630,7 +630,7 @@ namespace eval ::tanzer::session {
                 error "No response recorded"
             }
 
-            return [$response {*}$args]
+            return [uplevel 1 [list $response {*}$args]]
         }
     }
 

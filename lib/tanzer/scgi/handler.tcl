@@ -51,8 +51,7 @@ namespace eval ::tanzer::scgi::handler {
 # response bodies from the SCGI service to the originating client.
 #
 ::oo::define ::tanzer::scgi::handler constructor {opts} {
-    my variable config socks buffers \
-        bodies requested responses
+    my variable config socks buffers bodies requested
 
     next $opts
 
@@ -67,7 +66,6 @@ namespace eval ::tanzer::scgi::handler {
     array set buffers   {}
     array set bodies    {}
     array set requested {}
-    array set responses {}
 
     foreach {name message} $requirements {
         if {![dict exists $opts $name]} {
@@ -122,8 +120,7 @@ namespace eval ::tanzer::scgi::handler {
 }
 
 ::oo::define ::tanzer::scgi::handler method open {session} {
-    my variable config socks buffers \
-        requested responses
+    my variable config socks buffers requested
 
     next $session
 
@@ -140,15 +137,15 @@ namespace eval ::tanzer::scgi::handler {
     set buffers($session)   ""
     set bodies($session)    ""
     set requested($session) 0
-    set responses($session) [::tanzer::response new \
+
+    $session respond -new [::tanzer::response new \
         $::tanzer::forwarder::defaultStatus]
 
     $session cleanup [self] cleanup $session
 }
 
 ::oo::define ::tanzer::scgi::handler method cleanup {session} {
-    my variable socks buffers bodies \
-        requested responses
+    my variable socks buffers bodies requested
 
     if {[array get socks $session] eq {}} {
         return
@@ -163,7 +160,6 @@ namespace eval ::tanzer::scgi::handler {
     array unset bodies    $session
     array unset requested $session
     array unset requested $session
-    array unset responses $session
 
     return
 }
@@ -191,9 +187,7 @@ namespace eval ::tanzer::scgi::handler {
 }
 
 ::oo::define ::tanzer::scgi::handler method write {session} {
-    my variable socks buffers requested responses
-
-    set response $responses($session)
+    my variable socks buffers requested
 
     #
     # If we have not forwarded the HTTP request to the SCGI service, then do
@@ -227,14 +221,14 @@ namespace eval ::tanzer::scgi::handler {
 
     append buffers($session) $buf
 
-    if {![$response parse buffers($session)]} {
+    if {![$session response parse buffers($session)]} {
         return
     }
 
     #
     # Let's send this little piggy to the market.
     #
-    $session send $response
+    $session respond
 
     #
     # Now, send off everything that's left over in the buffer.

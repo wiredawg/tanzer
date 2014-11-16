@@ -41,8 +41,7 @@ package require TclOO
 # client.
 #
 ::oo::define ::tanzer::http::handler constructor {opts} {
-    my variable config socks buffers \
-        lengths requested responses
+    my variable config socks buffers lengths requested
 
     next $opts
 
@@ -53,7 +52,7 @@ package require TclOO
 
     array set config {}
 
-    foreach varName {socks buffers lengths requested responses} {
+    foreach varName {socks buffers lengths requested} {
         array set $varName {}
     }
 
@@ -67,8 +66,7 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::http::handler method open {session} {
-    my variable config socks buffers \
-        requested responses
+    my variable config socks buffers requested
 
     next $session
 
@@ -94,14 +92,15 @@ package require TclOO
     set buffers($session)   ""
     set lengths($session)   0
     set requested($session) 0
-    set responses($session) [::tanzer::response new \
+
+    $session response -new [::tanzer::response new \
         $::tanzer::forwarder::defaultStatus]
 
     $session cleanup [self] cleanup $session
 }
 
 ::oo::define ::tanzer::http::handler method cleanup {session} {
-    my variable socks buffers requested responses
+    my variable socks buffers requested
 
     if {[array get socks $session] eq {}} {
         return
@@ -115,7 +114,6 @@ package require TclOO
     array unset buffers   $session
     array unset lengths   $session
     array unset requested $session
-    array unset responses $session
 
     return
 }
@@ -139,11 +137,9 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::http::handler method write {session} {
-    my variable socks buffers lengths \
-        requested responses
+    my variable socks buffers lengths requested
 
-    set request  [$session request]
-    set response $responses($session)
+    set request [$session request]
 
     #
     # If we have not forwarded the HTTP request to the remote server, then do
@@ -194,16 +190,16 @@ package require TclOO
     #
     append buffers($session) [read $socks($session) $size]
 
-    if {![$response parse buffers($session)]} {
+    if {![$session response parse buffers($session)]} {
         return
     }
 
-    set lengths($session) [$response length]
+    set lengths($session) [$session response length]
 
     #
     # Let's send this little piggy to the market.
     #
-    $session send $response
+    $session respond
 
     #
     # Now, send off everything that's left over in the buffer.
