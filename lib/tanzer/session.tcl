@@ -32,8 +32,8 @@ namespace eval ::tanzer::session {
 # specified in `$newProto`.
 #
 ::oo::define ::tanzer::session constructor {newServer newSock newProto} {
-    my variable server sock proto request route handler cleanup \
-        state response buffer config remaining keepalive watchdog
+    my variable server sock proto request route handler cleanup state \
+        response responded buffer config remaining keepalive watchdog
 
     set server    $newServer
     set sock      $newSock
@@ -44,6 +44,7 @@ namespace eval ::tanzer::session {
     set cleanup   {}
     set state     [dict create]
     set response  {}
+    set responded 0
     set buffer    ""
     set remaining 0
     set keepalive 1
@@ -165,7 +166,7 @@ namespace eval ::tanzer::session {
 #
 ::oo::define ::tanzer::session method nextRequest {} {
     my variable server sock buffer handler route \
-        request response remaining keepalive
+        request response responded remaining keepalive
 
     if {$remaining != 0} {
         ::tanzer::error throw 400 "Invalid request body length"
@@ -183,8 +184,9 @@ namespace eval ::tanzer::session {
 
     my cleanup
 
-    set route   {}
-    set handler {}
+    set route     {}
+    set handler   {}
+    set responded 0
 
     #
     # If the session shant be kept alive, then end it.
@@ -545,9 +547,9 @@ namespace eval ::tanzer::session {
 # response with the server.
 #
 ::oo::define ::tanzer::session method send {newResponse} {
-    my variable server sock request response keepalive
+    my variable server sock request response responded keepalive
 
-    if {$response ne {}} {
+    if {$responded} {
         error "Already sent response"
     }
 
@@ -558,7 +560,8 @@ namespace eval ::tanzer::session {
     $newResponse header Connection [expr {$keepalive? "Keep-Alive": "Close"}]
     $newResponse send $sock
 
-    set response $newResponse
+    set response  $newResponse
+    set responded 1
 
     $server log $request $response
 
@@ -566,21 +569,70 @@ namespace eval ::tanzer::session {
 }
 
 ##
+# If a response was previously queued by a call to ::tanzer::session::response,
+# then send that response using ::tanzer::session::send.
+#
+::oo::define ::tanzer::session method respond {} {
+    my variable response
+
+    if {$response eq {}} {
+        error "No response queued"
+    }
+
+    my send $response
+}
+
+##
 # Returns true if a response has been sent for the last request handled by this
 # session.
 #
 ::oo::define ::tanzer::session method responded {} {
-    my variable response
+    my variable responded
 
-    return [expr {$response ne {}}]
+    return $responded
 }
 
 ##
-# Returns a reference to the message sent in response to the most recent
-# request handled by the current session handler
+# This method yields different behaviors when called in any of the following
+# ways.
 #
-::oo::define ::tanzer::session method response {} {
-    my variable response
+# * `[$session response]`
+#
+#   Return the last response recorded for this session, if any.
+#
+# * `[$session response -new $response]`
+#
+#   Record the new response provided in `$response` in the current session.
+#
+# * `[$session response $args]`
+#
+#   Call the response object command last recorded for the current session,
+#   passing the arguments in `$args` in expanded form with `{*}` prepended.
+#   The result of this response command invocation is returned.
+# .
+#
+::oo::define ::tanzer::session method response {args} {
+    my variable response responded
+
+    if {[llength $args] > 0} {
+        if {$responded} {
+            error "Already sent response"
+        }
+
+        if {[lindex $args 0] eq "-new"} {
+            if {[llength $args] != 2} {
+                error "Invalid command invocation"
+            }
+
+            set response [lindex $args 1]
+        } else {
+            if {$response eq {}} {
+                error "No response recorded"
+            }
+
+            return [$response {*}$args]
+        }
+    }
 
     return $response
 }
