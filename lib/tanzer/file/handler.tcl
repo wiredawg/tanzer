@@ -137,11 +137,12 @@ package require TclOO
         return
     }
 
-    set request  [$session request]
-    set method   [$request method]
-    set range    [$request headerExists Range]
-    set response [::tanzer::response new [expr {$range? 206: 200}]]
-    set serve    1
+    set request [$session request]
+    set method  [$request method]
+    set range   [$request headerExists Range]
+    set serve   1
+
+    $session response -new [::tanzer::response new [expr {$range? 206: 200}]]
 
     set file [if {$range} {
         ::tanzer::file::partial new $localPath $st [$session config] $request
@@ -168,14 +169,14 @@ package require TclOO
         ::tanzer::error throw 415 "Request bodies not allowed for file reads"
     }
 
-    $response headers [$file headers]
+    $session response headers [$file headers]
 
     #
     # If this is a Range: request, then check to see any If-Range: precondition
     # matches, and set the status to 200 and serve the whole file if not.
     #
     if {$range && [$file mismatched]} {
-        $response status 200
+        $session response status 200
     }
 
     #
@@ -191,8 +192,8 @@ package require TclOO
 
     foreach {precondition failStatus} $preconditions {
         if {![$file $precondition $request]} {
-            $response status $failStatus
-            $response header Content-Length 0
+            $session response status $failStatus
+            $session response header Content-Length 0
 
             set serve 0
 
@@ -200,7 +201,7 @@ package require TclOO
         }
     }
 
-    $session send $response
+    $session respond
 
     if {$serve} {
         $session delegate $file stream
@@ -257,9 +258,8 @@ package require TclOO
     #
     # Lastly, send a directory listing.
     #
-    set response [::tanzer::file::listing new $request $localPath $st]
-
-    $session send $response
+    $session response -new [::tanzer::file::listing new $request $localPath $st]
+    $session respond
     $session nextRequest
 }
 
