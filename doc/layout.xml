@@ -4,7 +4,7 @@
   <navindex>
     <tab type="user" url="http://tanzer.io/" title="home"/>
     <tab type="mainpage" visible="yes" title="main"/>
-    <tab type="pages" visible="yes" title="" intro="pages"/>
+    <tab type="pages" visible="yes" title="pages" intro=""/>
     <tab type="hierarchy" visible="yes" title="classes" intro=""/>
     <tab type="namespacelist" visible="yes" title="functions" intro=""/>
     <tab type="user" url="http://tanzer.io/git/tanzer.git" title="source code"/>
