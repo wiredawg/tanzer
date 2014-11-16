@@ -68,7 +68,7 @@ namespace eval ::tanzer::session {
 
     if {$sock ne {}} {
         $server forget $sock
-        
+
         catch {
             close $sock
         }
