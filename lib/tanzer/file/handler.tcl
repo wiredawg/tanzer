@@ -142,8 +142,6 @@ package require TclOO
     set range   [$request headerExists Range]
     set serve   1
 
-    $session response -new [::tanzer::response new [expr {$range? 206: 200}]]
-
     set file [if {$range} {
         ::tanzer::file::partial new $localPath $st [$session config] $request
     } else {
@@ -169,6 +167,7 @@ package require TclOO
         ::tanzer::error throw 415 "Request bodies not allowed for file reads"
     }
 
+    $session response -new [::tanzer::response new [expr {$range? 206: 200}]]
     $session response headers [$file headers]
 
     #
