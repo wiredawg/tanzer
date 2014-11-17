@@ -297,11 +297,9 @@ namespace eval ::tanzer::server {
         -buffering   full \
         -buffersize  $config(readsize)
 
-    set session [::tanzer::session new [self] $sock $config(proto)]
+    set sessions($sock) [::tanzer::session new [self] $sock $config(proto)]
 
     fileevent $sock readable [list [self] respond read $sock]
-
-    set sessions($sock) $session
 
     return
 }
