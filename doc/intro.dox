@@ -1,0 +1,56 @@
+/*!
+ * @page intro Introduction to hacking with tänzer
+ *
+ * @section sec_installation Installation
+ *
+ * Currently, tänzer does not provide an installer.  However, installing it by
+ * hand is a trivial affair.  From the `tanzer/` repository root, do this:
+ *
+ * @code{.sh}
+ * sudo cp -r lib /usr/local/lib/tanzer0.1
+ * @endcode
+ *
+ * Or, simply use tänzer in place, setting the `$TCLLIBPATH` environment
+ * variable as appropriate to include the `lib/` subdirectory.
+ *
+ * @section sec_model The tänzer event model
+ *
+ * tänzer provides a fairly thin layer of HTTP/1.1 parsing and generating
+ * semantics on top of the Tcl event loop, exposing the user to some of the
+ * intricacies of handling the many individual read and write events that come
+ * part and parcel with servicing many sessions asynchronously and in a
+ * concurrent fashion.  The rationale is this: Not every request needs to be
+ * fulfilled and responded to in a single sitting, but incrementally, with
+ * event handlers should deal with a small part of handling their respective
+ * requests dealing with things in a granular fashion, one chunk at a time.
+ *
+ * tänzer is similar to Node.js in that it provides request parsing, response
+ * sending and message body I/O with very little abstraction.  tänzer differs
+ * from Node.js in that the developer is actively encouraged by its API to
+ * handle as little as possible per I/O event.  Furthermore, tänzer, as a
+ * project, is much smaller in scope than Node.js as it focuses purely on
+ * facilitating the crafting of HTTP/1.1 services, delegating all other
+ * functionality to the tried-and-true rich Tcl platform.
+ *
+ * @section sec_helloworld Your first "Hello, World!" with tänzer
+ *
+ * Open the `examples/simple.tcl` file in your favorite editor and look around.
+ * Notice that the event handler for the sole route in that file is a single
+ * command called `simpleResponder`, which accepts two required arguments,
+ * `$event` and `$session`, and an optional argument, `$data`.  The `$event`
+ * argument will always be one of the following values:
+ *
+ * * `read`
+ *
+ *   Sent to your event handler when the session handler has read data from
+ *   the remote client, and may have data available in `$data`.
+ *
+ * * `write`
+ *   Sent to your event handler when the remote socket is ready to be written
+ *   to.
+ * .
+ *
+ * The `$session` argument specifies a ::tanzer::session object for the current
+ * session.  And, as previously mentioned, a third argument is available in
+ * `$data`, when data is available and accompanies a `read` event.
+ */

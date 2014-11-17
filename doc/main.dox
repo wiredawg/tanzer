@@ -1,11 +1,9 @@
 /*!
  * @mainpage Documentation
  *
- * @subpage faq
- *
  * @tableofcontents
  *
- * @section sec_intro Introduction
+ * @section sec_about About
  *
  * tänzer is a very lightweight web server framework which utilizes the
  * inherent beauty of Tcl's builtin event loop to great effect.  tänzer hopes
@@ -14,9 +12,13 @@
  * for most HTTP service needs.  A great emphasis is placed on performance,
  * simplicity, understandability, and low project overhead.
  *
- * Herein is a brief overview of the API and the functionality it provides.
+ * @section sec_overview Overview
  *
- * @section sec_api API reference
+ * * @subpage intro
+ * * @subpage faq
+ * .
+ *
+ * @section sec_api API overview
  *
  * @subsection sub_server Server internals
  *
