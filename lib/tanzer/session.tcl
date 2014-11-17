@@ -221,8 +221,19 @@ namespace eval ::tanzer::session {
 # the appropriate request handler, and delegate all subsequent `write` events
 # to the new handler.
 # 
-# This is the first bit of code that gets executed by the server upon receipt
-# of a ready event.
+# Event handlers are called with the following form when dispatching `read`
+# events:
+#
+# @code{.tcl}
+# {*}$handler $event $session $data
+# @endcode
+#
+# Event handlers are called with the following form when dispatching `write`
+# events:
+#
+# @code{.tcl}
+# {*}$handler $event $session
+# @endcode
 #
 ::oo::define ::tanzer::session method handle {event} {
     my variable sock server request keepalive \
