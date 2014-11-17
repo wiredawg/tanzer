@@ -67,12 +67,10 @@ namespace eval ::tanzer::session {
         $response destroy
     }
 
-    if {$sock ne {}} {
-        $server forget $sock
+    $server forget $sock
 
-        catch {
-            close $sock
-        }
+    catch {
+        close $sock
     }
 
     my monitor -cancel
@@ -523,7 +521,7 @@ namespace eval ::tanzer::session {
     }
 
     foreach type [dict keys $listen] {
-        set callback [if [dict get $listen type] {
+        set callback [if [dict get $listen $type] {
             list $server respond $event $sock
         } else {
             list
