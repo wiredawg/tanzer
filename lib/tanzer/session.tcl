@@ -618,6 +618,14 @@ namespace eval ::tanzer::session {
         }
 
         if {[lindex $args 0] eq "-new"} {
+            #
+            # Destroy any existing response object there may be, if it has not
+            # been served yet.
+            #
+            if {$response ne {}} {
+                $response destroy
+            }
+
             if {[llength $args] != 2} {
                 error "Invalid command invocation"
             }
