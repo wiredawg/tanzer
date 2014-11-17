@@ -12,8 +12,6 @@
  * for most HTTP service needs.  A great emphasis is placed on performance,
  * simplicity, understandability, and low project overhead.
  *
- * @section sec_overview Overview
- *
  * * @subpage intro
  * * @subpage faq
  * .
