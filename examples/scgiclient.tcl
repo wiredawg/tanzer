@@ -1,9 +1,7 @@
-#! /usr/bin/env tclsh8.5
+#! /usr/bin/env tclsh8.6
 
 package require tanzer
-package require tanzer::http
 package require tanzer::scgi::handler
-package require tanzer::response
 
 set server [::tanzer::server new]
 

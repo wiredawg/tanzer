@@ -1,8 +1,6 @@
-#! /usr/bin/env tclsh8.5
+#! /usr/bin/env tclsh8.6
 
 package require tanzer
-package require tanzer::http
-package require tanzer::file::handler
 package require tanzer::cgi::handler
 
 proc usage {} {
@@ -20,6 +18,12 @@ set server [::tanzer::server new [list \
     port  $port \
     proto "http" \
 ]]
+
+$server route {.*} /env/* {.*} [::tanzer::cgi::handler new {
+    program "/var/www/xantronix.net/doc/env.cgi"
+    name    "/env"
+    root    "/var/www/xantronix.net/doc"
+}]
 
 $server route {.*} /* {.*} [::tanzer::file::handler new [list \
     root     $root \

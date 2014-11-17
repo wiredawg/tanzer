@@ -1,10 +1,8 @@
-#! /usr/bin/env tclsh8.5
+#! /usr/bin/env tclsh8.6
 
 package require tanzer
-package require tanzer::http
-package require tanzer::response
 
-proc simpleResponder {event session args} {
+proc simpleResponder {event session {data ""}} {
     switch -- $event "read" {
         #
         # This is executed every time there is data that has just been read
