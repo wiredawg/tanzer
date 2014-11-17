@@ -1,0 +1,48 @@
+/*!
+ * @page faq Frequently Asked Questions
+ *
+ * @tableofcontents 
+ *
+ * @section sec_faq_sockets Sockets
+ *
+ * -# Q. How can I listen on multiple sockets, or on a different incoming IP
+ *    address?
+ *
+ *    * A. Use `[::tanzer::server accept]` as a callback to `socket -server`
+ *      for each listening socket you wish to provide service on.
+ *    .
+ *   
+ * -# Q. How can I use TLS with tänzer?
+ *
+ *    * A. Use `[::tanzer::server accept]` as a callback to the TLS equivalent
+ *      of `socket -server`, `[::tls::socket -server]`, as provided by the `tls`
+ *      package, as a direct replacement for unencrypted sockets.  As tänzer is
+ *      focused on providing HTTP/1.1 semantics first and foremost, it is not
+ *      expected that a standalone server or support module will be incorporated
+ *      into tänzer itself to handle TLS service configuration and startup.  On
+ *      the other hand, this state of affairs offers plenty of flexibility!
+ *    .
+ * .
+ *
+ * @section sec_faq_events Event handling
+ *
+ * -# Q. When can I know when I have received the full message body of an
+ *    incoming request?
+ *
+ *    * A. The session handler will pass only `read` events to the event
+ *      handler until the message body has been read in full.  The message body
+ *      will be considered "finished" upon the receipt of the first `write`
+ *      event.
+ *    .
+ *
+ * -# Q. How can I incorporate usage of tänzer in another application or
+ *    framework which also uses the Tcl event loop?
+ *
+ *    * A. Do not call `[::tanzer::server listen]`, as that method generates a
+ *      call to `[vwait forever]`.  Instead, consider accepting incoming
+ *      connections using `[::tanzer::server accept]`, or create a new
+ *      ::tanzer::session object for client sockets already opened by your
+ *      framework or application.
+ *    .
+ * .
+ */
