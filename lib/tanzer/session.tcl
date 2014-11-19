@@ -32,7 +32,7 @@ namespace eval ::tanzer::session {
 # specified in `$newProto`.
 #
 ::oo::define ::tanzer::session constructor {newServer newSock newProto} {
-    my variable server sock proto request route handler cleanup state \
+    my variable server sock proto request route handler cleanup \
         response responded buffer config remaining keepalive watchdog
 
     set server    $newServer
@@ -42,7 +42,6 @@ namespace eval ::tanzer::session {
     set route     {}
     set handler   {}
     set cleanup   {}
-    set state     [dict create]
     set response  {}
     set responded 0
     set buffer    ""
@@ -363,29 +362,6 @@ namespace eval ::tanzer::session {
 }
 
 ##
-# Obtain a piece of state named by `$key` held by the current session handler.
-#
-::oo::define ::tanzer::session method get {key} {
-    my variable state
-
-    return [dict get $state $key]
-}
-
-##
-# Given a list of key-value pairs in `$args`, set the internal general purpose
-# state.
-#
-::oo::define ::tanzer::session method set {args} {
-    my variable state
-
-    foreach {name value} $args {
-        dict set state $name $value
-    }
-
-    return
-}
-
-##
 # Return a reference to the server for which the current session handler is
 # open.
 #
@@ -461,15 +437,6 @@ namespace eval ::tanzer::session {
     }
 
     return [array get config]
-}
-
-##
-# Return all caller-provided state for the current session handler object.
-#
-::oo::define ::tanzer::session method state {} {
-    my variable state
-
-    return $state
 }
 
 ##
