@@ -131,8 +131,8 @@ namespace eval ::tanzer::cgi::handler {
         -buffersize  [$session config readsize] \
         -blocking    0
 
-    set pipes($session)     $pipe
-    set buffers($session)   ""
+    set pipes($session)   $pipe
+    set buffers($session) ""
 
     $session response -new [::tanzer::response new \
         $::tanzer::forwarder::defaultStatus]
