@@ -238,7 +238,7 @@ namespace eval ::tanzer::session {
     my variable sock server request keepalive \
         buffer config handler watchdog
 
-    set streamed 0
+    set requestBodyFinished 0
 
     if {$event eq "write"} {
         return [{*}$handler write [self]]
@@ -321,7 +321,7 @@ namespace eval ::tanzer::session {
         # we are now ready to transition to write-ready events.
         #
         if {![::tanzer::message::chunk parse buffer {*}$handler read [self]]} {
-            set streamed 1
+            set requestBodyFinished 1
         }
     } else {
         {*}$handler read [self] $data
@@ -337,7 +337,7 @@ namespace eval ::tanzer::session {
         # can transition to write-ready events.
         #
         if {$remaining == 0} {
-            set streamed 1
+            set requestBodyFinished 1
         }
     }
 
@@ -353,7 +353,7 @@ namespace eval ::tanzer::session {
     # the session and spawn up a new request handler, at least in the case
     # of HTTP.
     #
-    if {$streamed} {
+    if {$requestBodyFinished} {
         fileevent $sock readable {}
         fileevent $sock writable [list $server respond write $sock]
     }
