@@ -3,6 +3,28 @@
  *
  * @tableofcontents 
  *
+ * @section sec_faq_generl General questions
+ *
+ * -# Q. Why do my requests take longer than one would hope to fulfill?  There's
+ *    barely any load on my server, and network utilization is minimal!
+ *
+ *    * A. This is likely due to initial connections between client and server
+ *         blocking due to reverse DNS resolution.  There is not much that can
+ *         be done to avoid this without a very small modification to your
+ *         application code within tänzer itself; any conceivable means of
+ *         sidestepping this problem would involve breaking tänzer's deliberate
+ *         design decision to not open nor manage its own listening sockets.
+ *
+ *         To sidestep this problem and disable reverse DNS lookup on client
+ *         sockets, put this in your application prior to entering the Tcl event
+ *         loop:
+ *
+ *         @code
+ *         set ::tcl::unsupported::noReverseDNS 1
+ *         @endcode
+ *    .
+ * .
+ *
  * @section sec_faq_sockets Sockets
  *
  * -# Q. How can I listen on multiple sockets, or on a different incoming IP
