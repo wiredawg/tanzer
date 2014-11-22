@@ -61,7 +61,7 @@ namespace eval ::tanzer::scgi::handler {
         name "No program name provided"
     }
 
-    array set config    $defaults
+    array set config    {}
     array set socks     {}
     array set buffers   {}
     array set bodies    {}
