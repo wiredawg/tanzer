@@ -92,8 +92,6 @@ namespace eval ::tanzer::scgi::handler {
     set env [list \
         SCGI            $::tanzer::scgi::handler::version \
         SERVER_SOFTWARE "$::tanzer::server::name/$::tanzer::server::version" \
-        SERVER_ADDR     $addr \
-        SERVER_PORT     [$server port] \
         SCRIPT_NAME     $config(name) \
         REQUEST_METHOD  [$request method] \
         PWD             [pwd]]
@@ -138,7 +136,7 @@ namespace eval ::tanzer::scgi::handler {
     set bodies($session)    ""
     set requested($session) 0
 
-    $session respond -new [::tanzer::response new \
+    $session response -new [::tanzer::response new \
         $::tanzer::forwarder::defaultStatus]
 
     $session cleanup [self] cleanup $session
@@ -182,10 +180,6 @@ namespace eval ::tanzer::scgi::handler {
     append bodies($session) $data
 }
 
-::oo::define ::tanzer::scgi::handler method pipe {in out} {
-
-}
-
 ::oo::define ::tanzer::scgi::handler method write {session} {
     my variable socks buffers requested
 
@@ -200,7 +194,7 @@ namespace eval ::tanzer::scgi::handler {
         set requested($session) 1
     }
 
-    set size [$session config size]
+    set size [$session config readsize]
     set sock [$session sock]
 
     #
