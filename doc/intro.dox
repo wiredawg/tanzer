@@ -46,6 +46,7 @@
  *   the remote client, and may have data available in `$data`.
  *
  * * `write`
+ *
  *   Sent to your event handler when the remote socket is ready to be written
  *   to.
  * .
