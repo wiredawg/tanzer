@@ -27,9 +27,10 @@ proc ::tanzer::file::mimeType {path} {
         *.jpg -
         *.jpeg { return "image/jpeg" }
         *.gif  { return "image/gif" }
+        *.*    { return "application/octet-stream" }
     }
 
-    return "application/octet-stream"
+    return "text/plain"
 }
 
 ##
