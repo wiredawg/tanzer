@@ -18,16 +18,14 @@ namespace eval ::tanzer::file {}
 proc ::tanzer::file::mimeType {path} {
     set mimeType [lindex [::fileutil::magic::mimetype $path] 0]
 
-    switch -glob -nocase $path {
-        *.txt  { return "text/plain" }
-        *.htm -
-        *.html { return "text/html" }
-        *.css  { return "text/css" }
-        *.png  { return "image/png" }
-        *.jpg -
-        *.jpeg { return "image/jpeg" }
-        *.gif  { return "image/gif" }
-        *.*    { return "application/octet-stream" }
+    switch -regex -nocase [file tail $path] {
+        {\.txt$}          { return "text/plain" }
+        {\.(?:htm|html)$} { return "text/html" }
+        {\.css$}          { return "text/css" }
+        {\.png$}          { return "image/png" }
+        {\.(?:jpg|jpeg)$} { return "image/jpeg" }
+        {\.gif$}          { return "image/gif" }
+        {\.}              { return "application/octet-stream" }
     }
 
     return "text/plain"
