@@ -143,7 +143,7 @@ namespace eval ::tanzer::session {
 }
 
 ##
-# Delegate events to a different request handler as specified in `$args.
+# Delegate events to a different request handler as specified in `$args`.
 #
 ::oo::define ::tanzer::session method delegate {args} {
     my variable handler
