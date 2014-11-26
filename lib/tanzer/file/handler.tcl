@@ -36,8 +36,21 @@ package require TclOO
 #
 #   A list of key-value pairs indicating special filters to apply to files
 #   whose base names match a regular expression in the key portion of each
-#   pair, and a command prefix to pass the name of the current object to as
-#   its value.
+#   pair, and a command prefix which is called with the following values
+#   appended:
+#
+#   * `$session`
+#
+#     A reference to the originating session
+#
+#   * `$localPath`
+#
+#     A string containing the local path of the file to be transformed
+#
+#   * `$st`
+#
+#     A `dict` of data as returned by `[file stat]`
+#   .
 # .
 #
 # In order to facilitate service of file hierarchies, the file request handler
