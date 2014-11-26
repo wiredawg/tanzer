@@ -66,5 +66,13 @@
  *      ::tanzer::session object for client sockets already opened by your
  *      framework or application.
  *    .
+ *
+ * -# Q. Does tänzer support coroutines as event handlers?
+ *
+ *    * A. Not explicitly.  However, tänzer does not stand in the way of one
+ *      delegating events to coroutines; an example of a simple coroutine-based
+ *      request handler is provided in the tänzer sources in the file
+ *      `examples/coroutine.tcl`.
+ *    .
  * .
  */
