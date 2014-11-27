@@ -233,25 +233,27 @@ namespace eval ::tanzer::server {
     }
 
     if {[::tanzer::error servable $e]} {
-        if {[::tanzer::error status $e] >= 500} {
-            $logger err $e
-        }
-
         $session response -new [::tanzer::error response $e]
     } else {
-        $logger err $e
-
         $session response -new \
             [::tanzer::error response [::tanzer::error fatal]]
     }
 
-    ::tanzer::error try {
-        $session respond
-    } catch e {
+    set request [$session request]
+    set status  [$session response status]
+
+    if {$status >= 500} {
         $logger err $e
     }
 
-    my close $sock
+    ::tanzer::error try {
+        $session respond
+        $session nextRequest
+    } catch e {
+        $logger err $e
+
+        my close $sock
+    }
 
     return
 }
