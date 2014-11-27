@@ -596,35 +596,37 @@ namespace eval ::tanzer::session {
 ::oo::define ::tanzer::session method response {args} {
     my variable response responded
 
-    if {[llength $args] > 0} {
-        if {$responded} {
-            error "Already sent response"
-        }
-
-        if {[lindex $args 0] eq "-new"} {
-            #
-            # Destroy any existing response object there may be, if it has not
-            # been served yet.
-            #
-            if {$response ne {}} {
-                $response destroy
-            }
-
-            if {[llength $args] != 2} {
-                error "Invalid command invocation"
-            }
-
-            set response [lindex $args 1]
-        } else {
-            if {$response eq {}} {
-                error "No response recorded"
-            }
-
-            return [uplevel 1 [list $response {*}$args]]
-        }
+    if {[llength $args] == 0} {
+        return $response
     }
 
-    return $response
+    if {$responded} {
+        error "Already sent response"
+    }
+
+    if {[lindex $args 0] eq "-new"} {
+        #
+        # Destroy any existing response object there may be, if it has not
+        # been served yet.
+        #
+        if {$response ne {}} {
+            $response destroy
+        }
+
+        if {[llength $args] != 2} {
+            error "Invalid command invocation"
+        }
+
+        set response [lindex $args 1]
+
+        return
+    }
+
+    if {$response eq {}} {
+        error "No response recorded"
+    }
+
+    return [uplevel 1 [list $response {*}$args]]
 }
 
 ##
