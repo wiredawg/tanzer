@@ -264,7 +264,7 @@ namespace eval ::tanzer::server {
 # directly.
 #
 ::oo::define ::tanzer::server method respond {event sock} {
-    my variable sessions logger
+    my variable sessions
 
     set session $sessions($sock)
 
