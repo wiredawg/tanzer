@@ -414,12 +414,12 @@ namespace eval ::tanzer::session {
         set server  [chan configure $sock -sockname]
         set peer    [chan configure $sock -peername]
 
-        $request env SERVER_ADDR [lindex $peer 0]
-        $request env SERVER_HOST [lindex $peer 1]
-        $request env SERVER_PORT [lindex $peer 2]
-        $request env REMOTE_ADDR [lindex $peer 0]
-        $request env REMOTE_HOST [lindex $peer 1]
-        $request env REMOTE_PORT [lindex $peer 2]
+        $request env SERVER_ADDR [lindex $server 0]
+        $request env SERVER_HOST [lindex $server 1]
+        $request env SERVER_PORT [lindex $server 2]
+        $request env REMOTE_ADDR [lindex $peer   0]
+        $request env REMOTE_HOST [lindex $peer   1]
+        $request env REMOTE_PORT [lindex $peer   2]
     }
 
     return $request
