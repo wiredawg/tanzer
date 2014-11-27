@@ -165,10 +165,6 @@ namespace eval ::tanzer::session {
     my variable server sock buffer handler route \
         request response responded remaining keepalive
 
-    if {$remaining != 0} {
-        ::tanzer::error throw 400 "Invalid request body length"
-    }
-
     if {$request ne {}} {
         $request destroy
         set request {}
@@ -184,6 +180,10 @@ namespace eval ::tanzer::session {
     set route     {}
     set handler   {}
     set responded 0
+
+    if {$remaining != 0} {
+        ::tanzer::error throw 400 "Invalid request body length"
+    }
 
     #
     # If the session shant be kept alive, then end it.
