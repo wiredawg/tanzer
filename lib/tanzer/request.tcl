@@ -245,13 +245,15 @@ package require TclOO
 # Return the value of the parameter called `$name`, or if `$value` is also
 # specified, set the value of `$name` to `$value`.
 #
-::oo::define ::tanzer::request method param {name {value ""}} {
+::oo::define ::tanzer::request method param {name args} {
     my variable params
 
-    if {$value ne ""} {
-        dict set params $name $value
-
-        return
+    switch -- [llength $args] 0 {
+        #
+    } 1 {
+        return [dict set params $name [lindex $args 0]]
+    } default {
+        error "Invalid command invocation"
     }
 
     return [dict get $params $name]
