@@ -19,7 +19,7 @@ set server [::tanzer::server new [list \
     proto "http" \
 ]]
 
-$server route {GET} /* {.*} apply {{event session {data ""}} {
+$server route GET /* {.*} apply {{event session {data ""}} {
     if {$event ne "write"} {
         return
     }
