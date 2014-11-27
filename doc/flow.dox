@@ -1,0 +1,63 @@
+/*!
+ * @page flow Flow of execution
+ *
+ * Herein the flow of execution of tänzer shall be described: From the point
+ * at which remote connections are accepted, to the point at which a request
+ * handler is selected (or not!) for any given request under a session.
+ *
+ * @section sec_flow_session Step 1: A session handler is born
+ *
+ * It is upon this auspicious occasion in which a newborn baby session is
+ * brought into this world; the heavens part, and rays of magnificent golden
+ * light shine upon this brand new creation, announcing the auspicious occasion
+ * of its commencement into life.
+ *
+ * How this happens is a miracle of heartbreaking beauty.
+ *
+ * ::tanzer::server::accept is dispatched as a callback to the client
+ * acceptor, `[socket -server]`.  Here, a new session object is created, and
+ * all `readable` events for the new remote socket is saved in association with
+ * the incoming socket.  Then, all `readable` * events for the new incoming
+ * socket are bound to the server's default event handler,
+ * ::tanzer::server::respond.
+ *
+ * ::tanzer::server::respond handles all subsequent I/O events, at least until
+ * a request handler decides to bind other event handlers directly to the
+ * socket.  This method will forward events to ::tanzer::session::handle and,
+ * when errors occur in the request handler, will log them to the server's
+ * logging facilities.
+ *
+ * @section sec_flow_request Step 2: The session handler accepts requests
+ *
+ * ::tanzer::session::handle will, when ready to parse a new request, create
+ * a new ::tanzer::request object.  Any and all incoming data from the remote
+ * end is buffered by the request object, until it is either fully parseable or
+ * a syntax error is encountered.
+ *
+ * ::tanzer::request will, when given enough data by the session handler to
+ * parse a full request entity, search the server route table until a suitable
+ * route is found that can meet fulfill the request.  If a suitable route is
+ * found, the session handler will delegate all future I/O events for the
+ * current request to that handler; otherwise, a 404 is thrown.
+ *
+ * @section sec_flow_handler Step 3: The request finds a handler
+ *
+ * The current request handler will yield all future I/O events back to the
+ * session handler object via ::tanzer::session::nextRequest, or may throw an
+ * error that shall cause the session handler to either move on to the next
+ * request, or if a fatal error has occured, terminate the session entirely.
+ *
+ * @section sec_flow_next_request Step 4: The request handler is productive
+ *
+ * The request handler runs until it decides it is done.  In cooperation with
+ * everybody else on the farm, it shall yield the session to handle the next
+ * request by calling ::tanzer::session::nextRequest, which prepares the
+ * session handler to handle a new request, and cleans up any remaining state
+ * as appropriate.
+ *
+ * @section sec_flow_timeout Step 5: Death and rebirth
+ *
+ * This all happens until the remote end closes the connection, or if the
+ * watchdog timer closes the session and socket after a 5 second timeout of no
+ * new events from a waiting event loop.
+ */
