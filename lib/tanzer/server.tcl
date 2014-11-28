@@ -250,8 +250,6 @@ namespace eval ::tanzer::server {
         $session respond
         $session nextRequest
     } catch e {
-        $logger err $e
-
         my close $sock
     }
 
