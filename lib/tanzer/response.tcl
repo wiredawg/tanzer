@@ -75,17 +75,17 @@ proc ::tanzer::response::lookup {status} {
 }
 
 ##
-# Return the HTTP status code of the current response.  If `$newStatus` is
+# Return the HTTP status code of the current response.  If a new status is
 # provided, then set the status code with the value provided.
 #
-::oo::define ::tanzer::response method status {{newStatus ""}} {
+::oo::define ::tanzer::response method status {args} {
     my variable status
 
-    if {$newStatus ne ""} {
-        set status $newStatus
-
-        return
+    switch -- [llength $args] 0 {
+        return $status
+    } 1 {
+        return [lassign $args status]
     }
 
-    return $status
+    error "Invalid command invocation"
 }

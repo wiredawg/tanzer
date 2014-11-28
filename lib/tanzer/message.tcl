@@ -318,35 +318,35 @@ proc ::tanzer::message::field {name} {
 # Return the current message HTTP version string, or, if one was not parsed,
 # use the default assumed in ::tanzer::message::defaultVersion.
 #
-::oo::define ::tanzer::message method version {{newVersion ""}} {
+::oo::define ::tanzer::message method version {args} {
     my variable version
 
-    if {$newVersion ne ""} {
-        set version $newVersion
-
-        return
+    switch -- [llength $args] 0 {
+        return $version
+    } 1 {
+        return [lassign $args version]
     }
 
-    return $version
+    error "Invalid command invocation"
 }
 
 ##
 # Get or set the value of a message header.  If only `$name` is specified, then
-# return the value of the header.  If `$value` is also specified, then set or
-# replace the current value of `$name` with `$value`.
+# return the value of the header.  If a second argument is specified, then set
+# or replace the current value of `$name` its value.
 #
-::oo::define ::tanzer::message method header {name {value ""}} {
+::oo::define ::tanzer::message method header {name args} {
     my variable headers
 
     set name [::tanzer::message::field $name]
 
-    if {$value ne ""} {
-        dict set headers $name $value
-
-        return
+    switch -- [llength $args] 0 {
+        return [dict get $headers $name]
+    } 1 {
+        return [dict set headers $name [lindex $args 0]]
     }
 
-    return [dict get $headers $name]
+    error "Invalid command invocation"
 }
 
 ##

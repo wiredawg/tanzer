@@ -104,18 +104,18 @@ namespace eval ::tanzer::server {
 
 ##
 # Query configuration value `$name` from server, or set configuration for
-# `$name` with `$value`.
+# `$name` with a second argument provided as value.
 #
-::oo::define ::tanzer::server method config {name {value ""}} {
+::oo::define ::tanzer::server method config {name args} {
     my variable config
 
-    if {$value ne ""} {
-        set config($name) $value
-
-        return
+    switch -- [llength $args] 0 {
+        return $config($name)
+    } 1 {
+        return [lassign $args config($name)]
     }
 
-    return $config($name)
+    error "Invalid command invocation"
 }
 
 ::oo::define ::tanzer::server method log {request response} {

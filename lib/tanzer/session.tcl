@@ -431,18 +431,22 @@ namespace eval ::tanzer::session {
 # configuration option `$name` with `$value`.  Otherwise, return a list of
 # key-value pairs containing all current configuration data.
 #
-::oo::define ::tanzer::session method config {{name ""} {value ""}} {
+::oo::define ::tanzer::session method config {args} {
     my variable config
 
-    if {$value ne ""} {
-        set config($name) $value
+    switch -- [llength $args] 0 {
+        return [array get config]
+    } 1 {
+        lassign $args name
 
-        return
-    } elseif {$name ne ""} {
         return $config($name)
+    } 2 {
+        lassign $args name value
+
+        return [set $config($name) $value]
     }
 
-    return [array get config]
+    error "Invalid command invocation"
 }
 
 ##
@@ -654,19 +658,19 @@ namespace eval ::tanzer::session {
 }
 
 ##
-# Return true if the current session is to be kept alive.  Otherwise, set the
-# keepalive flag according to `$newValue`.
+# Return true if the current session is to be kept alive.  If a boolean
+# argument is provided, the keepalive setting is set to its value.
 #
-::oo::define ::tanzer::session method keepalive {{newValue ""}} {
+::oo::define ::tanzer::session method keepalive {args} {
     my variable keepalive
 
-    if {$newValue ne ""} {
-        set keepalive $newValue
-
-        return
+    switch -- [llength $args] 0 {
+        return $keepalive
+    } 1 {
+        return [lassign $args kepalive]
     }
 
-    return $keepalive
+    error "Invalid command invocation"
 }
 
 ##

@@ -278,26 +278,30 @@ package require TclOO
 
 ##
 # Return all the CGI/1.1 environment variables set for the current request as a
-# list of key-value pairs.  If `$name` is supplied, then return only the value
-# of that variable, if it exists.  If `$value` is also supplied, then set the
-# environment variable `$name` with that value.
+# list of key-value pairs.  If only a name is supplied, then return only the
+# value of that variable, if it exists.  If a value is also supplied, then set
+# an environment variable to that value.
 #
-::oo::define ::tanzer::request method env {{name ""} {value ""}} {
+::oo::define ::tanzer::request method env {args} {
     my variable env
 
-    if {$value ne ""} {
-        dict set env $name $value
+    switch -- [llength $args] 0 {
+        return $env
+    } 1 {
+        lassign $args name
 
-        return
-    } elseif {$name ne ""} {
         return [if {[dict exists $env $name]} {
             dict get $env $name
         } else {
             list ""
         }]
+    } 2 {
+        lassign $args name value
+
+        return [dict set env $name $value]
     }
 
-    return $env
+    error "Invalid command invocation"
 }
 
 ##
