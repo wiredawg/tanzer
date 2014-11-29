@@ -291,10 +291,10 @@ namespace eval ::tanzer::server {
 ::oo::define ::tanzer::server method accept {sock addr port} {
     my variable config sessions
 
-    fconfigure $sock \
+    fconfigure $sock        \
         -translation binary \
-        -blocking    0 \
-        -buffering   full \
+        -blocking    0      \
+        -buffering   full   \
         -buffersize  $config(readsize)
 
     set sessions($sock) [::tanzer::session new [self] $sock $config(proto)]
