@@ -291,7 +291,7 @@ namespace eval ::tanzer::server {
 ::oo::define ::tanzer::server method accept {sock addr port} {
     my variable config sessions
 
-    fconfigure $sock        \
+    chan configure $sock    \
         -translation binary \
         -blocking    0      \
         -buffering   full   \
@@ -299,7 +299,7 @@ namespace eval ::tanzer::server {
 
     set sessions($sock) [::tanzer::session new [self] $sock $config(proto)]
 
-    fileevent $sock readable [list [self] respond read $sock]
+    chan event $sock readable [list [self] respond read $sock]
 
     return
 }

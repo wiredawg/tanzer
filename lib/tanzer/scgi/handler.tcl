@@ -125,10 +125,10 @@ namespace eval ::tanzer::scgi::handler {
     set request [$session request]
     set sock    [socket $config(host) $config(port)]
 
-    fconfigure $sock \
+    chan configure $sock    \
         -translation binary \
-        -blocking    0 \
-        -buffering   full \
+        -blocking    0      \
+        -buffering   full   \
         -buffersize  [$session config readsize]
 
     set socks($session)     $sock

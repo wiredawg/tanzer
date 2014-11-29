@@ -37,7 +37,7 @@ package require TclOO
 # opens a connection with the remote host, then sends the current request to
 # the remote service.  Then, the remote service's response is parsed into a new
 # ::tanzer::response object, which is in turn sent to the originating client;
-# thereafter, the response body is piped via `[fcopy]` to the originating
+# thereafter, the response body is piped via `[chan copy]` to the originating
 # client.
 #
 ::oo::define ::tanzer::http::handler constructor {opts} {
@@ -82,10 +82,10 @@ package require TclOO
 
     set sock [socket $config(host) $config(port)]
 
-    fconfigure $sock \
+    chan configure $sock    \
         -translation binary \
-        -blocking    0 \
-        -buffering   full \
+        -blocking    0      \
+        -buffering   full   \
         -buffersize  [$session config readsize]
 
     set socks($session)     $sock
@@ -150,11 +150,11 @@ package require TclOO
 
         set requested($session) 1
 
-        fileevent [$session sock] readable {}
-        fileevent [$session sock] writable {}
+        chan event [$session sock] readable {}
+        chan event [$session sock] writable {}
 
-        fileevent $socks($session) readable [list [self] write $session]
-        fileevent $socks($session) writable {}
+        chan event $socks($session) readable [list [self] write $session]
+        chan event $socks($session) writable {}
 
         return
     }
@@ -167,7 +167,7 @@ package require TclOO
             $size > $lengths($session)? $lengths($session): $size
         }]
 
-        incr lengths($session) -[fcopy $socks($session) $sock -size $len]
+        incr lengths($session) -[chan copy $socks($session) $sock -size $len]
 
         if {[eof $socks($session)] || $lengths($session) == 0} {
             my close $session

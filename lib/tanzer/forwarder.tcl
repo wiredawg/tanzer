@@ -74,10 +74,10 @@ namespace eval ::tanzer::forwarder {
 #
 ::oo::define ::tanzer::forwarder method pipe {in sock session} {
     foreach event {readable writable} {
-        fileevent $sock $event {}
+        chan event $sock $event {}
     }
 
-    fcopy $in $sock -command [list apply {
+    chan copy $in $sock -command [list apply {
         {session copied args} {
             if {[llength $args] > 0} {
                 $session error [lindex $args 0]

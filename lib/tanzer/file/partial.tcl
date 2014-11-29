@@ -138,12 +138,12 @@ package require TclOO
     set sock [$session sock]
 
     foreach event {readable writable} {
-        fileevent $sock $event {}
+        chan event $sock $event {}
     }
 
     seek $fh [$fragment offset]
 
-    fcopy $fh $sock -size [$fragment size] -command [list apply {
+    chan copy $fh $sock -size [$fragment size] -command [list apply {
         {self session written args} {
             #
             # If we were not able to pipe any data from the input file to the output

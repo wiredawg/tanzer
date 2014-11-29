@@ -354,8 +354,8 @@ namespace eval ::tanzer::session {
     # of HTTP.
     #
     if {$requestBodyFinished} {
-        fileevent $sock readable {}
-        fileevent $sock writable [list $server respond write $sock]
+        chan event $sock readable {}
+        chan event $sock writable [list $server respond write $sock]
     }
 
     return
@@ -517,7 +517,7 @@ namespace eval ::tanzer::session {
             list
         }]
 
-        fileevent $sock $type $callback
+        chan event $sock $type $callback
     }
 
     return

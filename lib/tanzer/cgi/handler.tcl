@@ -121,11 +121,11 @@ namespace eval ::tanzer::cgi::handler {
 
     set pipe [open [list |/usr/bin/env -i {*}$envargs $config(program)] r+]
 
-    fconfigure $pipe \
+    chan configure $pipe    \
         -translation binary \
-        -buffering   full \
-        -buffersize  [$session config readsize] \
-        -blocking    0
+        -blocking    0      \
+        -buffering   full   \
+        -buffersize  [$session config readsize]
 
     set pipes($session)   $pipe
     set buffers($session) ""
