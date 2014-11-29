@@ -232,13 +232,12 @@ proc ::tanzer::file::mimeType {path} {
 ::oo::define ::tanzer::file method headers {} {
     my variable st
 
-    set headers [dict create]
+    set timestamp [::tanzer::date::rfc2616 $st(mtime)]
 
-    dict set headers Content-Type   [my mimeType]
-    dict set headers Content-Length $st(size)
-    dict set headers Etag           "\"[my etag]\""
-    dict set headers Accept-Ranges  "bytes"
-    dict set headers Last-Modified  [::tanzer::date::rfc2616 $st(mtime)]
-
-    return $headers
+    return [dict create                \
+        Content-Type   [my mimeType]   \
+        Content-Length $st(size)       \
+        Etag           "\"[my etag]\"" \
+        Accept-Ranges  "bytes"         \
+        Last-Modified  $timestamp]
 }
