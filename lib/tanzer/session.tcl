@@ -482,42 +482,48 @@ namespace eval ::tanzer::session {
 
 ##
 # Reset the socket attached to the current session to monitor for the event
-# type specified in `$event`, either `read`, `write`, or `any`, to indicate
-# both.  I/O readiness events will be dispatched by the server once again,
-# which shall then dispatch the handler specified in the last call to the
-# method ::tanzer::session::delegate.  If either `read` or `write` is not
-# specified explicitly or implicitly by `any`, then I/O event response is
-# canceled for that event type.
+# type specified in `$event` as per the following:
+#
+# * `read`
+#
+# * `write`
+#
+# * `any`
+#
+#   Implies both `read` and `write`
+#
+# * `none`
+#
+#   Implies neither `read` nor `write`
+# .
+#
+# I/O readiness events will be dispatched by the server once again, which shall
+# then dispatch the handler specified in the last call to the method
+# ::tanzer::session::delegate.  If either `read` or `write` is not specified
+# explicitly or implicitly by `any`, then I/O event response is canceled for
+# that event type.
 #
 # `$event` defaults to `any` if it is not specified.
 #
 ::oo::define ::tanzer::session method reset {{event "any"}} {
     my variable sock server
 
-    set listen [dict create \
-        "readable" 0 \
-        "writable" 0 \
-    ]
+    array set eventTypes {
+        read  readable
+        write writable
+        any   {readable writable}
+        none  {}
+    }
 
-    switch -- $event "read" {
-        dict set listen readable 1
-    } "write" {
-        dict set listen writable 1
-    } "any" {
-        dict set listen readable 1
-        dict set listen writable 1
-    } default {
+    if {[array get eventTypes $event] eq {}} {
         error "Invalid event $event"
     }
 
-    foreach type [dict keys $listen] {
-        set callback [if [dict get $listen $type] {
-            list $server respond $event $sock
-        } else {
-            list
-        }]
+    chan event $sock readable {}
+    chan event $sock writable {}
 
-        chan event $sock $type $callback
+    foreach eventType $eventTypes($event) {
+        chan event $sock $eventType [list $server respond $event $sock]
     }
 
     return
