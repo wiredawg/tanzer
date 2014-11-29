@@ -485,7 +485,9 @@ namespace eval ::tanzer::session {
 # type specified in `$event`, either `read`, `write`, or `any`, to indicate
 # both.  I/O readiness events will be dispatched by the server once again,
 # which shall then dispatch the handler specified in the last call to the
-# method ::tanzer::session::delegate.
+# method ::tanzer::session::delegate.  If either `read` or `write` is not
+# specified explicitly or implicitly by `any`, then I/O event response is
+# canceled for that event type.
 #
 # `$event` defaults to `any` if it is not specified.
 #
