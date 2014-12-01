@@ -292,7 +292,9 @@ package require TclOO
     }
 
     if {$st(type) eq "directory"} {
-        my index $session $localPath [array get st]
+        ::tanzer::error run {
+            my index $session $localPath [array get st]
+        }
 
         return
     }
