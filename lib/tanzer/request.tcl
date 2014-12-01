@@ -249,14 +249,12 @@ package require TclOO
     my variable params
 
     switch -- [llength $args] 0 {
-        #
+        return [dict get $params $name]
     } 1 {
         return [dict set params $name [lindex $args 0]]
     } default {
         error "Invalid command invocation"
     }
-
-    return [dict get $params $name]
 }
 
 ##
