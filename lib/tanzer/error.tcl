@@ -71,7 +71,7 @@ proc ::tanzer::error::run {script} {
         } else {
             switch -- $errno ENOTDIR - ENOENT {
                 ::tanzer::error throw 404 $msg
-            } EPERM {
+            } EPERM - EACCES {
                 ::tanzer::error throw 403 $msg
             } default {
                 error $::errorInfo
