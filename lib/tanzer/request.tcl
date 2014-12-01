@@ -242,8 +242,8 @@ package require TclOO
 }
 
 ##
-# Return the value of the parameter called `$name`, or if `$value` is also
-# specified, set the value of `$name` to `$value`.
+# Return the value of the parameter called `$name`, or a value is also provided
+# in a second argument, set the value of `$name` to that literal value.
 #
 ::oo::define ::tanzer::request method param {name args} {
     my variable params
