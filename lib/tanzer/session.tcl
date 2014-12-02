@@ -481,6 +481,16 @@ namespace eval ::tanzer::session {
 }
 
 ##
+# Using `[chan event]` on the current session's socket, bind all events of the
+# type specified in `$eventType` to the command specified in `$args`.
+#
+::oo::define ::tanzer::session method bind {eventType args} {
+    my variable sock
+
+    chan event $sock $eventType $args
+}
+
+##
 # Reset the socket attached to the current session to monitor for the event
 # type specified in `$event` as per the following:
 #
