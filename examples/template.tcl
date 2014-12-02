@@ -23,6 +23,7 @@ set server [::tanzer::server new [list \
 $server route {.*} /* {.*} [::tanzer::file::handler new [list \
     root     $root \
     listings 1     \
+    index    {index.tsp index.html} \
     filters  {
         {.*\.tsp$} {apply {{session localPath st} {
             set template [::teaspoon open $localPath]

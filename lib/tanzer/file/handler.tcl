@@ -27,10 +27,11 @@ package require TclOO
 #   A boolean indicating whether directory listings should be enabled.  Default
 #   value is `0`.
 #
-# * `indexFile`
+# * `index`
 #
-#   The name of the index file to look for when serving a request for a
-#   directory path.  Default value is `index.html`.
+#   A list of index files to look for when serving a request for a directory
+#   path.  The first item in this list found is served.  Default value is a
+#   single element, `index.html`.
 #
 # * `filters`
 #
@@ -60,9 +61,9 @@ package require TclOO
     my variable config
 
     set defaults {
-        listings  0
-        indexFile index.html
-        filters   {}
+        listings 0
+        index    {index.html}
+        filters  {}
     }
 
     set requirements {
@@ -246,18 +247,20 @@ package require TclOO
     # Otherwise, look for an index file in the requested directory, and serve
     # that file if it exists.
     #
-    set indexFile "$localPath/$config(indexFile)"
+    foreach item $config(index) {
+        set indexFile "$localPath/$item"
 
-    if {![catch {file stat $indexFile indexSt}]} {
-        if {$indexSt(type) ne "file"} {
-            ::tanzer::error throw 403 "$indexFile is not a file"
+        if {![catch {file stat $indexFile indexSt}]} {
+            if {$indexSt(type) ne "file"} {
+                ::tanzer::error throw 403 "$indexFile is not a file"
+            }
+
+            ::tanzer::error run {
+                my serve $session $indexFile [array get indexSt]
+            }
+
+            return
         }
-
-        ::tanzer::error run {
-            my serve $session $indexFile [array get indexSt]
-        }
-
-        return
     }
 
     #
