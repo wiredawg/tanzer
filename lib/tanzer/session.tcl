@@ -629,9 +629,7 @@ namespace eval ::tanzer::session {
             error "Invalid command invocation"
         }
 
-        set response [lindex $args 1]
-
-        return
+        return [set response [lindex $args 1]]
     }
 
     if {$response eq {}} {
