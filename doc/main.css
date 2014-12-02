@@ -1,8 +1,11 @@
 body {
-    font: 400 14px/22px "Helvetica Neue", Helvetica, sans-serif;
-    padding-left: 10%;
-    padding-right: 10%;
-    margin: 0;
+    font:                400 14px/22px "Helvetica Neue", Helvetica, sans-serif;
+    margin:              0px;
+    padding-left:        10%;
+    padding-right:       10%;
+    background-image:    url("bjork.jpg");
+    background-repeat:   no-repeat;
+    background-position: top right;
 }
 
 table, div, p, dl {
@@ -263,9 +266,11 @@ div.groupText {
 }
 
 div.contents {
-    margin-top: 10px;
-    margin-left: 12px;
-    margin-right: 8px;
+    width:            75%;
+    padding:          8px 32px 8px 32px;
+    margin:           16px auto 16px auto;
+    background-color: #fafafa;
+    opacity:          0.8;
 }
 
 td.indexkey {
@@ -952,12 +957,15 @@ div.ingroups a {
 }
 
 div.header {
-    margin:  0px;
-    border-bottom: 1px solid #c0c0c0;
+    width:            75%;
+    padding:          8px 32px 8px 32px;
+    margin:           16px auto 16px auto;
+    background-color: #f0e0f0;
+    opacity:          0.7;
 }
 
 div.headertitle {
-    padding: 5px 5px 5px 10px;
+    padding: 5px 5px 5px 0px;
 }
 
 dl {

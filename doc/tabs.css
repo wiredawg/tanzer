@@ -19,9 +19,11 @@
 }
 
 .tablist {
-    margin: 0;
-    padding: 0;
-    display: table;
+    margin:           0;
+    padding:          0;
+    display:          table;
+    background-color: #ffffff;
+    opacity:          0.8;
 }
 
 .tablist li {
@@ -30,6 +32,7 @@
     /*background-image: url('tab_b.png');*/
     line-height: 36px;
     list-style: none;
+
 }
 
 .tablist a {
