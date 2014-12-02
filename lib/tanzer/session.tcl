@@ -41,7 +41,7 @@ namespace eval ::tanzer::session {
     set request   {}
     set route     {}
     set handler   {}
-    set cleanup   {}
+    set cleanup   [list]
     set response  {}
     set responded 0
     set buffer    ""
@@ -121,25 +121,34 @@ namespace eval ::tanzer::session {
 # When `$args` is not empty, specify a callback to be dispatched whenever the
 # current session handler is ready to clean any associated state and prepare
 # to handle a new request, or to end.  Otherwise, when no arguments are
-# specified, any previously provided cleanup callback is executed precisely
-# once, and the callback is cleared.
+# specified, any previously provided cleanup callbacks are executed precisely
+# once, in the order in which they were registered, and are subsequently
+# cleared.
+#
+# Each successive call to this method results in another cleanup task queued to
+# be executed upon session termination.
+#
+# If `-reset` is specified in the first argument, then all cleanup tasks are
+# cleared for the current session.
 #
 ::oo::define ::tanzer::session method cleanup {args} {
     my variable cleanup
 
     if {[llength $args] > 0} {
-        set cleanup $args
+        if {[lindex $args 0] eq "-reset"} {
+            set cleanup [list]
+        } else {
+            lappend cleanup $args
+        }
 
         return
     }
 
-    if {$cleanup eq {}} {
-        return
+    foreach script $cleanup {
+        {*}$script
     }
 
-    set ret [{*}$cleanup]
-    set cleanup {}
-    return $ret
+    set cleanup [list]
 }
 
 ##
