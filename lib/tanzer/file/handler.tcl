@@ -145,7 +145,8 @@ package require TclOO
     set filter [my filter $session $localPath $st]
 
     if {[llength $filter] > 0} {
-        $session delegate {*}$filter $session $localPath $st
+        $session bind readable {}
+        $session bind writable {*}$filter $session $localPath $st
 
         return
     }
