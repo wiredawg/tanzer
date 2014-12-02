@@ -266,7 +266,6 @@ div.groupText {
 }
 
 div.contents {
-    width:            75%;
     padding:          8px 32px 8px 32px;
     margin:           16px auto 16px auto;
     background-color: #fafafa;
@@ -957,7 +956,6 @@ div.ingroups a {
 }
 
 div.header {
-    width:            75%;
     padding:          8px 32px 8px 32px;
     margin:           16px auto 16px auto;
     background-color: #f0e0f0;
