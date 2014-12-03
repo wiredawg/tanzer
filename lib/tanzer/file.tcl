@@ -8,27 +8,21 @@ package provide tanzer::file 0.1
 
 package require tanzer::response
 package require tanzer::error
-
-package require fileutil::magic::mimetype
 package require TclOO
-package require sha1
 
-namespace eval ::tanzer::file {}
-
-proc ::tanzer::file::mimeType {path} {
-    set mimeType [lindex [::fileutil::magic::mimetype $path] 0]
-
-    switch -regex -nocase [file tail $path] {
-        {\.txt$}          { return "text/plain" }
-        {\.(?:htm|html)$} { return "text/html" }
-        {\.css$}          { return "text/css" }
-        {\.png$}          { return "image/png" }
-        {\.(?:jpg|jpeg)$} { return "image/jpeg" }
-        {\.gif$}          { return "image/gif" }
-        {\.}              { return "application/octet-stream" }
+namespace eval ::tanzer::file {
+    variable mimeTypes {
+        {\.txt$}          "text/plain"
+        {\.(?:htm|html)$} "text/html"
+        {\.css$}          "text/css"
+        {\.png$}          "image/png"
+        {\.(?:jpg|jpeg)$} "image/jpeg"
+        {\.gif$}          "image/gif"
+        {\.tar\.gz$}      "application/x-tgz"
+        {\.tgz$}          "application/x-tgz"
+        {\.gz$}           "application/x-gzip"
+        {\.}              "application/octet-stream"
     }
-
-    return "text/plain"
 }
 
 ##
@@ -48,7 +42,7 @@ proc ::tanzer::file::mimeType {path} {
 #   The number of bytes of a file to read at a time.
 #
 ::oo::define ::tanzer::file constructor {newPath newSt newConfig} {
-    my variable config path fh st etag
+    my variable config path fh st etag mimeType
 
     set required {
         readsize
@@ -62,9 +56,10 @@ proc ::tanzer::file::mimeType {path} {
         }
     }
 
-    set       path $newPath
-    set       etag {}
-    array set st   $newSt
+    set       path     $newPath
+    set       etag     {}
+    set       mimeType {}
+    array set st       $newSt
 
     if {$st(type) ne "file"} {
         error "Unsupported operation on file of type $st(type)"
@@ -99,9 +94,21 @@ proc ::tanzer::file::mimeType {path} {
 # Return the MIME type of the current file.
 #
 ::oo::define ::tanzer::file method mimeType {} {
-    my variable path
+    my variable path mimeType
 
-    return [::tanzer::file::mimeType $path]
+    if {$mimeType ne {}} {
+        return $mimeType
+    }
+
+    set name [file tail $path]
+
+    foreach {pattern type} $::tanzer::file::mimeTypes {
+        if {[regexp -nocase $pattern $name]} {
+            return [set mimeType $type]
+        }
+    }
+
+    return [set mimeType "application/octet-stream"]
 }
 
 ##
@@ -114,8 +121,8 @@ proc ::tanzer::file::mimeType {path} {
         return $etag
     }
 
-    return [set etag [::sha1::sha1 -hex [concat \
-        $path $st(mtime) $st(ino)]]]
+    return [set etag [format "%x" \
+        [expr {$st(mtime) + $st(ino) + $st(dev)}]]]
 }
 
 ##
