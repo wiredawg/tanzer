@@ -41,7 +41,7 @@ $server route {.*} /* {.*} [::tanzer::file::handler new [list \
             $session cleanup chan pop stdout
             $session cleanup $template destroy
 
-            $template process
+            $template process $session
 
             $session nextRequest
         }}}
