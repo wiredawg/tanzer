@@ -7,8 +7,11 @@
  * hand is a trivial affair.  From the `tanzer/` repository root, do this:
  *
  * @code{.sh}
- * sudo cp -r lib /usr/local/lib/tanzer0.1
+ * sudo cp -r lib /usr/lib/tanzer0.1
  * @endcode
+ *
+ * Any other directory indicated by `$::tcl_pkgPath` is a suitable place to
+ * install tänzer as well.
  *
  * Or, simply use tänzer in place, setting the `$TCLLIBPATH` environment
  * variable as appropriate to include the `lib/` subdirectory.
