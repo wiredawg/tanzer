@@ -11,6 +11,6 @@ package require test::tanzer    0.1
         X-FOO-BAR X-Foo-Bar
         x-Foo-bar X-Foo-Bar
         FOOBARBAZ Foobarbaz
-}
+    }
 
 ::test::tanzer::finish
