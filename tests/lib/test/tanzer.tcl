@@ -18,3 +18,17 @@ proc ::test::tanzer::dies {name desc body expected} {
         regexp $expected $err
     } 1
 }
+
+proc ::test::tanzer::produces {name desc script data} {
+    set i 0
+
+    foreach {input expected} $data {
+        ::tcltest::test "$name-[incr i]" "$desc: $input" {
+            {*}$script $input
+        } $expected
+    }
+}
+
+proc ::test::tanzer::finish {} {
+    ::tcltest::cleanupTests
+}
