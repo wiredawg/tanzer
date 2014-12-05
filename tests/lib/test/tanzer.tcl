@@ -10,11 +10,11 @@ proc ::test::tanzer::lives {name desc body} {
 }
 
 proc ::test::tanzer::dies {name desc body expected} {
-    ::tcltest::test $name $desc {
+    ::tcltest::test "$name-dies" $desc {
         catch $body err
     } 0
 
-    ::tcltest::test $name "$name dies with $expected" {
+    ::tcltest::test "$name-errors" "$name dies with $expected" {
         regexp $expected $err
     } 1
 }
