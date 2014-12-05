@@ -1,0 +1,16 @@
+#! /usr/bin/env tclsh8.6
+# vim: set syntax=tcl:
+
+package require tanzer::message 0.1
+package require test::tanzer    0.1
+
+::test::tanzer::produces "message-field" \
+    "\[::tanzer::message::field\] transforms header names correctly" \
+    ::tanzer::message::field {
+        x-foo-bar X-Foo-Bar
+        X-FOO-BAR X-Foo-Bar
+        x-Foo-bar X-Foo-Bar
+        FOOBARBAZ Foobarbaz
+}
+
+::test::tanzer::finish
