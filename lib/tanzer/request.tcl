@@ -57,15 +57,8 @@ package require TclOO
     set path     [::tanzer::uri::parts [lindex $uriParts 0]]
     set query    [join [lrange $uriParts 1 end] "?"]
 
-    foreach pair [split $query "&"] {
-        #
-        # Split only once, in case a value contains an equals for whatever
-        # perverse reason.
-        #
-        if {[regexp {^(.*)=(.*)$} $pair {} name value]} {
-            my param \
-                [::tanzer::uri::decode $name] [::tanzer::uri::decode $value]
-        }
+    foreach {name value} [::tanzer::uri::params $query] {
+        my param $name $value
     }
 
     my env REQUEST_URI  $uri
