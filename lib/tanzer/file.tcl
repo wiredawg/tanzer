@@ -121,8 +121,7 @@ namespace eval ::tanzer::file {
         return $etag
     }
 
-    return [set etag [format "%x" \
-        [expr {$st(mtime) + $st(ino) + $st(dev)}]]]
+    return [set etag [format "%x%x%x" $st(dev) $st(ino) $st(mtime)]]
 }
 
 ##
