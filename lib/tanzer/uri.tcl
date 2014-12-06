@@ -42,6 +42,26 @@ proc ::tanzer::uri::decode {text} {
 }
 
 ##
+# Extract parameters from the string provided in `$query`.
+#
+proc ::tanzer::uri::params {query} {
+    set params [list]
+
+    foreach pair [split $query "&"] {
+        #
+        # Split only once, in case a value contains an equals sign for whatever
+        # perverse reason.
+        #
+        if {[regexp {^(.*)=(.*)$} $pair {} name value]} {
+            lappend params \
+                [::tanzer::uri::decode $name] [::tanzer::uri::decode value]
+        }
+    }
+
+    return $params
+}
+
+##
 # Filter out unnecessary items from the list of path components provided in
 # `$parts`.
 #
