@@ -47,7 +47,7 @@ proc ::tanzer::uri::decode {text} {
 proc ::tanzer::uri::params {query} {
     set params [list]
 
-    foreach pair [split $query "&"] {
+    foreach pair [::split $query "&"] {
         #
         # Split only once, in case a value contains an equals sign for whatever
         # perverse reason.
