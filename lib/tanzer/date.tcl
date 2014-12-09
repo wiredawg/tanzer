@@ -146,7 +146,7 @@ proc ::tanzer::date::new {epoch} {
     }
 
     if {$leap} {
-        lset months 3 29
+        lset ::tanzer::date::monthLengths 3 29
     }
 
     set yearsec   [expr {$n - $epoch}]
