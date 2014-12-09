@@ -237,7 +237,7 @@ proc ::tanzer::date::rfc2616 {date} {
 # Given the date object in `$date`, generate a Unix epoch timestamp.
 #
 proc ::tanzer::date::epoch {date} {
-    set dayOfYear [::tanzer::date::dayOfYear $date]
+    set dayOfYear [expr {[::tanzer::date::dayOfYear $date] - 1}]
 
     return [dict with date {
         set tm_year [expr {$year - 1900}]
