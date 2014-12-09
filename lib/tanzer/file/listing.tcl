@@ -32,21 +32,30 @@ proc ::tanzer::file::listing::humanTimestamp {epoch} {
     set now [clock seconds]
     set age [expr {$now - $epoch}]
 
-    if {$age == 1} {
-        return "1 second ago"
-    } elseif {$age == 0 || $age < 60} {
-        return [format "%d seconds ago" $age]
-    } elseif {$age >= 60 && $age < 120} {
-        return "About 1 minute ago"
-    } elseif {$age >= 120 && $age < 3600} {
-        return [format "%d minutes ago" [expr {$age / 60}]]
-    } elseif {$age >= 3600 && $age < 86400} {
-        return [clock format $epoch -format "%H:%M today GMT" -gmt 1]
-    } elseif {$age >= 86400 && $age < 172800} {
-        return [clock format $epoch -format "%H:%M yesterday GMT" -gmt 1]
+    set date [::tanzer::date new $epoch]
+    set ret  "Unknown"
+
+    dict with date {
+        if {$age == 1} {
+            set ret "1 second ago"
+        } elseif {$age == 0 || $age < 60} {
+            set ret [format "%d seconds ago" $age]
+        } elseif {$age >= 60 && $age < 120} {
+            set ret "About 1 minute ago"
+        } elseif {$age >= 120 && $age < 3600} {
+            set ret [format "%d minutes ago" [expr {$age / 60}]]
+        } elseif {$age >= 3600 && $age < 86400} {
+            set ret [format "%02d:%02d today GMT" $hour $minute]
+        } elseif {$age >= 86400 && $age < 172800} {
+            set ret [format "%02d:%02d yesterday GMT" $hour $minute]
+        } else {
+            set ret [format "%02d %s %04d, %02d:%02d GMT" \
+                $day [lindex $::tanzer::date::monthNames $month] $year \
+                $hour $minute]
+        }
     }
 
-    return [clock format $epoch -format "%d %b %Y, %H:%M GMT" -gmt 1]
+    return $ret
 }
 
 proc ::tanzer::file::listing::compareTypes {a b} {
