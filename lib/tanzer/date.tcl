@@ -10,16 +10,25 @@ package provide tanzer::date 0.1
 # Date, time and calendar facilities and constants
 #
 namespace eval ::tanzer::date {
+    ##
+    # A mapping of ASCII month names to numbers.
+    #
     variable months [dict create \
         Jan  1 Feb  2 Mar  3     \
         Apr  4 May  5 Jun  6     \
         Jul  7 Aug  8 Sep  9     \
         Oct 10 Nov 11 Dec 12]
 
+    ##
+    # A positional listing of ASCII month names.
+    #
     variable monthNames {
         {} Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
     }
 
+    ##
+    # A positional listing of the number of days in each month.
+    #
     variable monthLengths {
            {}
         31 28 31
@@ -28,6 +37,9 @@ namespace eval ::tanzer::date {
         31 30 31
     }
 
+    ##
+    # A positional listing of the days of the week.
+    #
     variable weekdays [list Sun Mon Tue Wed Thu Fri Sat]
 
     namespace ensemble create
