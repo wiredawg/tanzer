@@ -249,19 +249,21 @@ proc ::tanzer::file::listing::items {localDir path} {
     }
 
     foreach item [::tanzer::file::listing::items $localDir $path] {
-        my buffer [string map [list \
-            @size  [dict get $item size] \
-            @name  [dict get $item name] \
-            @date  [dict get $item date] \
-            @uri   [dict get $item uri] \
-            @class $rowClasses($odd) \
-        ] {
-            <tr class="@class">
-                <td class="tanzer-size">@size</td>
-                <td><a href="@uri">@name</a></td>
-                <td class="tanzer-date">@date</td>
-            </tr>
-        }]
+        dict with item {
+            my buffer [string map [list  \
+                @size  $size             \
+                @name  $name             \
+                @date  $date             \
+                @uri   $uri              \
+                @class $rowClasses($odd)] {
+                    <tr class="@class">
+                        <td class="tanzer-size">@size</td>
+                        <td><a href="@uri">@name</a></td>
+                        <td class="tanzer-date">@date</td>
+                    </tr>
+                }
+            ]
+        }
 
         set odd [expr {1 - $odd}]
     }
