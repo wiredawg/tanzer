@@ -6,6 +6,9 @@ package provide tanzer::date 0.1
 # Functions for parsing and generating RFC 2616 timestamps
 #
 
+##
+# Date, time and calendar facilities and constants
+#
 namespace eval ::tanzer::date {
     variable months [dict create \
         Jan  1 Feb  2 Mar  3     \
