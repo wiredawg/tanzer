@@ -197,14 +197,13 @@ package require TclOO
     # If any preconditions are present and fail, then modify the status and do
     # not send a response body.
     #
+    set failStatus 304
+
     set preconditions {
-                  match 412
-              noneMatch 304
-          modifiedSince 412
-        unmodifiedSince 304
+        match noneMatch modifiedSince unmodifiedSince
     }
 
-    foreach {precondition failStatus} $preconditions {
+    foreach precondition $preconditions {
         if {![$file $precondition $request]} {
             $session response status $failStatus
             $session response header Content-Length 0
