@@ -120,9 +120,11 @@ proc ::tanzer::file::listing::items {localDir path} {
 }
 
 ::oo::define ::tanzer::file::listing constructor {request localDir st} {
+    set date [::tanzer::date new [dict get $st mtime]]
+
     next 200 [list \
         Content-Type  "text/html" \
-        Last-Modified [::tanzer::date::rfc2616 [dict get $st mtime]]]
+        Last-Modified [::tanzer::date rfc2616 $date]]
 
     #
     # If the client simply wants to determine whether or not to invalidate a

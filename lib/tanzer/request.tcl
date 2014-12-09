@@ -28,6 +28,8 @@ package require TclOO
     next -newline "\r\n" \
          -request
 
+    set date [::tanzer::date new [clock seconds]]
+
     set session      $newSession
     set env          [dict create]
     set headers      [dict create]
@@ -36,7 +38,7 @@ package require TclOO
     set params       {}
     set rewritten    0
     set headerLength 0
-    set timestamp    [::tanzer::date::rfc2616 [clock seconds]]
+    set timestamp    [::tanzer::date rfc2616 $date]
 }
 
 ##

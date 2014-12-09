@@ -6,25 +6,231 @@ package provide tanzer::date 0.1
 # Functions for parsing and generating RFC 2616 timestamps
 #
 
-##
-# Parse and generate RFC 2616 timestamps.
-#
 namespace eval ::tanzer::date {
-    variable rfc2616Format "%a, %d %b %Y %T %Z"
+    variable months [dict create \
+        Jan  1 Feb  2 Mar  3     \
+        Apr  4 May  5 Jun  6     \
+        Jul  7 Aug  8 Sep  9     \
+        Oct 10 Nov 11 Dec 12]
+
+    variable monthNames {
+        {} Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
+    }
+
+    variable monthLengths {
+           {}
+        31 28 31
+        30 31 30
+        31 31 30
+        31 30 31
+    }
+
+    variable weekdays [list Sun Mon Tue Wed Thu Fri Sat]
+
+    namespace ensemble create
+    namespace export   leapYear dayOfYear new scan epoch rfc2616
 }
 
 ##
-# Transform a timestamp in seconds since the Unix epoch, provided in `$epoch`,
-# to an RFC 2616 format timestamp.
+# Returns true if `$year` is a leap year.
 #
-proc ::tanzer::date::rfc2616 {epoch} {
-    return [clock format $epoch -format $::tanzer::date::rfc2616Format -gmt 1]
+proc ::tanzer::date::leapYear {year} {
+    if {$year % 4} {
+        return 0
+    }
+
+    return [expr {$year % 100 || $year % 400 == 0}]
 }
 
 ##
-# Transform an RFC 2616 timestamp as provided in `$rfc2616` to seconds since
-# the Unix epoch.
+# Returns the number of days (starting with 1) into the year of the date object
+# provided in `$date`.
 #
-proc ::tanzer::date::epoch {rfc2616} {
-    return [clock scan $rfc2616 -format $::tanzer::date::rfc2616Format]
+proc ::tanzer::date::dayOfYear {date} {
+    set ret 0
+
+    dict with date {
+        set leap [::tanzer::date::leapYear $year]
+
+        for {set i 1} {$i < $month} {incr i} {
+            if {$i == 2 && $leap} {
+                incr ret
+            }
+
+            incr ret [lindex $::tanzer::date::monthLengths $i]
+        }
+
+        incr ret $day
+    }
+
+    return $ret
+}
+
+##
+# Given a Unix epoch timestamp in `$epoch`, return a new `[dict]` containing
+# the following elements:
+#
+# * `year`
+#
+# * `month`
+#
+# * `day`
+#
+# * `weekday`
+#
+#   A short string representation of the current day of week; one of the
+#   following:
+#
+#   * Sun
+#
+#   * Mon
+#
+#   * Tue
+#
+#   * Wed
+#
+#   * Thu
+#
+#   * Fri
+#
+#   * Sat
+#   .
+#
+# * `hour`
+#
+# * `minute`
+#
+# * `second`
+# .
+#
+proc ::tanzer::date::new {epoch} {
+    set firstdow    4
+    set year     1969
+    set daylen  86400
+    set hourlen  3600
+    set yeardays  365
+    set yearlen [expr {$yeardays * $daylen}]
+
+    for {set n 0} {$n < $epoch} {incr n $yearlen} {
+        set  leap 0
+        incr year
+        incr firstdow
+
+        set leap [::tanzer::date::leapYear $year]
+
+        if {$leap} {
+            set yeardays 366
+
+            incr n $daylen
+            incr firstdow
+        } else {
+            set yeardays 365
+        }
+
+        set firstdow [expr {$firstdow % 7}]
+    }
+
+    if {$leap} {
+        lset months 3 29
+    }
+
+    set yearsec   [expr {$n - $epoch}]
+    set dayOfYear [expr {$yeardays - ($yearsec / $daylen)}]
+
+    set daysec    [expr {$yearsec % $daylen}]
+    set hour      [expr {23        - ($daysec / 3600)}]
+    set hoursec   [expr {3600      - ($daysec % 3600)}]
+    set minute    [expr {$hoursec / 60}]
+    set second    [expr {$hoursec % 60}]
+    set dayofweek [expr {($dayOfYear % $firstdow) - 1}]
+
+    set day   $dayOfYear
+    set month 1
+
+    foreach monthLength $::tanzer::date::monthLengths {
+        if {$monthLength eq {}} {
+            continue
+        }
+
+        if {$day <= $monthLength} {
+            break
+        }
+
+        incr day -$monthLength
+        incr month
+    }
+
+    return [dict create \
+        year    $year   \
+        month   $month  \
+        day     $day    \
+        hour    $hour   \
+        minute  $minute \
+        second  $second \
+        weekday [lindex $::tanzer::date::weekdays $dayofweek]]
+}
+
+##
+# Given an RFC 2616 timestamp in `$timestamp`, return a new date object as per
+# ::tanzer::date::new.
+#
+proc ::tanzer::date::scan {timestamp} {
+    set patterns {
+        {%3s, %02d %3s %04d %02d:%02d:%02d GMT} {
+            weekday day monthName year hour minute second
+        }
+
+        {%3s %3s %02d %02d:%02d:%02d %04d} {
+            weekday monthName day hour minute second year
+        }
+    }
+
+    foreach {pattern matchvars} $patterns {
+        set expected [llength $matchvars]
+
+        if {[::scan $timestamp $pattern {*}$matchvars] != $expected} {
+            continue
+        }
+
+        set month [dict get $::tanzer::date::months $monthName]
+
+        return [dict create \
+            year    $year   \
+            month   $month  \
+            day     $day    \
+            hour    $hour   \
+            minute  $minute \
+            second  $second \
+            weekday $weekday]
+    }
+
+    error "Invalid timestamp"
+}
+
+##
+# Given the date object in `$date`, generate an RFC 2616 timestamp string.
+#
+proc ::tanzer::date::rfc2616 {date} {
+    return [dict with date {
+        format "%s, %02d %s %04d %02d:%02d:%02d GMT" \
+            $weekday $day [lindex $::tanzer::date::monthNames $month] \
+            $year $hour $minute $second
+    }]
+}
+
+##
+# Given the date object in `$date`, generate a Unix epoch timestamp.
+#
+proc ::tanzer::date::epoch {date} {
+    set dayOfYear [::tanzer::date::dayOfYear $date]
+
+    return [dict with date {
+        set tm_year [expr {$year - 1900}]
+
+        expr {
+            $second + $minute * 60 + $hour * 3600 + $dayOfYear * 86400 +
+                ($tm_year - 70) * 31536000 + (($tm_year - 69) / 4) * 86400 -
+                (($tm_year - 1) / 100) * 86400 + (($tm_year + 299) / 400) * 86400
+        }
+    }]
 }

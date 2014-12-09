@@ -143,7 +143,10 @@ namespace eval ::tanzer::file {
 ::oo::define ::tanzer::file method entityNewerThan {rfc2616} {
     my variable st
 
-    return [expr {$st(mtime) > [::tanzer::date::epoch $rfc2616]}]
+    set date  [::tanzer::date scan  $rfc2616]
+    set epoch [::tanzer::date epoch $date]
+
+    return [expr {$st(mtime) > $epoch}]
 }
 
 ##
@@ -238,7 +241,8 @@ namespace eval ::tanzer::file {
 ::oo::define ::tanzer::file method headers {} {
     my variable st
 
-    set timestamp [::tanzer::date::rfc2616 $st(mtime)]
+    set date      [::tanzer::date new $st(mtime)]
+    set timestamp [::tanzer::date rfc2616 $date]
 
     return [dict create                \
         Content-Type   [my mimeType]   \
