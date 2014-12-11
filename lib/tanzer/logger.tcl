@@ -23,13 +23,6 @@ proc ::tanzer::logger::format {subcommand args} {
 
     lassign $args request response
 
-    #
-    # TODO: Figure out how to log these sorts of events
-    #
-    if {$request eq {} || $response eq {}} {
-        return
-    }
-
     return [::format {%s %s - [%s] "%s %s %s" %d %d "%s" "%s"} \
         [$request client] \
         [$request host] \
@@ -160,6 +153,10 @@ proc ::tanzer::logger::default {subcommand args} {
 # Record the incoming `$request` and its `$response` to the access log.
 #
 ::oo::define ::tanzer::logger method log {request response} {
+    if {$request eq {} || $response eq {}} {
+        return
+    }
+
     my write accessLog [::tanzer::logger::format log $request $response]
 
     return
