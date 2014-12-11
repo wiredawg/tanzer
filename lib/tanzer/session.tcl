@@ -570,7 +570,7 @@ namespace eval ::tanzer::session {
         set keepalive 0
     }
 
-    $server log $request $response
+    $server log $request $newResponse
 
     $newResponse header Connection [expr {$keepalive? "Keep-Alive": "Close"}]
     $newResponse send $sock
