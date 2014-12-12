@@ -1,6 +1,13 @@
 tänzer: The Lovable Web Server Framework for Tcl!
 =================================================
 
+See http://tanzer.io/ for further information.
+
+Documentation
+-------------
+
+http://tanzer.io/doc/
+
 What is tänzer?
 ---------------
 
