@@ -31,6 +31,7 @@ Features
 Example
 -------
 
+```tcl
     package require tanzer
 
     set server [::tanzer::server new]
@@ -53,6 +54,7 @@ Example
     }
 
     $server listen 8080
+```
 
 Copyright
 =========
