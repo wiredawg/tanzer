@@ -100,7 +100,7 @@ package require TclOO
 }
 
 ::oo::define ::tanzer::http::handler method cleanup {session} {
-    my variable socks buffers requested
+    my variable socks buffers lengths requested
 
     if {[array get socks $session] eq {}} {
         return
