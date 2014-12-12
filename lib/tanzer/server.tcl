@@ -98,7 +98,7 @@ namespace eval ::tanzer::server {
         $route destroy
     }
 
-    dict for {sock session} sessions {
+    dict for {sock session} $sessions {
         $session destroy
         dict unset sessions $sock
     }
