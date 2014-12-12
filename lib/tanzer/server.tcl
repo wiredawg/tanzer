@@ -277,8 +277,7 @@ namespace eval ::tanzer::server {
     ::tanzer::error try {
         $session handle $event
     } catch e {
-        puts "Got a kitty: $::errorInfo"
-        #my error $e $sock
+        my error $e $sock
     }
 }
 
