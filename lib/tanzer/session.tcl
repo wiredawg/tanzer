@@ -74,24 +74,6 @@ namespace eval ::tanzer::session {
 
     my monitor -cancel
     my cleanup
-
-    set objects [dict create]
-
-    foreach command [info commands ::oo::Obj*] {
-        set class [info object class $command]
-
-        if {[dict exists $objects $class]} {
-            set count [dict get $objects $class]
-        } else {
-            set count 0
-        }
-
-        incr count
-
-        dict set objects $class $count
-    }
-
-    puts "Channels: [chan names]\nObjects: $objects"
 }
 
 ##
