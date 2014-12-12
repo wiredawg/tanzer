@@ -41,9 +41,10 @@ namespace eval ::tanzer::server {
 ::oo::define ::tanzer::server constructor {{newOpts {}}} {
     my variable routes config sessions logger
 
-    set opts   {}
-    set routes [list]
-    set logger ::tanzer::logger::default
+    set opts     {}
+    set routes   [list]
+    set sessions [dict create]
+    set logger   ::tanzer::logger::default
 
     array set config {
         readsize 4096
@@ -97,8 +98,9 @@ namespace eval ::tanzer::server {
         $route destroy
     }
 
-    foreach sock [array names sessions] {
-        $sessions($sock) destroy
+    dict for {sock session} $sessions {
+        $session destroy
+        dict unset sessions $sock
     }
 }
 
@@ -188,11 +190,11 @@ namespace eval ::tanzer::server {
 ::oo::define ::tanzer::server method forget {sock} {
     my variable sessions
 
-    if {[array get sessions $sock] eq {}} {
+    if {![dict exists $sessions $sock]} {
         return
     }
 
-    unset sessions($sock)
+    dict unset sessions $sock
 }
 
 ##
@@ -202,11 +204,11 @@ namespace eval ::tanzer::server {
 ::oo::define ::tanzer::server method close {sock} {
     my variable sessions
 
-    if {[array get sessions $sock] eq {}} {
+    if {![dict exists $sessions $sock]} {
         return
     }
 
-    $sessions($sock) destroy
+    [dict get $sessions $sock] destroy
 
     my forget $sock
 }
@@ -218,7 +220,7 @@ namespace eval ::tanzer::server {
 ::oo::define ::tanzer::server method error {e sock} {
     my variable sessions logger
 
-    set session $sessions($sock)
+    set session [dict get $sessions $sock]
 
     #
     # If the session has already sent a response for the current request,
@@ -264,7 +266,7 @@ namespace eval ::tanzer::server {
 ::oo::define ::tanzer::server method respond {event sock} {
     my variable sessions
 
-    set session $sessions($sock)
+    set session [dict get $sessions $sock]
 
     if {[$session ended]} {
         my close $sock
@@ -275,7 +277,8 @@ namespace eval ::tanzer::server {
     ::tanzer::error try {
         $session handle $event
     } catch e {
-        my error $e $sock
+        puts "Got a kitty: $::errorInfo"
+        #my error $e $sock
     }
 }
 
@@ -297,7 +300,7 @@ namespace eval ::tanzer::server {
         -buffering   full   \
         -buffersize  $config(readsize)
 
-    set sessions($sock) [::tanzer::session new [self] $sock $config(proto)]
+    dict set sessions $sock [::tanzer::session new [self] $sock $config(proto)]
 
     chan event $sock readable [list [self] respond read $sock]
 
