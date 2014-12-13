@@ -215,6 +215,10 @@ namespace eval ::tanzer::scgi::handler {
     append buffers($session) $buf
 
     if {![$session response parse buffers($session)]} {
+        if {[eof $socks($session)]} {
+            error "Could not parse response from SCGI service"
+        }
+
         return
     }
 
