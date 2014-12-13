@@ -157,7 +157,6 @@ namespace eval ::tanzer::scgi::handler {
     array unset buffers   $session
     array unset bodies    $session
     array unset requested $session
-    array unset requested $session
 
     return
 }
