@@ -198,7 +198,8 @@ namespace eval ::tanzer::scgi::handler {
 
     #
     # If we weren't able to read anything from the SCGI service, then let's
-    # wrap up this session.
+    # wrap up this session; [my pipe] will end the session once it has finished
+    # funneling data from the SCGI socket to the client socket.
     #
     if {[$session responded]} {
         my pipe $socks($session) $sock $session
