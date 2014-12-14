@@ -23,22 +23,20 @@ package require TclOO
 #
 ::oo::define ::tanzer::request constructor {newSession} {
     my variable session env headers buffer uri path \
-        params rewritten timestamp headerLength
+        params rewritten timestamp
 
-    next -newline "\r\n" \
-         -request
+    next -request
 
     set date [::tanzer::date new [clock seconds]]
 
-    set session      $newSession
-    set env          [dict create]
-    set headers      [dict create]
-    set uri          {}
-    set path         {}
-    set params       {}
-    set rewritten    0
-    set headerLength 0
-    set timestamp    [::tanzer::date rfc2616 $date]
+    set session   $newSession
+    set env       [dict create]
+    set headers   [dict create]
+    set uri       {}
+    set path      {}
+    set params    {}
+    set rewritten 0
+    set timestamp [::tanzer::date rfc2616 $date]
 }
 
 ##

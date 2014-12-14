@@ -75,16 +75,18 @@ proc ::tanzer::message::field {name} {
 # ::tanzer::message::setup verbatim.
 #
 ::oo::define ::tanzer::message constructor {args} {
-    my variable opts ready chunked body version
+    my variable opts ready chunked body version \
+        newline newlineLength headerLength
 
-    set ready   0
-    set chunked ""
-    set body    {}
-    set version $::tanzer::message::defaultVersion
+    set ready         0
+    set chunked       ""
+    set body          {}
+    set version       $::tanzer::message::defaultVersion
+    set headerLength  {}
+    set newline       "\r\n"
+    set newlineLength 1
     
     array set opts {
-        newline      "\r\n"
-        newlinelen     2
         request        0
         response       0
         errorStatus  400
@@ -98,11 +100,6 @@ proc ::tanzer::message::field {name} {
 
 ##
 # Set up the current message object.  Flags include:
-#
-# * `-newline value`
-#
-#   Specify the newline sequence used to parse any data specified for this
-#   message.
 #
 # * `-request`
 #
@@ -119,12 +116,8 @@ proc ::tanzer::message::field {name} {
         return [array get opts]
     }
 
-    set prev {}
-
     foreach arg $args {
-        switch -- $arg "-newline" {
-            # Needs value
-        } "-request" {
+        switch -- $arg "-request" {
             set opts(request) 1
             break
         } "-response" {
@@ -134,17 +127,8 @@ proc ::tanzer::message::field {name} {
 
             break
         } default {
-            switch -- $prev {} {
-                # Do nothing
-            } "-newline" {
-                set opts(newline)    $arg
-                set opts(newlinelen) [string length $arg]
-            } default {
-                error "Invalid argument $arg"
-            }
+            error "Invalid argument $arg"
         }
-
-        set prev $arg
     }
 
     return
@@ -177,22 +161,39 @@ proc ::tanzer::message::field {name} {
 #
 ::oo::define ::tanzer::message method parse {varName} {
     my variable opts version status ready env headers \
-        path uri headerLength
+        path uri newline newlineLength headerLength
 
+    #
+    # If the message is already parsed, then return true.
+    #
     if {$ready} {
         return 1
     }
 
     upvar 1 $varName buffer
 
+    #
+    # Attempt to locate the header boundary (length), for both CRLF and LF-type
+    # messages.
+    #
+    if {$headerLength eq {}} {
+        foreach {newline newlineLength} [list "\n" 1 "\r\n" 2] {
+            set headerEnding "$newline$newline"
+            set headerLength [string first $headerEnding $buffer]
+
+            if {$headerLength >= 0} {
+                break
+            }
+        }
+    }
+
     set bufferLength [string length $buffer]
-    set headerLength [string first "$opts(newline)$opts(newline)" $buffer]
-    set bodyStart    [expr {$headerLength + (2 * $opts(newlinelen))}]
+    set bodyStart    [expr {$headerLength + (2 * $newlineLength)}]
 
     #
     # If we cannot find the end of the headers, then determine if the buffer
     # is too large at this point, and raise an error.  Otherwise, let's try
-    # and buffer more data at the next opportunity to reqd the request and
+    # and buffer more data at the next opportunity to read the request and
     # have another go at this.
     #
     if {$headerLength < 0} {
@@ -207,19 +208,25 @@ proc ::tanzer::message::field {name} {
     # On the other hand, at this point, we happen to know where the request
     # preamble ends.  Let's try to parse that.
     #
-    set preamble    [string range $buffer 0 [expr {$headerLength + 1}]]
+    set preamble    [string range $buffer 0 $headerLength]
     set action      {}
     set headerName  {}
     set headerValue {}
 
-    set index 0
-    set start 0
-    set end   [expr {[string first $opts(newline) $preamble $start] - 1}]
+    set valid $opts(response) ;# Don't require full header for responses
+    set index 0               ;# Current line number
+    set start 0               ;# Offset of current line
+    set end   [expr {[string first $newline $preamble $start] - 1}]
 
     while {$end > 0} {
         set line [string range $preamble $start $end]
 
-        if {[regexp -nocase {^HTTP/(?:0.9|1.0|1.1)\s+} $line {}]} {
+        if {[regexp -nocase {^(?:HTTP/|)(?:0.9|1.0|1.1)\s+} $line {}]} {
+            #
+            # Throw an error if we're trying to parse a response status into a
+            # non-response object, or if this doesn't happen to be the first line
+            # of data provided.
+            #
             if {!$opts(response) || $index != 0} {
                 ::tanzer::error throw $opts(errorStatus) $opts(errorMessage)
             }
@@ -232,8 +239,15 @@ proc ::tanzer::message::field {name} {
             }
 
             lassign $responseParts version status
+
+            set valid 1
         } elseif {[regexp -nocase {^(?:[a-z]+)\s+} $line {}]} {
-            if {!$opts(request) || $action ne {} || $index != 0} {
+            #
+            # Throw an error if we're trying to parse a request action into a
+            # non-request object, or if this doesn't happen to be the first line
+            # of data provided.
+            #
+            if {!$opts(request) || $action ne {} || $index > 0} {
                 ::tanzer::error throw $opts(errorStatus) $opts(errorMessage)
             }
 
@@ -261,19 +275,26 @@ proc ::tanzer::message::field {name} {
             my env SERVER_PROTOCOL $httpVersion
 
             my uri $httpUri
+
+            set valid 1
         } elseif {[regexp -nocase {^([a-z][a-z0-9\-_]+):\s+(.*)} $line {} newHeaderName newHeaderValue]} {
             #
-            # Set the value of an existing header that was parsed previously.
+            # Set the value of an existing header that was parsed previously, if
+            # present.
             #
             if {$headerName ne {} && $headerValue ne {}} {
                 my header $headerName $headerValue
             }
 
+            #
+            # Then, take note of the header data in the current line.
+            #
             set headerName  $newHeaderName
             set headerValue [string trim $newHeaderValue]
         } elseif {[regexp {^\s+(.*)$} $line {} headerValueExtra]} {
             #
-            # Look for header value continuation lines.
+            # Look for header value continuation lines.  If there is no previous
+            # header line, then that would be quite problematic, indeed.
             #
             if {$headerName eq {}} {
                 ::tanzer::error throw $opts(errorStatus) $opts(errorMessage)
@@ -284,8 +305,8 @@ proc ::tanzer::message::field {name} {
             ::tanzer::error throw $opts(errorStatus) $opts(errorMessage)
         }
 
-        set start [expr {$end + $opts(newlinelen) + 1}]
-        set end   [expr {[string first "\r\n" $preamble $start] - 1}]
+        set start [expr {$end + $newlineLength + 1}]
+        set end   [expr {[string first $newline $preamble $start] - 1}]
 
         incr index
     }
@@ -295,6 +316,14 @@ proc ::tanzer::message::field {name} {
     #
     if {$headerName ne {} && $headerValue ne {}} {
         my header $headerName $headerValue
+    }
+
+    #
+    # Die if we've not received a valid message due to either a lacking HTTP
+    # request verb or a response status.
+    #
+    if {!$valid} {
+        ::tanzer::error throw $opts(errorStatus) $opts(errorMessage)
     }
 
     #

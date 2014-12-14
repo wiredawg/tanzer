@@ -38,6 +38,11 @@ namespace eval ::tanzer::scgi::handler {
 #
 #   The name of the script that shall be identified to the service via the
 #   `SCRIPT_NAME` SCGI request parameter.
+#
+# * `root`
+#
+#   The location of a document root that shall be identified to the service via
+#   the `DOCUMENT_ROOT` SCGI request parameter.
 # .
 #
 # All inbound requests are transformed into an SCGI request as per the official
@@ -61,6 +66,10 @@ namespace eval ::tanzer::scgi::handler {
         name "No program name provided"
     }
 
+    set optional {
+        root
+    }
+
     array set config    {}
     array set socks     {}
     array set bodies    {}
@@ -73,6 +82,12 @@ namespace eval ::tanzer::scgi::handler {
         }
 
         set config($name) [dict get $opts $name]
+    }
+
+    foreach name $optional {
+        if {[dict exists $opts $name]} {
+            set config($name) [dict get $opts $name]
+        }
     }
 }
 
@@ -128,13 +143,16 @@ namespace eval ::tanzer::scgi::handler {
     set addr    [lindex [chan configure [$session sock] -sockname] 0]
 
     set env [list \
-        SCGI            $::tanzer::scgi::handler::version \
+        SCGI            $::tanzer::scgi::handler::version                    \
         SERVER_SOFTWARE "$::tanzer::server::name/$::tanzer::server::version" \
-        SCRIPT_NAME     $config(name) \
-        REQUEST_METHOD  [$request method] \
+        CONTENT_LENGTH  [string length $bodies($session)]                    \
+        SCRIPT_NAME     $config(name)                                        \
+        REQUEST_METHOD  [$request method]                                    \
         PWD             [pwd]]
 
-    lappend env CONTENT_LENGTH [string length $bodies($session)]
+    if {[array get config root] ne {}} {
+        lappend env DOCUMENT_ROOT $config(root)
+    }
 
     foreach {name value} [$request env] {
         lappend env $name $value
@@ -275,6 +293,24 @@ namespace eval ::tanzer::scgi::handler {
     set buf [read $socks($session) $size]
 
     append buffers($session) $buf
+
+    #
+    # If we've received nothing from the remote SCGI service...
+    #
+    if {[string length $buffers($session)] == 0} {
+        #
+        # ...And we've reached an EOF condition on that socket, then move on to
+        # the next request.
+        #
+        if {[eof $socks($session)]} {
+            $session nextRequest
+        }
+
+        #
+        # But nonetheless return.
+        #
+        return
+    }
 
     if {![$session response parse buffers($session)]} {
         if {[eof $socks($session)]} {

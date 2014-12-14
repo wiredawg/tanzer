@@ -133,7 +133,6 @@ namespace eval ::tanzer::cgi::handler {
     $session response -new [::tanzer::response new \
         $::tanzer::forwarder::defaultStatus]
 
-    $session response setup -newline "\n"
     $session cleanup [self] cleanup $session
 }
 
