@@ -157,7 +157,7 @@ proc ::tanzer::date::new {epoch} {
     set hoursec   [expr {3600      - ($daysec % 3600)}]
     set minute    [expr {$hoursec / 60}]
     set second    [expr {$hoursec % 60}]
-    set dayofweek [expr {$firstdow? ($dayOfYear % $firstdow) - 1: 0}]
+    set dayofweek [expr {($dayOfYear % 7) - $firstdow - 1}]
 
     set day   $dayOfYear
     set month 1
