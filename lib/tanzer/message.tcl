@@ -173,18 +173,16 @@ proc ::tanzer::message::field {name} {
     upvar 1 $varName buffer
 
     #
-    # Attempt to locate the header boundary (length), for both CRLF and LF-type
-    # messages.
+    # Attempt to locate the header boundary (length) and line break sequence
+    # used in the current message.
     #
     if {$headerLength eq {}} {
-        foreach {newline newlineLength} [list "\n" 1 "\r\n" 2] {
-            set headerEnding "$newline$newline"
-            set headerLength [string first $headerEnding $buffer]
-
-            if {$headerLength >= 0} {
-                break
-            }
-        }
+        set firstnl       [string first "\n" $buffer]
+        set prevchar      [string index $buffer [expr {$firstnl - 1}]]
+        set newline       [expr {($prevchar eq "\r")? "\r\n": "\n"}]
+        set newlineLength [string length $newline]
+        set headerEnding  "$newline$newline"
+        set headerLength  [string first $headerEnding $buffer]
     }
 
     set bufferLength [string length $buffer]
