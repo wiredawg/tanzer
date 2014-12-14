@@ -130,6 +130,18 @@ namespace eval ::tanzer::cgi::handler {
     set pipes($session)   $pipe
     set buffers($session) ""
 
+    #
+    # Bind writable events on the CGI pipe to the server's reader handler.
+    #
+    $session reset none
+
+    chan event $pipe readable {}
+    chan event $pipe writable [list $server respond read [$session sock]]
+
+    #
+    # Now, prepare a new, empty response object, and ensure any session state is
+    # cleaned up when appropriate.
+    #
     $session response -new [::tanzer::response new \
         $::tanzer::forwarder::defaultStatus]
 
@@ -164,11 +176,36 @@ namespace eval ::tanzer::cgi::handler {
 ::oo::define ::tanzer::cgi::handler method read {session data} {
     my variable pipes
 
+    #
+    # Open a pipe to the CGI executable if we have not already done so.
+    #
     if {[array get pipes $session] eq {}} {
         my open $session
     }
 
-    puts -nonewline $pipes($session) $data
+    #
+    # If we have data to buffer for the request body, then let's send that to the
+    # CGI executable and quickly return.
+    #
+    if {[string length $data] > 0} {
+        puts -nonewline $pipes($session) data
+
+        return
+    }
+
+    #
+    # If we've already sent everything out for the request body, we can then bind
+    # our own writer to readable events on the CGI pipe.  Of course, the server
+    # will only know about the originating client socket, so we'll have to use
+    # that as reference for our current request handler.
+    #
+    set server [$session server]
+    set sock   [$session sock]
+
+    chan event $pipes($session) readable [list $server respond write $sock]
+    chan event $pipes($session) writable {}
+
+    return
 }
 
 ::oo::define ::tanzer::cgi::handler method write {session} {
@@ -188,6 +225,9 @@ namespace eval ::tanzer::cgi::handler {
     # from the CGI process to the client socket, and bail out.
     #
     if {[$session responded]} {
+        chan event $pipe readable {}
+        chan event $pipe writable {}
+
         my pipe $pipe $sock $session
 
         return
@@ -199,7 +239,30 @@ namespace eval ::tanzer::cgi::handler {
     #
     append buffers($session) [read $pipe $size]
 
+    #
+    # If we've received nothing from the CGI program...
+    #
+    if {[string length $buffers($session)] == 0} {
+        #
+        # ...And we've reached an EOF condition on that pipe, then move on to the
+        # next request.
+        #
+        if {[eof $pipe]} {
+            $session nextRequest
+        }
+
+        #
+        # And return nonetheless.
+        #
+        return
+    }
+
     if {![$session response parse buffers($session)]} {
+        if {[eof $pipes]} {
+            ::tanzer::error throw \
+                500 "Could not parse response from CGI program"
+        }
+
         return
     }
 
