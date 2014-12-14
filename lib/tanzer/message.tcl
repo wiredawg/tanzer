@@ -173,6 +173,13 @@ proc ::tanzer::message::field {name} {
     upvar 1 $varName buffer
 
     #
+    # If the buffer is empty, then bail.
+    #
+    if {[string length $buffer] == 0} {
+        return 0
+    }
+
+    #
     # Attempt to locate the header boundary (length) and line break sequence
     # used in the current message.
     #
