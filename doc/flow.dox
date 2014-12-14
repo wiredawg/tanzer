@@ -45,7 +45,7 @@
  * The current request handler will yield all future I/O events back to the
  * session handler object via ::tanzer::session::nextRequest, or may throw an
  * error that shall cause the session handler to either move on to the next
- * request, or if a fatal error has occured, terminate the session entirely.
+ * request, or if a fatal error has occurred, terminate the session entirely.
  *
  * @section sec_flow_next_request Step 4: The request handler is productive
  *
