@@ -36,6 +36,13 @@ namespace eval ::tanzer::server {
 #
 #   Defaults to 4096.  The size of buffer used to read from remote sockets and
 #   local files.
+#
+# - `logger`
+#
+#   Defaults to the simple standard output logger provided in
+#   ::tanzer::logger::default.  Any command or object that provides `log` and
+#   `err` subcommands is suitable; a no-op proc is also useful for suppressing
+#   logging altogether.
 # .
 #
 ::oo::define ::tanzer::server constructor {{newOpts {}}} {
@@ -62,12 +69,10 @@ namespace eval ::tanzer::server {
     }
 
     #
-    # If need be, instantiate a logger object, passing configuration directives
-    # directly from the caller here as required.
+    # If the caller provided a logger, then use that instead.
     #
-    if {[dict exists $opts logging]} {
-        set logger [::tanzer::logger new \
-            [set config(logging) [dict get $opts logging]]]
+    if {[dict exists $opts logger]} {
+        set logger [dict get $opts logger]
     }
 
     #
