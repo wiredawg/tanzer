@@ -324,6 +324,13 @@ proc ::tanzer::message::field {name} {
     }
 
     #
+    # If a status was provided as a headers, then use that instead.
+    #
+    if {[my headerExists Status]} {
+        set status [lindex [my header Status] 0]
+    }
+
+    #
     # Die if we've not received a valid message due to either a lacking HTTP
     # request verb or a response status.
     #
