@@ -22,8 +22,8 @@ package require TclOO
 # Create a request object attached to the session specified in `$newSession`.
 #
 ::oo::define ::tanzer::request constructor {newSession} {
-    my variable session env headers buffer uri path \
-        params rewritten timestamp
+    my variable session env headers buffer uri uriOrig \
+        path params rewritten timestamp
 
     next -request
 
@@ -33,6 +33,7 @@ package require TclOO
     set env       [dict create]
     set headers   [dict create]
     set uri       {}
+    set uriOrig   {}
     set path      {}
     set params    {}
     set rewritten 0
@@ -45,11 +46,22 @@ package require TclOO
 # appropriate.  `$newUri` will be saved literally in the current request for
 # future reference.
 #
+# If called with a `$newUri` value multiple times on the same request object,
+# the new URI will of course take effect, but internally the original URI will
+# be retained; and, when called with no arguments after a new URI was set again,
+# the original URI will always be returned.  This is particularly useful in
+# helping the request object remember the original URI for accurate logging
+# purposes.
+#
 ::oo::define ::tanzer::request method uri {{newUri ""}} {
-    my variable uri path
+    my variable uri uriOrig path
 
     if {$newUri eq ""} {
-        return $uri
+        return $uriOrig
+    }
+
+    if {$uriOrig eq {}} {
+        set uriOrig $newUri
     }
 
     set uri      $newUri
@@ -74,20 +86,22 @@ package require TclOO
 # subexpression matches given for positional format arguments.
 #
 # Repeated calls to this method on the same request object yield no effect, and
-# always return 1.
+# always return 1.  Furthermore, subsequent rewrite calls always perform rewrites
+# on the original URI of the request, not the resulting URI from prior rewrite
+# operations.
 #
 ::oo::define ::tanzer::request method rewrite {re newFormat} {
-    my variable uri rewritten
+    my variable uriOrig rewritten
 
     if {$rewritten} {
         return 1
     }
 
-    if {$uri eq {}} {
+    if {$uriOrig eq {}} {
         error "Cannot rewrite URI on request that has not been matched"
     }
 
-    set matches [regexp -inline $re $uri]
+    set matches [regexp -inline $re $uriOrig]
 
     if {[llength $matches] == 0} {
         return 0
