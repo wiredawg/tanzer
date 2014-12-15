@@ -21,6 +21,10 @@ namespace eval ::tanzer::forwarder {
 #
 ::oo::class create ::tanzer::forwarder
 
+::oo::define ::tanzer::forwarder constructor {args} {
+    # Do nothing! \o/
+}
+
 ##
 # A method to be implemented by any request forwarder class that allows one to
 # clean up any state specific to that request forwarder.
