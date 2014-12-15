@@ -331,6 +331,13 @@ proc ::tanzer::message::field {name} {
     }
 
     #
+    # If the status is >=500, then throw an error.
+    #
+    if {$status >= 500} {
+        ::tanzer::error throw $status $opts(errorMessage)
+    }
+
+    #
     # Die if we've not received a valid message due to either a lacking HTTP
     # request verb or a response status.
     #
