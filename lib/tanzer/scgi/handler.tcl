@@ -250,7 +250,7 @@ namespace eval ::tanzer::scgi::handler {
     #
     # Otherwise, let's send the request body to the SCGI service in chunks.
     #
-    set size [$session config readlen]
+    set size [$session config readsize]
 
     puts -nonewline $socks($session) [string range $bodies($session) \
         0 [expr {$size - 1}]]
