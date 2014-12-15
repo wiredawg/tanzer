@@ -12,7 +12,8 @@ package require tanzer::error
 package require TclOO
 
 namespace eval ::tanzer::cgi::handler {
-    variable proto "CGI/1.1"
+    variable proto           "CGI/1.1"
+    variable defaultStatus 200
 }
 
 ##
@@ -139,7 +140,7 @@ namespace eval ::tanzer::cgi::handler {
     # cleaned up when appropriate.
     #
     $session response -new [::tanzer::response new \
-        $::tanzer::forwarder::defaultStatus]
+        $::tanzer::cgi::handler::defaultStatus]
 
     $session cleanup [self] cleanup $session
 }
