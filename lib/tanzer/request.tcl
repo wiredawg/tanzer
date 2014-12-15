@@ -73,6 +73,9 @@ package require TclOO
 # string created from the `[format]` string in `$newFormat`, with the values of
 # subexpression matches given for positional format arguments.
 #
+# Repeated calls to this method on the same request object yield no effect, and
+# always return 1.
+#
 ::oo::define ::tanzer::request method rewrite {re newFormat} {
     my variable uri rewritten
 
@@ -92,7 +95,7 @@ package require TclOO
 
     my uri [format $newFormat {*}[lrange $matches 1 end]]
 
-    return 1
+    return [set rewritten 1]
 }
 
 ##
