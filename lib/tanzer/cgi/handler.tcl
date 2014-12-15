@@ -258,7 +258,7 @@ namespace eval ::tanzer::cgi::handler {
     }
 
     if {![$session response parse buffers($session)]} {
-        if {[eof $pipes]} {
+        if {[eof $pipe]} {
             ::tanzer::error throw \
                 500 "Could not parse response from CGI program"
         }
