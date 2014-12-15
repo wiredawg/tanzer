@@ -71,16 +71,7 @@ package require TclOO
     next $session
 
     set request [$session request]
-
-    if {[array get config rewrite] ne {}} {
-        foreach {re newFormat} $config(rewrite) {
-            if {[$request rewrite $re $newFormat]} {
-                break
-            }
-        }
-    }
-
-    set sock [socket $config(host) $config(port)]
+    set sock    [socket $config(host) $config(port)]
 
     chan configure $sock    \
         -translation binary \

@@ -17,55 +17,36 @@ namespace eval ::tanzer::forwarder {
 }
 
 ##
-# The HTTP request forwarding base class.
+# The HTTP request forwarding base interface class.
 #
 ::oo::class create ::tanzer::forwarder
 
 ##
-# Create a new HTTP request forwarder.
+# A method to be implemented by any request forwarder class that allows one to
+# clean up any state specific to that request forwarder.
 #
-# Options include:
-#
-# * `rewrite`
-# 
-#   A list of regex, `[format]` pairs which, upon the regex matching a literal
-#   request URI string, will replace the URI with a new string produced from
-#   the formatted regular expression subexpression matches.  For instance:
-#
-#   @code
-#   ::tanzer::forwarder new {
-#       rewrite {
-#           {/git?repo_name=/(.*)\.git$}             "/git/%s"
-#           {/git?repo_name=/(.*)\.git&commit=(.*)$} "/git/%s/commits/%s"
-#       }
-#   }
-#   @endcode
-# .
-#
-::oo::define ::tanzer::forwarder constructor {opts} {
-    my variable rewrite
-
-    set rewrite [if {[dict exists $opts rewrite]} {
-        dict get $opts rewrite
-    } else {
-        list
-    }]
-}
-
 ::oo::define ::tanzer::forwarder method cleanup {session} {
     error "Not implemented"
 }
 
+##
+# A method to be implemented by any request forwarder class that allows one to
+# open any resources involved in servicing the current request for `$session`.
+#
 ::oo::define ::tanzer::forwarder method open {session} {
-    my variable rewrite
+    error "Not implemented"
+}
 
-    set request [$session request]
+##
+# Clean up any state associated with `$session`, and allow the session handler to
+# yield yield to the next incoming request.
+#
+::oo::define ::tanzer::forwarder method close {session} {
+    my cleanup $session
 
-    foreach {re newFormat} $rewrite {
-        if {[$request rewrite $re $newFormat]} {
-            break
-        }
-    }
+    $session nextRequest
+
+    return
 }
 
 ##
@@ -88,14 +69,6 @@ namespace eval ::tanzer::forwarder {
             $session nextRequest
         }
     } $session]
-
-    return
-}
-
-::oo::define ::tanzer::forwarder method close {session} {
-    my cleanup $session
-
-    $session nextRequest
 
     return
 }
