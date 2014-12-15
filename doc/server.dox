@@ -1,0 +1,57 @@
+/*!
+ * @page server Server overview
+ *
+ * @tableofcontents
+ *
+ * @section sec_server About the server
+ * 
+ * ::tanzer::server is the central locus of activity where acceptance of inbound
+ * connections, handling of errors server-wide, request routing, and logging
+ * occurs.
+ *
+ * @subsection sec_server_connections Inbound connections
+ *
+ * Inbound connections are serviced by ::tanzer::server::accept, which creates a
+ * new ::tanzer::session object, binds the connection to the new session, and
+ * delegates all I/O events to the socket as appropriate.
+ *
+ * @subsection sec_server_error_handling Error handling
+ *
+ * All I/O events other than those relegated to background operations initiated by
+ * `[chan copy]` go through ::tanzer::server::respond; as such, any errors that
+ * are raised can be logged and actioned upon as appropriate without having to
+ * force every request handler or client worry about logging concerns.
+ *
+ * @subsection sec_server_routing_table The routing table
+ *
+ * The routing table is a flat list of ::tanzer::route objects that are managed by
+ * ::tanzer::server::route.  When the server accepts a new request, it loops over
+ * each entry in the route table, in search of the first route that matches the
+ * criteria for servicing the request.  For each route, the server interrogates
+ * the request object to determine if the route matches the request.  In terms of
+ * implementation details, this is serviced by ::tanzer::request::matches.
+ *
+ * The manner in which ::tanzer::request::matches determines the ability of a
+ * route to service a request is as follows, in the following order:
+ *
+ * -# The request method must match that of the route.
+ *
+ * -# The Host: header must match that of the route.
+ *
+ * -# The request URI must match the path glob pattern of the route, including any
+ *    positional path arguments.
+ * .
+ *
+ * A route must match all these criteria in order to service a request.
+ *
+ * @subsection sec_server_logging Logging
+ *
+ * The default logging facility is ::tanzer::logger::default, a simple function
+ * which outputs informational log lines to standard output, and any error objects
+ * raised to the server.
+ *
+ * An alternate logger can be provided which must accept two subcommands: `log`
+ * and `err`.  The `log` subcommand requires a request object, and a response
+ * object.  The `err` subcommand simply accepts any error provided, be it a
+ * string, or a servable error produced by the facilities in ::tanzer::error.
+ */
