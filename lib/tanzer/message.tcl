@@ -218,9 +218,9 @@ proc ::tanzer::message::field {name} {
     set headerName  {}
     set headerValue {}
 
-    set valid $opts(response) ;# Don't require full header for responses
-    set index 0               ;# Current line number
-    set start 0               ;# Offset of current line
+    set valid 0
+    set index 0 ;# Current line number
+    set start 0 ;# Offset of current line
     set end   [expr {[string first $newline $preamble $start] - 1}]
 
     while {$end > 0} {
@@ -324,17 +324,30 @@ proc ::tanzer::message::field {name} {
     }
 
     #
-    # If a status was provided as a headers, then use that instead.
+    # When dealing with response objects in particular...
     #
-    if {[my headerExists Status]} {
-        set status [lindex [my header Status] 0]
-    }
+    if {$opts(response)} {
+        #
+        # If a status was provided as a headers, then use that instead.
+        #
+        if {[my headerExists Status]} {
+            set status [lindex [my header Status] 0]
+        }
 
-    #
-    # If the status is >=500, then throw an error.
-    #
-    if {$status >= 500} {
-        ::tanzer::error throw $status $opts(errorMessage)
+        if {$status ne {}} {
+            #
+            # If our status was declared at some point, then we at least know
+            # we're dealing with a valid response.
+            #
+            set valid 1
+        }
+
+        #
+        # On the other hand, if our status is >=500, then serve an error page.
+        #
+        if {$status >= 500} {
+            ::tanzer::error throw $status $opts(errorMessage)
+        }
     }
 
     #
