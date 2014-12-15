@@ -43,8 +43,6 @@ package require TclOO
 ::oo::define ::tanzer::http::handler constructor {opts} {
     my variable config socks buffers lengths requested
 
-    next $opts
-
     set requirements {
         host "No HTTP service host provided"
         port "No HTTP service port provided"
@@ -67,8 +65,6 @@ package require TclOO
 
 ::oo::define ::tanzer::http::handler method open {session} {
     my variable config socks buffers requested
-
-    next $session
 
     set request [$session request]
     set sock    [socket $config(host) $config(port)]

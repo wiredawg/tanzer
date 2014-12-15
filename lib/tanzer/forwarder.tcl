@@ -22,7 +22,7 @@ namespace eval ::tanzer::forwarder {
 ::oo::class create ::tanzer::forwarder
 
 ::oo::define ::tanzer::forwarder constructor {args} {
-    # Do nothing! \o/
+    error "Not implemented"
 }
 
 ##

@@ -58,8 +58,6 @@ namespace eval ::tanzer::cgi::handler {
 ::oo::define ::tanzer::cgi::handler constructor {opts} {
     my variable config pipes buffers
 
-    next $opts
-
     set requirements {
         program "No CGI executable provided"
         name    "No script name provided"
@@ -81,8 +79,6 @@ namespace eval ::tanzer::cgi::handler {
 
 ::oo::define ::tanzer::cgi::handler method open {session} {
     my variable config pipes buffers
-
-    next $session
 
     set server   [$session server]
     set route    [$session route]

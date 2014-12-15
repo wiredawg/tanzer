@@ -58,8 +58,6 @@ namespace eval ::tanzer::scgi::handler {
 ::oo::define ::tanzer::scgi::handler constructor {opts} {
     my variable config socks bodies buffers requested
 
-    next $opts
-
     set requirements {
         host "No SCGI service host provided"
         port "No SCGI service port provided"
@@ -99,8 +97,6 @@ namespace eval ::tanzer::scgi::handler {
 #
 ::oo::define ::tanzer::scgi::handler method open {session} {
     my variable config socks bodies buffers requested
-
-    next $session
 
     set server  [$session server]
     set request [$session request]
