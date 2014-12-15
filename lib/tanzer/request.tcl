@@ -80,17 +80,27 @@ package require TclOO
 }
 
 ##
-# Match the URI stored in a previous invocation of ::tanezr::requst::uri with
-# the regular expression in `$re`, and replace it with the newly formatted
-# string created from the `[format]` string in `$newFormat`, with the values of
-# subexpression matches given for positional format arguments.
+# Given a list of regular expression and `[format]` string pairs, iterate through
+# the list until the first matching regular expression is encountered, and
+# rewrite the URI set in a previous invocation of ::tanzer::request::uri
+# accordingly.  Positional format specifiers in the rewrite format are filled in
+# with values captured from subexpressions in the matching regular expression.
 #
 # Repeated calls to this method on the same request object yield no effect, and
 # always return 1.  Furthermore, subsequent rewrite calls always perform rewrites
 # on the original URI of the request, not the resulting URI from prior rewrite
 # operations.
 #
-::oo::define ::tanzer::request method rewrite {re newFormat} {
+# Example:
+#
+# @code{.tcl}
+# $request rewrite {
+#     {^/foo/(\d+)$} "/foo-%d.html"
+#     {^/bar/(\d+)$} "/images/bar-%d.jpg"
+# }
+# @endcode
+#
+::oo::define ::tanzer::request method rewrite {args} {
     my variable uriOrig rewritten
 
     if {$rewritten} {
@@ -101,15 +111,19 @@ package require TclOO
         error "Cannot rewrite URI on request that has not been matched"
     }
 
-    set matches [regexp -inline $re $uriOrig]
+    foreach {re newFormat} $args {
+        set matches [regexp -inline $re $uriOrig]
 
-    if {[llength $matches] == 0} {
-        return 0
+        if {[llength $matches] == 0} {
+            continue
+        }
+
+        my uri [format $newFormat {*}[lrange $matches 1 end]]
+
+        return [set rewritten 1]
     }
 
-    my uri [format $newFormat {*}[lrange $matches 1 end]]
-
-    return [set rewritten 1]
+    return 0
 }
 
 ##
