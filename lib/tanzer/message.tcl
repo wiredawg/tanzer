@@ -93,29 +93,6 @@ proc ::tanzer::message::field {name} {
         errorMessage "Invalid Request"
     }
 
-    if {[llength $args] > 0} {
-        my setup {*}$args
-    }
-}
-
-##
-# Set up the current message object.  Flags include:
-#
-# * `-request`
-#
-#   Configure the current message as an HTTP request.
-#
-# * `-response`
-#
-#   Configure the current message as an HTTP response.
-#
-::oo::define ::tanzer::message method setup {args} {
-    my variable opts
-
-    if {[llength $args] == 0} {
-        return [array get opts]
-    }
-
     foreach arg $args {
         switch -- $arg "-request" {
             set opts(request) 1
@@ -130,8 +107,6 @@ proc ::tanzer::message::field {name} {
             error "Invalid argument $arg"
         }
     }
-
-    return
 }
 
 ##
