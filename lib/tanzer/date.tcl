@@ -157,7 +157,7 @@ proc ::tanzer::date::new {epoch} {
     set hoursec   [expr {3600      - ($daysec % 3600)}]
     set minute    [expr {$hoursec / 60}]
     set second    [expr {$hoursec % 60}]
-    set dayofweek [expr {($dayOfYear % 7) - $firstdow - 1}]
+    set dayOfWeek [expr {($dayOfYear - $firstdow - 1) % 7}]
 
     set day   $dayOfYear
     set month 1
@@ -182,7 +182,7 @@ proc ::tanzer::date::new {epoch} {
         hour    $hour   \
         minute  $minute \
         second  $second \
-        weekday [lindex $::tanzer::date::weekdays $dayofweek]]
+        weekday [lindex $::tanzer::date::weekdays $dayOfWeek]]
 }
 
 ##
