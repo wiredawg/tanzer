@@ -24,12 +24,13 @@
  *
  * @subsection sec_server_routing_table The routing table
  *
- * The routing table is a flat list of ::tanzer::route objects that are managed by
- * ::tanzer::server::route.  When the server accepts a new request, it loops over
- * each entry in the route table, in search of the first route that matches the
- * criteria for servicing the request.  For each route, the server interrogates
- * the request object to determine if the route matches the request.  In terms of
- * implementation details, this is serviced by ::tanzer::request::matches.
+ * The default routing table is a flat list of ::tanzer::router::entry objects
+ * that are managed by ::tanzer::router.  When the server accepts a new
+ * request, it loops over each entry in the route table, in search of the first
+ * route that matches the criteria for servicing the request.  For each route,
+ * the server interrogates the request object to determine if the route matches
+ * the request.  In terms of implementation details, this is serviced by
+ * ::tanzer::request::matches.
  *
  * The manner in which ::tanzer::request::matches determines the ability of a
  * route to service a request is as follows, in the following order:

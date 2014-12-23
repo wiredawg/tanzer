@@ -35,9 +35,9 @@
  *
  *   The request logging facility.
  *
- * * ::tanzer::route
+ * * ::tanzer::router
  *
- *   The request handler routing table entry class.
+ *   The request handler routing table.
  *
  * * ::tanzer::session
  *

@@ -7,8 +7,8 @@ package provide tanzer::server 0.1
 #
 
 package require tanzer::error
-package require tanzer::route
 package require tanzer::logger
+package require tanzer::router
 package require tanzer::session
 package require TclOO
 
@@ -46,16 +46,17 @@ namespace eval ::tanzer::server {
 # .
 #
 ::oo::define ::tanzer::server constructor {{newOpts {}}} {
-    my variable routes config sessions logger
+    my variable router config sessions logger
 
     set opts     {}
-    set routes   [list]
+    set router   {}
     set sessions [dict create]
     set logger   ::tanzer::logger::default
 
     array set config {
         readsize 4096
         proto    "http"
+        
     }
 
     if {$newOpts ne {}} {
@@ -73,6 +74,15 @@ namespace eval ::tanzer::server {
     #
     if {[dict exists $opts logger]} {
         set logger [dict get $opts logger]
+    }
+
+    #
+    # If no router was provided, then construct one.
+    #
+    if {[dict exists $opts router]} {
+        set router [dict get $opts router]
+    } else {
+        set router [::tanzer::router new]
     }
 
     #
@@ -97,11 +107,9 @@ namespace eval ::tanzer::server {
 }
 
 ::oo::define ::tanzer::server destructor {
-    my variable routes sessions
+    my variable router sessions
 
-    foreach route $routes {
-        $route destroy
-    }
+    $router destroy
 
     dict for {sock session} $sessions {
         $session destroy
@@ -131,6 +139,15 @@ namespace eval ::tanzer::server {
     $logger log $request $response
 
     return
+}
+
+##
+# Return the routing table object the server is currently using.
+#
+::oo::define ::tanzer::server method router {} {
+    my variable router
+
+    return $router
 }
 
 ##
@@ -174,18 +191,9 @@ namespace eval ::tanzer::server {
 # .
 #
 ::oo::define ::tanzer::server method route {method pattern host args} {
-    my variable routes
+    my variable router
 
-    lappend routes [::tanzer::route new $method $pattern $host $args]
-}
-
-##
-# Return a list of the current routed request handlers.
-#
-::oo::define ::tanzer::server method routes {} {
-    my variable routes
-
-    return $routes
+    $router add $method $pattern $host {*}$args
 }
 
 ##

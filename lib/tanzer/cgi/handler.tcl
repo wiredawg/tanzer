@@ -82,7 +82,6 @@ namespace eval ::tanzer::cgi::handler {
     my variable config pipes buffers
 
     set server   [$session server]
-    set route    [$session route]
     set request  [$session request]
     set sock     [$session sock]
 

@@ -715,12 +715,14 @@ namespace eval ::tanzer::session {
     #
     # Find the most appropriate route to handle the current request.
     #
-    foreach candidate [$server routes] {
-        if {[$request matches $candidate]} {
+    set router [$server router]
+
+    foreach candidate [$router entries] {
+        if {[$candidate matches $request]} {
             set route   $candidate
             set handler [$candidate script]
 
-            return $route
+            return $candidate
         }
     }
 
