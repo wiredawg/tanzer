@@ -21,6 +21,7 @@ namespace eval ::tanzer::file {
         {\.tar\.gz$}      "application/x-tgz"
         {\.tgz$}          "application/x-tgz"
         {\.gz$}           "application/x-gzip"
+        {\.m4a$}          "audio/mp4a-latm"
         {\.}              "application/octet-stream"
     }
 }
