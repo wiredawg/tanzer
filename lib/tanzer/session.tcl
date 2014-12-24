@@ -712,19 +712,9 @@ namespace eval ::tanzer::session {
         return $route
     }
 
-    #
-    # Find the most appropriate route to handle the current request.
-    #
-    set router [$server router]
+    set router  [$server router]
+    set route   [$router route $request]
+    set handler [$route script]
 
-    foreach candidate [$router entries] {
-        if {[$candidate matches $request]} {
-            set route   $candidate
-            set handler [$candidate script]
-
-            return $candidate
-        }
-    }
-
-    ::tanzer::error throw 404 "No suitable request handler found"
+    return $route
 }

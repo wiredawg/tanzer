@@ -52,3 +52,20 @@ package require TclOO
 
     return $entries
 }
+
+##
+# Search through the route entries for a route that matches `$request`.
+# If no suitable router entry can be matched to the request specified, then
+# throw a 404 error.
+#
+::oo::define ::tanzer::router method route {request} {
+    my variable entries
+
+    foreach candidate $entries {
+        if {[$candidate matches $request]} {
+            return $candidate
+        }
+    }
+
+    ::tanzer::error throw 404 "No suitable route found"
+}
