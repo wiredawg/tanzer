@@ -128,7 +128,6 @@ proc ::tanzer::date::new {epoch} {
     set yearlen [expr {$yeardays * $daylen}]
 
     for {set n 0} {$n < $epoch} {incr n $yearlen} {
-        set  leap 0
         incr year
         incr firstdow
 
