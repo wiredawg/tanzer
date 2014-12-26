@@ -121,6 +121,7 @@ proc ::tanzer::date::dayOfYear {date} {
 proc ::tanzer::date::new {epoch} {
     set firstdow    4
     set year     1969
+    set leap        0
     set daylen  86400
     set hourlen  3600
     set yeardays  365
