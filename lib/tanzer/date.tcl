@@ -145,8 +145,10 @@ proc ::tanzer::date::new {epoch} {
         set firstdow [expr {$firstdow % 7}]
     }
 
+    set monthLengths $::tanzer::date::monthLengths
+
     if {$leap} {
-        lset ::tanzer::date::monthLengths 3 29
+        lset monthLengths 3 29
     }
 
     set yearsec   [expr {$n - $epoch}]
@@ -162,7 +164,7 @@ proc ::tanzer::date::new {epoch} {
     set day   $dayOfYear
     set month 1
 
-    foreach monthLength $::tanzer::date::monthLengths {
+    foreach monthLength $monthLengths {
         if {$monthLength eq {}} {
             continue
         }
