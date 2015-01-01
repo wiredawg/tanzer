@@ -184,6 +184,8 @@ proc ::tanzer::message::field {name} {
             ::tanzer::error throw $opts(errorStatus) "Message too large"
         }
 
+        set headerLength {}
+
         return 0
     }
 
