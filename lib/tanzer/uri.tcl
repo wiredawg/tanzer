@@ -27,18 +27,24 @@ proc ::tanzer::uri::encode {text} {
 # URI decode the data provided in `$text` and return a new string.
 #
 proc ::tanzer::uri::decode {text} {
-    set specialCases [dict create \
-        "\[" "%5B" \
-        "\]" "%5D"]
+    set parts [list]
 
-    set search  {%([0-9A-F]{2})}
-    set replace {[format "%c" [scan "\1" "%2x"]]}
+    foreach part [::split $text "+"] {
+        set specialCases [dict create \
+            "\[" "%5B" \
+            "\]" "%5D"]
 
-    set modified [regsub -all -nocase $search \
-        [string map $specialCases $text] $replace]
+        set search  {%([0-9A-F]{2})}
+        set replace {[format "%c" [scan "\1" "%2x"]]}
 
-    return [encoding convertfrom utf-8 [subst \
-        -nobackslash -novariable $modified]]
+        set modified [regsub -all -nocase $search \
+            [string map $specialCases $part] $replace]
+
+        lappend parts [encoding convertfrom utf-8 [subst \
+            -nobackslash -novariable $modified]]
+    }
+
+    return [::join $parts " "]
 }
 
 ##
