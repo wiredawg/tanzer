@@ -54,7 +54,7 @@ proc ::tanzer::uri::params {query} {
         #
         if {[regexp {^(.*)=(.*)$} $pair {} name value]} {
             lappend params \
-                [::tanzer::uri::decode $name] [::tanzer::uri::decode value]
+                [::tanzer::uri::decode $name] [::tanzer::uri::decode $value]
         }
     }
 
