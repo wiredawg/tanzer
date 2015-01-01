@@ -98,9 +98,9 @@ proc ::tanzer::message::field {name} {
             set opts(request) 1
             break
         } "-response" {
-            set opts(response)   1
-            set errorStatus    500
-            set errorMessage     "Invalid Response"
+            set opts(response)       1
+            set opts(errorStatus)  500
+            set opts(errorMessage) "Invalid Response"
 
             break
         } default {
