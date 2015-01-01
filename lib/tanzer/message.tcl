@@ -164,11 +164,11 @@ proc ::tanzer::message::field {name} {
         set newline       [expr {($prevchar eq "\r")? "\r\n": "\n"}]
         set newlineLength [string length $newline]
         set headerEnding  "$newline$newline"
-        set headerLength  [string first $headerEnding $buffer]
+        set headerLength  [expr {[string first $headerEnding $buffer] + $newlineLength}]
     }
 
     set bufferLength [string length $buffer]
-    set bodyStart    [expr {$headerLength + (2 * $newlineLength)}]
+    set bodyStart    [expr {$headerLength + $newlineLength}]
 
     #
     # If we cannot find the end of the headers, then determine if the buffer
