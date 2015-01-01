@@ -147,10 +147,12 @@ proc ::tanzer::message::field {name} {
 
     upvar 1 $varName buffer
 
+    set bufferLength [string length $buffer]
+
     #
     # If the buffer is empty, then bail.
     #
-    if {[string length $buffer] == 0} {
+    if {$bufferLength == 0} {
         return 0
     }
 
@@ -164,11 +166,12 @@ proc ::tanzer::message::field {name} {
         set newline       [expr {($prevchar eq "\r")? "\r\n": "\n"}]
         set newlineLength [string length $newline]
         set headerEnding  "$newline$newline"
-        set headerLength  [expr {[string first $headerEnding $buffer] + $newlineLength}]
+        set headerLength  [expr {
+            [string first $headerEnding $buffer] + $newlineLength - 1
+        }]
     }
 
-    set bufferLength [string length $buffer]
-    set bodyStart    [expr {$headerLength + $newlineLength}]
+    set bodyStart [expr {$headerLength + $newlineLength + 1}]
 
     #
     # If we cannot find the end of the headers, then determine if the buffer
