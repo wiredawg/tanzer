@@ -124,7 +124,7 @@ namespace eval ::tanzer::scgi::request {
     # We need to check and see if the first bit of the buffer looks like a
     # netstring prefix.  If so, we might actually have read the full headers.
     #
-    if {$headerLength == 0} {
+    if {$headerLength eq ""} {
         if {![regexp {^(0|[1-9]\d{0,6}):} $buffer {} headerLength]} {
             ::tanzer::error throw 400 "Invalid request header length"
         }
