@@ -33,7 +33,8 @@ namespace eval ::tanzer::session {
 #
 ::oo::define ::tanzer::session constructor {newServer newSock newProto} {
     my variable server sock proto request route handler cleanup \
-        response responded buffer config remaining keepalive watchdog
+        response responded buffer config remaining keepalive watchdog \
+        store
 
     set server    $newServer
     set sock      $newSock
@@ -48,6 +49,7 @@ namespace eval ::tanzer::session {
     set remaining 0
     set keepalive 1
     set watchdog  {}
+    set store [dict create]
 
     set config(readsize) [$newServer config readsize]
 
@@ -172,7 +174,8 @@ namespace eval ::tanzer::session {
 #
 ::oo::define ::tanzer::session method nextRequest {} {
     my variable server sock buffer handler route \
-        request response responded remaining keepalive
+        request response responded remaining keepalive \
+        store
 
     if {$request ne {}} {
         $request destroy
@@ -188,6 +191,7 @@ namespace eval ::tanzer::session {
 
     set route     {}
     set handler   {}
+    set store [dict create]
     set responded 0
 
     if {$remaining != 0} {
@@ -717,4 +721,25 @@ namespace eval ::tanzer::session {
     set handler [$route script]
 
     return $route
+}
+
+##
+# Return the value of the stored session variable `$name`
+# If `$value` is also provided, then set or replace the
+# session variable `$name` with `$value`.  Otherwise, return a list of
+# key-value pairs containing all current session variables.
+# #
+::oo::define ::tanzer::session method store {args} {
+    my variable store
+
+    switch -- [llength $args] 0 {
+        return $store
+    } 1 {
+        return [dict get $store [lindex $args 0]]
+    } 2 {
+        set store [dict set $store [lindex $args 0] [lindex $args 1]]
+        return
+    }
+
+    error "Invalid command invocation"
 }
