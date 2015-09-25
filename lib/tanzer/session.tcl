@@ -737,7 +737,7 @@ namespace eval ::tanzer::session {
     } 1 {
         return [dict get $store [lindex $args 0]]
     } 2 {
-        set store [dict set $store [lindex $args 0] [lindex $args 1]]
+        dict set store [lindex $args 0] [lindex $args 1]
         return
     }
 
