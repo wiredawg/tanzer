@@ -34,12 +34,13 @@ namespace eval ::tanzer::session {
 ::oo::define ::tanzer::session constructor {newServer newSock newProto} {
     my variable server sock proto request route handler cleanup \
         response responded buffer config remaining keepalive watchdog \
-        store
+        store requestBodyFinished
 
     set server    $newServer
     set sock      $newSock
     set proto     $newProto
     set request   {}
+    set requestBodyFinished 0
     set route     {}
     set handler   {}
     set cleanup   [list]
@@ -249,9 +250,8 @@ namespace eval ::tanzer::session {
 #
 ::oo::define ::tanzer::session method handle {event} {
     my variable sock server request keepalive \
-        buffer config handler watchdog remaining
-
-    set requestBodyFinished 0
+        buffer config handler watchdog remaining \
+        requestBodyFinished
 
     if {$event eq "write"} {
         return [{*}$handler write [self]]
@@ -337,8 +337,6 @@ namespace eval ::tanzer::session {
             set requestBodyFinished 1
         }
     } else {
-        {*}$handler read [self] $data
-
         #
         # Decrement the length of the data passed to the request handler from
         # the number of bytes left for this current request.
@@ -352,6 +350,8 @@ namespace eval ::tanzer::session {
         if {$remaining == 0} {
             set requestBodyFinished 1
         }
+
+        {*}$handler read [self] $data
     }
 
     #
@@ -372,6 +372,12 @@ namespace eval ::tanzer::session {
     }
 
     return
+}
+
+::oo::define ::tanzer::session method requestBodyFinished {} {
+    my variable requestBodyFinished
+
+    return $requestBodyFinished
 }
 
 ##
