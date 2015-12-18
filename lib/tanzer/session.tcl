@@ -249,7 +249,7 @@ namespace eval ::tanzer::session {
 #
 ::oo::define ::tanzer::session method handle {event} {
     my variable sock server request keepalive \
-        buffer config handler watchdog
+        buffer config handler watchdog remaining
 
     set requestBodyFinished 0
 
