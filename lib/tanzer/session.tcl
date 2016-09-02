@@ -491,7 +491,7 @@ namespace eval ::tanzer::session {
     set length [string length $data]
 
     if {[$response chunked]} {
-        puts -nonewline $sock [format "%x\r\n$data\r\n" $length]
+        puts -nonewline $sock [format "%x\r\n%s\r\n" $length $data]
     } else {
         puts -nonewline $sock $data
     }
