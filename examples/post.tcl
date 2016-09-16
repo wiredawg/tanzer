@@ -41,7 +41,7 @@ proc simpleResponder {event session {data ""}} {
 
 set server [::tanzer::server new]
 
-$server route GET /* {.*:8080} simpleResponder
+$server route GET /*  {.*:8080} simpleResponder
 $server route POST /* {.*:8080} postResponder
 
 set listener [socket -server [list $server accept] 8080]
