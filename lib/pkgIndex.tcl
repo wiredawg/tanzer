@@ -1,28 +1,41 @@
-package ifneeded tanzer                 0.1 [list source [file join $dir tanzer.tcl]]
-package ifneeded tanzer::date           0.1 [list source [file join $dir tanzer/date.tcl]]
-package ifneeded tanzer::daemon         0.1 [list source [file join $dir tanzer/daemon.tcl]]
-package ifneeded tanzer::error          0.1 [list source [file join $dir tanzer/error.tcl]]
-package ifneeded tanzer::forwarder      0.1 [list source [file join $dir tanzer/forwarder.tcl]]
-package ifneeded tanzer::logger         0.1 [list source [file join $dir tanzer/logger.tcl]]
-package ifneeded tanzer::message        0.1 [list source [file join $dir tanzer/message.tcl]]
-package ifneeded tanzer::message::chunk 0.1 [list source [file join $dir tanzer/message/chunk.tcl]]
-package ifneeded tanzer::request        0.1 [list source [file join $dir tanzer/request.tcl]]
-package ifneeded tanzer::response       0.1 [list source [file join $dir tanzer/response.tcl]]
-package ifneeded tanzer::router         0.1 [list source [file join $dir tanzer/router.tcl]]
-package ifneeded tanzer::router::entry  0.1 [list source [file join $dir tanzer/router/entry.tcl]]
-package ifneeded tanzer::session        0.1 [list source [file join $dir tanzer/session.tcl]]
-package ifneeded tanzer::server         0.1 [list source [file join $dir tanzer/server.tcl]]
-package ifneeded tanzer::uri            0.1 [list source [file join $dir tanzer/uri.tcl]]
-package ifneeded tanzer::cgi            0.1 [list source [file join $dir tanzer/cgi.tcl]]
-package ifneeded tanzer::cgi::handler   0.1 [list source [file join $dir tanzer/cgi/handler.tcl]]
-package ifneeded tanzer::file           0.1 [list source [file join $dir tanzer/file.tcl]]
-package ifneeded tanzer::file::fragment 0.1 [list source [file join $dir tanzer/file/fragment.tcl]]
-package ifneeded tanzer::file::partial  0.1 [list source [file join $dir tanzer/file/partial.tcl]]
-package ifneeded tanzer::file::handler  0.1 [list source [file join $dir tanzer/file/handler.tcl]]
-package ifneeded tanzer::file::listing  0.1 [list source [file join $dir tanzer/file/listing.tcl]]
-package ifneeded tanzer::http           0.1 [list source [file join $dir tanzer/http.tcl]]
-package ifneeded tanzer::http::handler  0.1 [list source [file join $dir tanzer/http/handler.tcl]]
-package ifneeded tanzer::http::request  0.1 [list source [file join $dir tanzer/http/request.tcl]]
-package ifneeded tanzer::scgi           0.1 [list source [file join $dir tanzer/scgi.tcl]]
-package ifneeded tanzer::scgi::handler  0.1 [list source [file join $dir tanzer/scgi/handler.tcl]]
-package ifneeded tanzer::scgi::request  0.1 [list source [file join $dir tanzer/scgi/request.tcl]]
+namespace eval ::tanzer {
+    variable version 0.1
+
+    variable packages {
+        tanzer
+        tanzer::date
+        tanzer::daemon
+        tanzer::error
+        tanzer::forwarder
+        tanzer::logger
+        tanzer::message
+        tanzer::message::chunk
+        tanzer::request
+        tanzer::response
+        tanzer::router
+        tanzer::router::entry
+        tanzer::session
+        tanzer::server
+        tanzer::uri
+        tanzer::cgi
+        tanzer::cgi::handler
+        tanzer::file
+        tanzer::file::fragment
+        tanzer::file::partial
+        tanzer::file::handler
+        tanzer::file::listing
+        tanzer::http
+        tanzer::http::handler
+        tanzer::http::request
+        tanzer::scgi
+        tanzer::scgi::handler
+        tanzer::scgi::request
+    }
+}
+
+foreach package $::tanzer::packages {
+    set file   "[string map {:: /} $package].tcl"
+    set source [list source [file join $dir $file]]
+
+    package ifneeded $package $::tanzer::version $source
+}
