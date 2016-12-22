@@ -349,6 +349,8 @@ namespace eval ::tanzer::session {
         #
         if {$remaining == 0} {
             set requestBodyFinished 1
+        } elseif {[chan eof $sock]} {
+            error "Client closed $sock prematurely"
         }
 
         {*}$handler read [self] $data
