@@ -318,9 +318,7 @@ namespace eval ::tanzer::session {
         # to the handler as a read event, and subsequently trim the buffer
         # to only the parts we need.
         #
-        set start 0
-        set end   [expr {$remaining - 1}]
-        set data  [string range $buffer $start $end]
+        set data [string range $buffer 0 [expr {$remaining - 1}]]
     } else {
         append buffer $data
     }
